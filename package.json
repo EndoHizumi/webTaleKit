@@ -1,0 +1,15 @@
+{
+  "name": "gyarugejs",
+  "version": "0.0.1",
+  "description": "Web知識でノベルゲーを作ることを目指したやつ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "EndoHizumi",
+  "license": "MIT",
+  "dependencies": {
+    "html-inline-external": "^1.0.10",
+    "html-to-image": "^1.11.11"
+  }
+}
