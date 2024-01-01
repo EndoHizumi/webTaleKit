@@ -1,5 +1,5 @@
 {
-  "name": "gyarugejs",
+  "name": "webtalekit",
   "version": "0.0.1",
   "description": "Web知識でノベルゲーを作ることを目指したやつ",
   "main": "index.js",
@@ -11,5 +11,9 @@
   "dependencies": {
     "html-inline-external": "^1.0.10",
     "html-to-image": "^1.11.11"
+  },
+  "devDependencies": {
+    "esdoc": "^1.1.0",
+    "esdoc-standard-plugin": "^1.0.0"
   }
 }
