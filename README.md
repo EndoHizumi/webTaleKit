@@ -327,16 +327,16 @@ const sceneConfig = {
  export const sceneConfig ={
 	 background: '屋上.jpg'
  };
- const scenario = [
+export const scenario = [
     {type: "choice", prompt: "プロローグをスキップしますか？", items: [{onSelect: skipScenario,label: "はい"},{onSelect: undefined,label: "いいえ"}]}
 	 {type: text, msg: "夏の陽気が残る９月の初旬"}
 	 {type: say, name:"燈火",msg: "先輩、別れてください")}
 	 {type: say, name: "智樹", msg: "え、ごめん。今･･･なんて")}
 	 type: text, msg: "聞き取れなかったわけじゃない。/n言われた意味が分からなかった。/n理解したくなかった。"
    
- ] // scenarioメソッドはexportしない。モジュールとして、使わないのでしないこと
+ ]
  // 他のロジック
-const skipScenario = () => {
+export const skipScenario = () => {
 	index = 1
 }
 ```
