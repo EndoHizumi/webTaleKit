@@ -9,6 +9,7 @@
   "author": "EndoHizumi",
   "license": "MIT",
   "dependencies": {
+    "axios": "^1.6.7",
     "html-inline-external": "^1.0.10",
     "html-to-image": "^1.11.11"
   },
