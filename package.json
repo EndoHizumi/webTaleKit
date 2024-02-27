@@ -4,17 +4,28 @@
   "description": "Web知識でノベルゲーを作ることを目指したやつ",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf ./dist/ && webpack --mode development && cp test/* dist/ ",
+    "build:prod": "webpack --mode production"
   },
   "author": "EndoHizumi",
   "license": "MIT",
   "dependencies": {
     "axios": "^1.6.7",
     "html-inline-external": "^1.0.10",
-    "html-to-image": "^1.11.11"
+    "html-to-image": "^1.11.11",
+    "http-server": "^14.1.1"
   },
   "devDependencies": {
     "esdoc": "^1.1.0",
-    "esdoc-standard-plugin": "^1.0.0"
+    "esdoc-standard-plugin": "^1.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-promise": "^6.1.1",
+    "html-webpack-plugin": "^5.6.0",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^5.1.4"
   }
 }
