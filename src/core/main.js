@@ -14,28 +14,37 @@ export class Core {
     this.isNext = false
   }
 
-  async init () {
+  async start () {
     // titleタグの内容を書き換える
     document.title = engineConfig.title
-    this.drawer.drawUI()
     const title = await import(/* webpackIgnore: true */ './title.js')//  webpackIgnoreでバンドルを無視する
     this.drawer.setConfig(title.sceneConfig)
     // scenario配列をmapで処理して、ゲームを進行する。
-    title.scenario.forEach((scene) => {
-      // type:textの場合, DrawerのdrawTextメソッドを実行する
-      console.log(scene)
-      if (scene.type === 'text') {
-        this.drawer.drawText(scene)
-        this.scenarioManager.setHistory(scene.text)
-        // waitがある場合、クリック待ちをする
-        if (scene.wait) {
+    console.log(title.scenario)
+    for (let i = 0; i < title.scenario.length; i++) {
+      if (!title.scenario[i].wait || !('wait' in title.scenario[i])) {
+        await new Promise((resolve) => {
           this.isNext = false
-          this.drawer.messageText.addEventListener('click', () => {
+          this.drawer.drawText(title.scenario[i])
+          this.scenarioManager.setHistory(title.scenario[i].text)
+          // クリック待ち
+          // const waitCircle = document.querySelector('#messageWindow')
+          // const img = document.createElement('img')
+          // img.src = './wait.gif' // 画像のパスを設定
+          // waitCircle.appendChild(img)
+          document.getElementById('gameContainer').addEventListener('click', () => {
             this.isNext = true
-            // うまくいってない。クリック待ちをSetTimeoutで実装する？
           })
-        }
+          setInterval(() => {
+            if (this.isNext) {
+              document.getElementById('gameContainer').removeEventListener('click', () => {})
+              // waitCircle.removeChild(img)
+              resolve()
+            }
+          }, 100)
+        })
+        console.log('next')
       }
-    })
+    }
   }
 }

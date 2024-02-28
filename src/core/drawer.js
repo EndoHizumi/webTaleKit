@@ -14,27 +14,27 @@ export class Drawer {
     this.ctx = canvas.getContext('2d')
     // 黒で塗りつぶす
     this.ctx.fillStyle = 'black'
-    this.ctx.fillRect(0, 0, 800, 600)
+    this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
   }
 
   setConfig (config) {
     // 背景画像をcanvasに描画する
     this.config = config
     const img = new Image()
-    img.src = this.config.background
     img.onload = () => {
-      console.log('load')
-      this.ctx.drawImage(img, 0, 0, this.ctx.width, this.ctx.height)
+      this.ctx.drawImage(img, 0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
     }
+    img.src = this.config.background
   }
 
   drawText (scene) {
     // テキストを描画する(座標は、読み込んだUIのHTMLのmessageBox要素に合わせる)
     // テキストは一文字ずつ描画する
+    const messageText = document.getElementById('messageWindow')
+    messageText.innerHTML = ''
     this.ctx.font = '20px serif'
     this.ctx.fillStyle = 'black'
     scene.msg.split('').forEach((char, i) => {
-      const messageText = document.getElementById('messageWindow')
       setTimeout(() => {
         messageText.innerHTML = messageText.innerHTML + char
       }, 100 * i)
