@@ -14,4 +14,8 @@ module.exports = {
       filename: 'index.html', // 出力されるHTMLファイル名
     }),
   ],
+  devServer: {
+    static: './dist',
+    port: 8080,
+  },
 };
