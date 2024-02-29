@@ -27,17 +27,42 @@ export class Drawer {
     img.src = this.config.background
   }
 
-  drawText (scene) {
-    // テキストを描画する(座標は、読み込んだUIのHTMLのmessageBox要素に合わせる)
-    // テキストは一文字ずつ描画する
-    const messageText = document.getElementById('messageWindow')
-    messageText.innerHTML = ''
-    this.ctx.font = '20px serif'
-    this.ctx.fillStyle = 'black'
-    scene.msg.split('').forEach((char, i) => {
-      setTimeout(() => {
-        messageText.innerHTML = messageText.innerHTML + char
-      }, 100 * i)
+  async drawText (scene) {
+    const messageText = document.querySelector('#messageWindow p')
+    if (scene.clear === undefined || scene.clear === true) {
+      messageText.innerHTML = ''
+    }
+
+    const displayText = scene.msg.split('\n')
+    for (const line of displayText) {
+      for (const char of line) {
+        await this.sleep(50) // 50ミリ秒待機
+        messageText.innerHTML += char
+      }
+      if (scene.wait === undefined || scene.wait === true) {
+        // 改行ごとにクリック待ち
+        await this.clickWait()
+      }
+    }
+  }
+
+  // クリック待ち処理
+  clickWait () {
+    const waitCircle = document.getElementById('wait')
+    waitCircle.style.visibility = 'visible'
+
+    return new Promise(resolve => {
+      const clickHandler = () => {
+        document.getElementById('gameContainer').removeEventListener('click', clickHandler)
+        waitCircle.style.visibility = 'hidden'
+        resolve()
+      }
+      document.getElementById('gameContainer').addEventListener('click', clickHandler)
     })
+  }
+
+  // sleep関数
+  sleep (ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
 }

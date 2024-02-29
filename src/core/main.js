@@ -22,29 +22,8 @@ export class Core {
     // scenario配列をmapで処理して、ゲームを進行する。
     console.log(title.scenario)
     for (let i = 0; i < title.scenario.length; i++) {
-      if (!title.scenario[i].wait || !('wait' in title.scenario[i])) {
-        await new Promise((resolve) => {
-          this.isNext = false
-          this.drawer.drawText(title.scenario[i])
-          this.scenarioManager.setHistory(title.scenario[i].text)
-          // クリック待ち
-          // const waitCircle = document.querySelector('#messageWindow')
-          // const img = document.createElement('img')
-          // img.src = './wait.gif' // 画像のパスを設定
-          // waitCircle.appendChild(img)
-          document.getElementById('gameContainer').addEventListener('click', () => {
-            this.isNext = true
-          })
-          setInterval(() => {
-            if (this.isNext) {
-              document.getElementById('gameContainer').removeEventListener('click', () => {})
-              // waitCircle.removeChild(img)
-              resolve()
-            }
-          }, 100)
-        })
-        console.log('next')
-      }
+      await this.drawer.drawText(title.scenario[i])
+      this.scenarioManager.setHistory(title.scenario[i].text)
     }
   }
 }

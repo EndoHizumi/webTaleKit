@@ -76,13 +76,16 @@ TIPS: 対応するWTSがある場合のみ、説明に記述がある
 
 ### テキスト表示
 canvasのメッセージウィンドウへ入力された条件でテキストを表示する。
-- text(msg: string,speed:number,wait: boolean)
+- text(msg: string,speed:number,wait: boolean､clear: boolean)
 	- overview: メッセージウインドウに入力された条件でテキストを表示する
 	- msg: 表示するテキスト
 	- speed: テキストの表示間隔。初期値は、0.5s
 	- wait: クリック待ちをするかどうか。初期値は、true。複数行を入力した場合、改行コードごとにクリック待ちをする。
+	- clear: 前のメッセージをけすかどうか。初期値は、true。
 	- 対応するWTS:`<text speed='' wait=''>msg</text>`
 	
+- newPage()
+  - overview: メッセージ
 - say(name:string, pattern: string, voice: {playの引数},  ...text)
 	- overview: textのrapperでキャラクターのセリフの時に使うことを想定している。キャラが表示されていないときは、表示する
 	- name: リソース定義オブジェクトのcharaのnameの値、定義していない値を指定可能。
