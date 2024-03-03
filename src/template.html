@@ -10,8 +10,8 @@
         html {
             margin: 0;
             padding: 0;
-            width: 800px;
-            height: 600px;
+            width: 1280px;
+            height: 720px;
             overflow: hidden;
             font-family: Arial, sans-serif;
         }
@@ -24,12 +24,25 @@
             color: #fff;
         }
 
+        #header {
+            position: absolute;
+            width: 100%;
+            height: calc(720px * 1 / 8);
+        }
+
+        #gameScreen {
+            height: calc(720px * 2 / 4);
+            position: absolute;
+            width: 100%;
+            top: calc(720px * 1 / 8);
+        }
+
         #messageWindow {
             position: absolute;
             bottom: 30px;
             left: 0;
             width: 100%;
-            height: calc(600px / 4);
+            height: calc(720px / 4);
             /* 4分の1の高さ */
             background-color: rgba(28, 41, 189, 0.3);
             /* 半透明 */
@@ -66,6 +79,8 @@
 
 <body>
     <div id="gameContainer">
+        <div id="header"></div>
+        <div id="gameScreen"></div>
         <div id="messageWindow">
             <p></p>
             <img id="wait" src="wait.gif" style="visibility: none;" width="20px" height="20px">
