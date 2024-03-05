@@ -15,6 +15,11 @@ export class Drawer {
     // 黒で塗りつぶす
     this.ctx.fillStyle = 'black'
     this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+    // ウィンドウのリサイズ時にスケールを調整
+    window.addEventListener('resize', this.adjustScale)
+
+    // 初期ロード時にもスケールを調整
+    this.adjustScale()
   }
 
   setConfig(config) {
@@ -178,6 +183,26 @@ export class Drawer {
   // sleep関数
   sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms))
-    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+
+  adjustScale() {
+    // ターゲット要素の元の幅と高さ
+    const originalWidth = 1280; // 例: 1280px
+    const originalHeight = 720; // 例: 720px
+  
+    // ビューポートの幅と高さを取得
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+  
+    // 幅と高さのスケールを計算
+    const scaleX = viewportWidth / originalWidth;
+    const scaleY = viewportHeight / originalHeight;
+  
+    // 幅と高さのうち、小さい方のスケールを選択（アスペクト比を維持）
+    const scale = Math.min(scaleX, scaleY);
+
+    // ターゲット要素にスケールを適用
+    const targetElement = document.getElementById('gameContainer');
+    targetElement.style.transform = `scale(${scale})`;
   }
 }
