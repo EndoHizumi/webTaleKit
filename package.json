@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "play": "rm -rf ./dist/ && webpack --mode development && cp test/* dist/ && npx webpack-dev-server --open --mode development",
-    "build": "rm -rf ./dist/ && webpack --mode development && cp test/* dist/",
+    "play": "rm -rf ./dist/ && webpack --mode development && cp -r test/* dist/ && npx webpack-dev-server --open --mode development",
+    "build": "rm -rf ./dist/ && webpack --mode development && cp -r test/* dist/",
     "build:prod": "webpack --mode production"
   },
   "author": "EndoHizumi",

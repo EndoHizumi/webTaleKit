@@ -27,22 +27,37 @@ export class Drawer {
         0,
         0,
         this.ctx.canvas.width,
-        this.ctx.canvas.height
+        this.ctx.canvas.height,
       )
     }
     img.src = this.config.background
   }
 
   async drawText(scene) {
-    const delay = 50
+    let isSkip = false
     const messageText = document.querySelector('#messageWindow p')
+    // Enterキーが押されたら全文表示
+    setTimeout(() => {
+      document.addEventListener('keydown', function eventHandler(event) {
+        if (event.key === 'Enter') {
+          isSkip = true
+          document.removeEventListener('keydown', eventHandler) // イベントリスナーを削除
+        }
+      })
+    }, 100)
     if (scene.clear === undefined || scene.clear === true) {
       messageText.innerHTML = ''
     }
     const displayText = scene.msg.split('\n')
     for (const line of displayText) {
       for (const char of line) {
-        await this.sleep(delay) // 50ミリ秒待機
+        if (isSkip) {
+          messageText.innerHTML = ''
+          messageText.innerHTML += line
+          isSkip = false
+          break
+        }
+        await this.sleep(50) // 50ミリ秒待機
         messageText.innerHTML += char
       }
       if (
@@ -69,29 +84,55 @@ export class Drawer {
 
     // 選択肢を表示
     const gameScreen = document.getElementById('gameScreen')
+    console.log(choices)
     for (const choice of choices.items) {
+      const backgroundImages =
+        choices.src !== undefined ? choices.src : choice.src
+        console.log(backgroundImages)
+      const defaultImage =
+        backgroundImages?.default !== undefined
+          ? backgroundImages.default
+          : './systemPicture/02_button/button.png'
+      const hoverImage =
+        backgroundImages?.hover !== undefined
+          ? backgroundImages.hover
+          : './systemPicture/02_button/button2.png'
+      const selectImage =
+        backgroundImages?.select !== undefined
+          ? backgroundImages.select
+          : './systemPicture/02_button/button3.png'
       const button = document.createElement('div')
       button.className = 'choice'
+      console.log(choice.color !== undefined ? choice.color.default : 'black')
+      button.style.color = choice.color !== undefined ? choice.color.default : 'black'
       button.style.width = '100%'
       button.style.height = '50px'
-      button.style.backgroundImage = 'url(./systemPicture/02_button/button.png)'
+      button.style.backgroundImage = `url(${defaultImage})`
       button.style.textAlign = 'center'
       button.style.backgroundRepeat = 'no-repeat'
       button.style.backgroundPosition = 'center'
       button.style.paddingTop = '20px'
-      button.style.color = 'black'
       button.addEventListener('mouseenter', function() {
-        this.style.backgroundImage = 'url(./systemPicture/02_button/button2.png)' // マウスが要素の上にあるときの背景色
+        // マウスが要素の上にあるときの背景色
+        this.style.backgroundImage = `url(${hoverImage})`
+        this.style.color = choice.color !== undefined ? choice.color.hover : 'black'
       })
       button.addEventListener('mouseleave', function() {
-        this.style.backgroundImage = 'url(./systemPicture/02_button/button.png)' // マウスが要素から離れたときの背景色
+        // マウスが要素から離れたときの背景色
+        this.style.backgroundImage = `url(${defaultImage})`
+        this.style.color = choice.color !== undefined ? choice.color.default : 'black'
       })
       button.addEventListener('mousedown', function() {
-        this.style.backgroundImage = 'url(./systemPicture/02_button/button3.png)' // マウスが要素から離れたときの背景色
+        // マウスが要素を選択したときの背景色
+        this.style.backgroundImage = `url(${selectImage})`
+        this.style.color = choice.color !== undefined ? choice.color.select : 'black'
       })
       button.innerHTML = choice.label
       button.onclick = () => {
         choice.onSelect()
+        document.querySelectorAll('.choice').forEach((element) => {
+          element.parentNode.removeChild(element)
+        })
         selectId = choice.id
         isSelect = true
       }
@@ -99,7 +140,7 @@ export class Drawer {
     }
 
     // 選択待ち
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const intervalId = setInterval(() => {
         if (isSelect) {
           clearInterval(intervalId)
@@ -114,7 +155,7 @@ export class Drawer {
     const waitCircle = document.getElementById('wait')
     waitCircle.style.visibility = 'visible'
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const clickHandler = () => {
         document
           .getElementById('gameContainer')
@@ -126,14 +167,17 @@ export class Drawer {
         .getElementById('gameContainer')
         .addEventListener('click', clickHandler)
 
-      document
-        .body
-        .addEventListener('keydown', (event) => { if (event.key === 'Enter') { clickHandler() } })
+      document.body.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+          clickHandler()
+        }
+      })
     })
   }
 
   // sleep関数
   sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms))
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 }

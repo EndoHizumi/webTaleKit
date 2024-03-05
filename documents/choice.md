@@ -2,7 +2,7 @@
 
 ## 引数
 
-`choice(id:number, prompt: String,src?: {default: string, hover?:string select?: string}, Items:{id:number, onSelect: function, label: String, src?: {default: string, hover?:string select?: string})`
+`choice(id:number, prompt: String,src?: {default: string, hover?:string select?: string}, Items:{id:number, onSelect: function, label: String, color:String, src?: {default: string, hover?:string select?: string})`
 
 ## WebTaleScript
 
@@ -32,3 +32,4 @@ Items: 選択肢の内容を設定できるオブジェクト（最大で６つ�
     id: 選択された選択肢を識別するための値。自動で設定される。
     onSelect: 選択肢が選択された時に設定された関数を実行する。
     label: 個別の選択肢の文言を設定できる。
+    chara: 選択肢ボタンの文字色を設定できる。色の名前かRGBで指定ができる。
