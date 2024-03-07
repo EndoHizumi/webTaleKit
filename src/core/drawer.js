@@ -83,6 +83,7 @@ export class Drawer {
   async drawChoices(choices) {
     let isSelect = false
     let selectId = 0
+    let selectIndex = 0
     // 選択肢のタイトルを表示
     const messageText = document.querySelector('#messageWindow p')
     messageText.innerHTML = choices.prompt
@@ -97,18 +98,17 @@ export class Drawer {
       const defaultImage =
         backgroundImages?.default !== undefined
           ? backgroundImages.default
-          : './systemPicture/02_button/button.png'
+          : './resource/system/systemPicture/02_button/button.png'
       const hoverImage =
         backgroundImages?.hover !== undefined
           ? backgroundImages.hover
-          : './systemPicture/02_button/button2.png'
+          : './resource/system/systemPicture/02_button/button2.png'
       const selectImage =
         backgroundImages?.select !== undefined
           ? backgroundImages.select
-          : './systemPicture/02_button/button3.png'
+          : './resource/system/systemPicture/02_button/button3.png'
       const button = document.createElement('div')
       button.className = 'choice'
-      console.log(choice.color !== undefined ? choice.color.default : 'black')
       button.style.color = choice.color !== undefined ? choice.color.default : 'black'
       button.style.width = '100%'
       button.style.height = '50px'
@@ -134,11 +134,11 @@ export class Drawer {
       })
       button.innerHTML = choice.label
       button.onclick = () => {
-        choice.onSelect()
         document.querySelectorAll('.choice').forEach((element) => {
           element.parentNode.removeChild(element)
         })
         selectId = choice.id
+        selectIndex = choice.jump
         isSelect = true
       }
       gameScreen.appendChild(button)
@@ -149,7 +149,7 @@ export class Drawer {
       const intervalId = setInterval(() => {
         if (isSelect) {
           clearInterval(intervalId)
-          resolve(selectId)
+          resolve({selectId, selectIndex})
         }
       }, 100)
     })
