@@ -32,8 +32,25 @@ export class Core {
         const result = await this.drawer.drawChoices(line)
         const {selectId, selectIndex: jumpIndex } = result
         this.scenarioManager.setHistory(line.prompt)
-        console.log(selectId)
+        console.log(selectId, jumpIndex)
+        this.index = jumpIndex
+        continue
+      } else if (line.type === 'jump') {
+        this.scenarioManager.jump(line.label)
+      } else if (line.type == 'show') {
+        let imagePath;
+        if (line.name) {
+          imagePath = this.resourceManager.getResourcePath(line.name);
+        } else {
+          imagePath = path;
+        }
+        const imageObject = this.drawer.show(imagePath, line.pos, line.look, line.entry);
+        // 表示した画像の情報を管理
+        const key = line.name || line.path;
+        this.displayedImages[key] = { imageObject, pos: line.pos};
       }
+      this.index++
     }
+    document.getElementById('gameContainer').innerHTML = ''
   }
 }

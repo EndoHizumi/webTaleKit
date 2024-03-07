@@ -155,6 +155,49 @@ export class Drawer {
     })
   }
 
+  
+  show({ path = '', pos = { x: 0, y: 0 }, reverse = true, entry = { time: 1, wait: false } }) {
+  
+    // 画像の読み込みと表示処理
+    const img = new Image();
+    img.onload = () => {
+      // 表示開始までの遅延処理
+      if (entry.wait) {
+        setTimeout(() => {
+          drawCanvas(img, pos, reverse)
+        }, entry.time * 1000);
+      } else {
+        drawCanvas(img, pos, reverse);
+      }
+    };
+    img.src = path;
+    // 操作用のオブジェクトを返す（簡易版）
+    return {
+      move: (newPos) => {
+        console.log(`画像${key}を新しい座標(${newPos.x}, ${newPos.y})に移動`);
+      },
+      // 他のメソッドも同様に実装
+    };
+  }
+
+  drawCanvas(img, pos, reverse) {
+    // canvasを生成して、画像を描画。
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    // reverseがtrueの場合、画像を反転して表示
+    if (reverse) {
+      ctx.save();
+      ctx.scale(-1, 1);
+      ctx.drawImage(img, -pos.x - img.width, pos.y);
+      ctx.restore();
+    } else {
+      ctx.drawImage(img, pos.x, pos.y);
+    }
+    // canvasから画像を取得して、this.ctxに描画
+    this.ctx.drawImage(canvas, 0, 0);
+  }
   // クリック待ち処理
   clickWait() {
     const waitCircle = document.getElementById('wait')
