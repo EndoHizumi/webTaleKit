@@ -85,7 +85,7 @@ canvasのメッセージウィンドウへ入力された条件でテキスト�
 	- 対応するWTS:`<text speed='' wait=''>msg</text>`
 	
 - newPage()
-  - overview: メッセージ
+  - overview: メッセージをクリアする
 - say(name:string, pattern: string, voice: {playの引数},  ...text)
 	- overview: textのrapperでキャラクターのセリフの時に使うことを想定している。キャラが表示されていないときは、表示する
 	- name: リソース定義オブジェクトのcharaのnameの値、定義していない値を指定可能。
@@ -382,11 +382,13 @@ export const skipScenario = () => {
 │  │  ├─picture
 │  │  ├─se
 │  │  └─voice
-|   ├─title.html <- cssとjsをインライン化する
-|   ├─css
-|   ├─js
-|   |   ├─title.js <- title.sceneの変換後はjsファイルになる
-|   |   └─config.js
+|  ├─title.html <- cssとjsをインライン化する
+|  ├─css
+|  ├─js
+|  |  ├─title.js <- title.sceneの変換後はjsファイルになる
+|  |  └─config.js
+|  |-dist.js
+|  |-index.html
 
 
 ```
