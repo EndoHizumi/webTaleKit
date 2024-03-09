@@ -11,7 +11,7 @@ export const scenario = [
     {
       id:1,
       label: 'ずんだもん',
-      jump: 2,
+      jump: 1,
       src: {
         default: './resource/system/systemPicture/02_button/button.png',
         hover: './resource/system/systemPicture/02_button/button2.png',
@@ -20,4 +20,28 @@ export const scenario = [
     }
   ]
   },
+  {
+    type: 'show',
+    path: './resource/character/01_zundamon/01_zundamon.png',
+    pos: {
+      x: 0,
+      y: 0
+    },
+    size: {
+      width: 696,
+      height: 720
+    },
+  },
+  {
+    type: 'text',
+    msg: 'ずんだもんを呼び出しました。'
+  },
+  {
+    type: 'text',
+    msg: 'ずんだもんなのだ！'
+  },
+  {
+    type: 'text',
+    msg: '初見は帰れなのだ！'
+  }
 ]

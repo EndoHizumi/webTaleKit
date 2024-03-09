@@ -11,10 +11,11 @@ export class Core {
     this.scenarioManager = new ScenarioManager()
     // ResourceManagerの初期化（引数にconfig.jsを渡して、リソース管理配列を作る）
     this.resourceManager = new ResourceManager(
-      import(/* webpackIgnore: true */ './config.js')
+      import(/* webpackIgnore: true */ './resource/config.js')
     ) //  webpackIgnoreでバンドルを無視する
     this.isNext = false
     this.index = 0
+    this.displayedImages = []
   }
 
   async start() {
@@ -27,7 +28,7 @@ export class Core {
       const line = title.scenario[this.index]
       if (line.type === 'text') {
         await this.drawer.drawText(line)
-        this.scenarioManager.setHistory(line.text)
+        this.scenarioManager.setHistory(line.msg)
       } else if (line.type === 'choice') {
         const result = await this.drawer.drawChoices(line)
         const {selectId, selectIndex: jumpIndex } = result
@@ -42,9 +43,9 @@ export class Core {
         if (line.name) {
           imagePath = this.resourceManager.getResourcePath(line.name);
         } else {
-          imagePath = path;
+          imagePath = line.path;
         }
-        const imageObject = this.drawer.show(imagePath, line.pos, line.look, line.entry);
+        const imageObject = this.drawer.show(imagePath, line.pos, line.size, line.look, line.entry);
         // 表示した画像の情報を管理
         const key = line.name || line.path;
         this.displayedImages[key] = { imageObject, pos: line.pos};

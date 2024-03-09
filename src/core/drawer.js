@@ -156,7 +156,7 @@ export class Drawer {
   }
 
   
-  show({ path = '', pos = { x: 0, y: 0 }, reverse = true, entry = { time: 1, wait: false } }) {
+  show(path = '', pos = { x: 0, y: 0 }, size, reverse = false, entry = { time: 1, wait: false }) {
   
     // 画像の読み込みと表示処理
     const img = new Image();
@@ -164,10 +164,10 @@ export class Drawer {
       // 表示開始までの遅延処理
       if (entry.wait) {
         setTimeout(() => {
-          drawCanvas(img, pos, reverse)
+          this.drawCanvas(img, pos, size, reverse)
         }, entry.time * 1000);
       } else {
-        drawCanvas(img, pos, reverse);
+        this.drawCanvas(img, pos, size, reverse);
       }
     };
     img.src = path;
@@ -180,10 +180,10 @@ export class Drawer {
     };
   }
 
-  drawCanvas(img, pos, reverse) {
+  drawCanvas(img, pos, size, reverse) {
     // canvasを生成して、画像を描画。
     const canvas = document.createElement('canvas');
-    canvas.width = img.width;
+    canvas.width =  img.width;
     canvas.height = img.height;
     const ctx = canvas.getContext('2d');
     // reverseがtrueの場合、画像を反転して表示
@@ -193,10 +193,12 @@ export class Drawer {
       ctx.drawImage(img, -pos.x - img.width, pos.y);
       ctx.restore();
     } else {
-      ctx.drawImage(img, pos.x, pos.y);
+      ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
     }
     // canvasから画像を取得して、this.ctxに描画
-    this.ctx.drawImage(canvas, 0, 0);
+    const imageWidth = size !== undefined ? size.width : img.width;
+    const imageHeight = size !== undefined ? size.height : img.height;
+    this.ctx.drawImage(canvas, pos.x, pos.y, canvas.width, canvas.height, 0, 0, imageWidth, imageHeight);
   }
   // クリック待ち処理
   clickWait() {
