@@ -23,8 +23,13 @@ export class Core {
     // titleタグの内容を書き換える
     document.title = engineConfig.title
     const title = await import(/* webpackIgnore: true */ './js/title.js') //  webpackIgnoreでバンドルを無視する
+    this.scenarioManager.progress.currentScene = title.sceneConfig.name
     this.drawer.setConfig(title.sceneConfig)
     await this.setScenario(this.index, title.scenario)
+    // 実行が終了したら、真っ黒の画面を表示する
+    document.getElementById('gameContainer').innerHTML = ''
+  }
+
  async setScenario(index, scenario) {
         // scenario配列をmapで処理して、ゲームを進行する。
         while (index < scenario.length) {
