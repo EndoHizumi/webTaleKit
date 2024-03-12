@@ -15,4 +15,8 @@ export class ScenarioManager {
   setHistory (text) {
     this.backlist.push(text)
   }
+
+  setSelectedChoice (prompt, id) {
+    this.progress.selected[this.progress.currentScene] = {prompt, id}
+  }
 }

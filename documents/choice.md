@@ -41,7 +41,9 @@
 
 ```html
 <choice prompt='', default='', hover='', select=''>
-	<item jump=1, default='', hover='', select=''>label</item>
+	<item label='' default='', hover='', select=''>
+    <show path="" name="" left="" top="" look="left" wait="0.5"/>
+  </item>
 </choice>
 ```
 
@@ -53,7 +55,7 @@
 
 promptに設定した文言をメッセージウインドウに表示する。
 画面中央にItemsで設定した選択肢を表示する。
-文言はlabel,クリックされたら、該当するItemsの要素にあるonSelectのfunctionを実行する。
+文言はlabel,クリックされたら、該当するItemsの子要素にあるWSTを実行する
 srcに値を設定されている場合、その画像を選択肢の画像として表示する。
 
 ## 引数詳細

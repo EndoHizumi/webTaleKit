@@ -24,35 +24,35 @@ export class Core {
     document.title = engineConfig.title
     const title = await import(/* webpackIgnore: true */ './js/title.js') //  webpackIgnoreでバンドルを無視する
     this.drawer.setConfig(title.sceneConfig)
-    // scenario配列をmapで処理して、ゲームを進行する。
-    while (this.index < title.scenario.length) {
-      const line = title.scenario[this.index]
-      if (line.type === 'text') {
-        await this.drawer.drawText(line)
-        this.scenarioManager.setHistory(line.msg)
-      } else if (line.type === 'choice') {
-        const result = await this.drawer.drawChoices(line)
-        const {selectId, selectIndex: jumpIndex } = result
-        this.scenarioManager.setHistory(line.prompt)
-        console.log(selectId, jumpIndex)
-        this.index = jumpIndex
-        continue
-      } else if (line.type === 'jump') {
-        this.scenarioManager.jump(line.label)
-      } else if (line.type == 'show') {
-        let imagePath;
-        if (line.name) {
-          imagePath = this.resourceManager.getResourcePath(line.name);
-        } else {
-          imagePath = line.path;
+    await this.setScenario(this.index, title.scenario)
+ async setScenario(index, scenario) {
+        // scenario配列をmapで処理して、ゲームを進行する。
+        while (index < scenario.length) {
+          const line = scenario[index]
+          if (line.type === 'text') {
+            await this.drawer.drawText(line)
+            this.scenarioManager.setHistory(line.msg)
+          } else if (line.type === 'choice') {
+            const {selectId, onSelect: selectHandler} = await this.drawer.drawChoices(line)
+            await this.setScenario(0, selectHandler)
+            this.scenarioManager.setSelectedChoice(line.prompt, selectId)
+            this.scenarioManager.setHistory(line.prompt)
+          } else if (line.type === 'jump') {
+            index = line.index
+            continue
+          } else if (line.type == 'show') {
+            let imagePath;
+            if (line.name) {
+              imagePath = this.resourceManager.getResourcePath(line.name);
+            } else {
+              imagePath = line.path;
+            }
+            const imageObject = this.drawer.show(imagePath, line.pos, line.size, line.look, line.entry);
+            // 表示した画像の情報を管理
+            const key = line.name || line.path;
+            this.displayedImages[key] = { imageObject, pos: line.pos};
+          }
+          index++
         }
-        const imageObject = this.drawer.show(imagePath, line.pos, line.size, line.look, line.entry);
-        // 表示した画像の情報を管理
-        const key = line.name || line.path;
-        this.displayedImages[key] = { imageObject, pos: line.pos};
-      }
-      this.index++
-    }
-    document.getElementById('gameContainer').innerHTML = ''
   }
 }
