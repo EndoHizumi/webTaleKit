@@ -5,8 +5,9 @@ import engineConfig from '../../engineConfig.json'
 
 export class Core {
   constructor() {
+    this.gameContainer = document.getElementById('gameContainer')
     // Drawerの初期化（canvasタグのサイズを設定する)
-    this.drawer = new Drawer()
+    this.drawer = new Drawer(this.gameContainer)
     // ScenarioManagerの初期化（変数の初期値設定）
     this.scenarioManager = new ScenarioManager()
     // ResourceManagerの初期化（引数にconfig.jsを渡して、リソース管理配列を作る）

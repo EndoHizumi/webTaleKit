@@ -3,23 +3,27 @@
   UIのHTMLとcanvasを描画する。
 */
 export class Drawer {
-  constructor() {
-    this.game = document.getElementById('gameContainer')
+  constructor(gameContainer) {
+    this.gameScreen = gameContainer
+    this.messageText = this.gameScreen.querySelector('#messageView')
+    this.waitCircle = this.gameScreen.querySelector('#waitCircle')
+    this.interactiveView = this.gameScreen.querySelector('#interactiveView')
+
     // canvasをDOMに追加する(800 x 600)
     const canvas = document.createElement('canvas')
     canvas.width = 1280
     canvas.height = 720
     // canvasのコンテキストを取得する
-    this.game.appendChild(canvas)
+    this.gameScreen.appendChild(canvas)
     this.ctx = canvas.getContext('2d')
     // 黒で塗りつぶす
     this.ctx.fillStyle = 'black'
     this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
     // ウィンドウのリサイズ時にスケールを調整
-    window.addEventListener('resize', this.adjustScale)
+    window.addEventListener('resize', () => this.adjustScale(this.gameScreen))
 
     // 初期ロード時にもスケールを調整
-    this.adjustScale()
+    this.adjustScale(this.gameScreen)
   }
 
   setConfig(config) {
@@ -40,7 +44,6 @@ export class Drawer {
 
   async drawText(scene) {
     let isSkip = false
-    const messageText = document.querySelector('#messageWindow p')
     // Enterキーが押されたら全文表示
     setTimeout(() => {
       document.addEventListener('keydown', function eventHandler(event) {
@@ -51,19 +54,19 @@ export class Drawer {
       })
     }, 100)
     if (scene.clear === undefined || scene.clear === true) {
-      messageText.innerHTML = ''
+      this.messageText.innerHTML = ''
     }
     const displayText = scene.msg.split('\n')
     for (const line of displayText) {
       for (const char of line) {
         if (isSkip) {
-          messageText.innerHTML = ''
-          messageText.innerHTML += line
+          this.messageText.innerHTML = ''
+          this.messageText.innerHTML += line
           isSkip = false
           break
         }
         await this.sleep(50) // 50ミリ秒待機
-        messageText.innerHTML += char
+        this.messageText.innerHTML += char
       }
       if (
         scene.wait === undefined ||
@@ -83,14 +86,11 @@ export class Drawer {
   async drawChoices(choices) {
     let isSelect = false
     let selectId = 0
-    let selectIndex = 0
+    let onSelect = 0
     // 選択肢のタイトルを表示
-    const messageText = document.querySelector('#messageWindow p')
-    messageText.innerHTML = choices.prompt
+    this.messageText.innerHTML = choices.prompt
 
     // 選択肢を表示
-    const gameScreen = document.getElementById('gameScreen')
-    console.log(choices)
     for (const choice of choices.items) {
       const backgroundImages =
         choices.src !== undefined ? choices.src : choice.src
@@ -134,14 +134,14 @@ export class Drawer {
       })
       button.innerHTML = choice.label
       button.onclick = () => {
-        document.querySelectorAll('.choice').forEach((element) => {
+        this.interactiveView.querySelectorAll('.choice').forEach((element) => {
           element.parentNode.removeChild(element)
         })
         selectId = choice.id
-        selectIndex = choice.jump
+        onSelect = choice.onSelect
         isSelect = true
       }
-      gameScreen.appendChild(button)
+      this.interactiveView.appendChild(button)
     }
 
     // 選択待ち
@@ -149,7 +149,7 @@ export class Drawer {
       const intervalId = setInterval(() => {
         if (isSelect) {
           clearInterval(intervalId)
-          resolve({selectId, selectIndex})
+          resolve({selectId, onSelect})
         }
       }, 100)
     })
@@ -193,31 +193,26 @@ export class Drawer {
       ctx.drawImage(img, -pos.x - img.width, pos.y);
       ctx.restore();
     } else {
-      ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, img.width, img.height);
     }
     // canvasから画像を取得して、this.ctxに描画
     const imageWidth = size !== undefined ? size.width : img.width;
     const imageHeight = size !== undefined ? size.height : img.height;
-    this.ctx.drawImage(canvas, pos.x, pos.y, canvas.width, canvas.height, 0, 0, imageWidth, imageHeight);
+    this.ctx.drawImage(canvas, 0,0, canvas.width, canvas.height, pos.x, pos.y, imageWidth, imageHeight);
   }
   // クリック待ち処理
   clickWait() {
-    const waitCircle = document.getElementById('wait')
-    waitCircle.style.visibility = 'visible'
+    this.waitCircle.style.visibility = 'visible'
 
     return new Promise((resolve) => {
       const clickHandler = () => {
-        document
-          .getElementById('gameContainer')
-          .removeEventListener('click', clickHandler)
-        waitCircle.style.visibility = 'hidden'
+        this.gameScreen.removeEventListener('click', clickHandler)
+        this.waitCircle.style.visibility = 'hidden'
         resolve()
       }
-      document
-        .getElementById('gameContainer')
-        .addEventListener('click', clickHandler)
+      this.gameScreen.addEventListener('click', clickHandler)
 
-      document.body.addEventListener('keydown', (event) => {
+      document.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
           clickHandler()
         }
@@ -230,10 +225,10 @@ export class Drawer {
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
-  adjustScale() {
+  adjustScale(targetElement) {
     // ターゲット要素の元の幅と高さ
-    const originalWidth = 1280; // 例: 1280px
-    const originalHeight = 720; // 例: 720px
+    const originalWidth = targetElement.scrollWidth; // 例: 1280px
+    const originalHeight = targetElement.scrollHeight; // 例: 720px
   
     // ビューポートの幅と高さを取得
     const viewportWidth = window.innerWidth;
@@ -247,7 +242,6 @@ export class Drawer {
     const scale = Math.min(scaleX, scaleY);
 
     // ターゲット要素にスケールを適用
-    const targetElement = document.getElementById('gameContainer');
     targetElement.style.transform = `scale(${scale})`;
   }
 }
