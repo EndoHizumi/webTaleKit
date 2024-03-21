@@ -1,6 +1,7 @@
-import { Drawer } from './drawer.js'
+import { Drawer } from './drawer.ts'
 import { ResourceManager } from './resourceManager.js'
 import { ScenarioManager } from './scenarioManager.js'
+import { ImageObject } from '../resource/ImageObject.ts'
 import engineConfig from '../../engineConfig.json'
 
 export class Core {
@@ -25,6 +26,7 @@ export class Core {
     const title = await import(/* webpackIgnore: true */ './js/title.js') //  webpackIgnoreでバンドルを無視する
     this.scenarioManager.progress.currentScene = title.sceneConfig.name
     this.drawer.setConfig(title.sceneConfig)
+    this.displayedImages['background'] = new ImageObject(title.sceneConfig.background);
     await this.setScenario(this.index, title.scenario)
     // 実行が終了したら、真っ黒の画面を表示する
     document.getElementById('gameContainer').innerHTML = ''
@@ -46,16 +48,16 @@ export class Core {
             index = line.index
             continue
           } else if (line.type == 'show') {
-            let imagePath;
+            let image;
             if (line.name) {
-              imagePath = this.resourceManager.getResourcePath(line.name);
+              image = await new ImageObject().setImageAsync(this.resourceManager.getResourcePath(line.name));
             } else {
-              imagePath = line.path;
+              image = await new ImageObject().setImageAsync(line.path);
             }
-            const imageObject = this.drawer.show(imagePath, line.pos, line.size, line.look, line.entry);
+            this.drawer.show(image, line.pos, line.size, line.look, line.entry);
             // 表示した画像の情報を管理
-            const key = line.name || line.path;
-            this.displayedImages[key] = { imageObject, pos: line.pos};
+            const key = line.name || line.path.split('/').pop();
+            this.displayedImages[key] = { image, pos: line.pos};
           }
           index++
         }

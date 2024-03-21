@@ -1,9 +1,18 @@
+import { ImageObject } from '../resource/ImageObject.js'
+
 /*
  drawerの目的
   UIのHTMLとcanvasを描画する。
 */
 export class Drawer {
-  constructor(gameContainer) {
+  private gameScreen: HTMLElement;
+  private messageText: HTMLElement;
+  private waitCircle: HTMLElement;
+  private interactiveView: HTMLElement;
+  private ctx: CanvasRenderingContext2D;
+  private config: any;
+
+  constructor(gameContainer: HTMLElement) {
     this.gameScreen = gameContainer
     this.messageText = this.gameScreen.querySelector('#messageView')
     this.waitCircle = this.gameScreen.querySelector('#waitCircle')
@@ -26,7 +35,7 @@ export class Drawer {
     this.adjustScale(this.gameScreen)
   }
 
-  setConfig(config) {
+  setConfig(config: any) {
     // 背景画像をcanvasに描画する
     this.config = config
     const img = new Image()
@@ -42,7 +51,7 @@ export class Drawer {
     img.src = this.config.background
   }
 
-  async drawText(scene) {
+  async drawText(scene: any) {
     let isSkip = false
     // Enterキーが押されたら全文表示
     setTimeout(() => {
@@ -83,7 +92,7 @@ export class Drawer {
     }
   }
 
-  async drawChoices(choices) {
+  async drawChoices(choices: any) {
     let isSelect = false
     let selectId = 0
     let onSelect = 0
@@ -156,11 +165,7 @@ export class Drawer {
   }
 
   
-  show(path = '', pos = { x: 0, y: 0 }, size, reverse = false, entry = { time: 1, wait: false }) {
-  
-    // 画像の読み込みと表示処理
-    const img = new Image();
-    img.onload = () => {
+  show(img: any, pos = { x: 0, y: 0 }, size:any, reverse = false, entry = { time: 1, wait: false }) {
       // 表示開始までの遅延処理
       if (entry.wait) {
         setTimeout(() => {
@@ -169,35 +174,13 @@ export class Drawer {
       } else {
         this.drawCanvas(img, pos, size, reverse);
       }
-    };
-    img.src = path;
-    // 操作用のオブジェクトを返す（簡易版）
-    return {
-      move: (newPos) => {
-        console.log(`画像${key}を新しい座標(${newPos.x}, ${newPos.y})に移動`);
-      },
-      // 他のメソッドも同様に実装
-    };
   }
 
-  drawCanvas(img, pos, size, reverse) {
-    // canvasを生成して、画像を描画。
-    const canvas = document.createElement('canvas');
-    canvas.width =  img.width;
-    canvas.height = img.height;
-    const ctx = canvas.getContext('2d');
-    // reverseがtrueの場合、画像を反転して表示
-    if (reverse) {
-      ctx.save();
-      ctx.scale(-1, 1);
-      ctx.drawImage(img, -pos.x - img.width, pos.y);
-      ctx.restore();
-    } else {
-      ctx.drawImage(img, 0, 0, img.width, img.height);
-    }
+  drawCanvas(img: ImageObject, pos: any, size: any, reverse: any) {
+    const canvas = img.draw(reverse);
     // canvasから画像を取得して、this.ctxに描画
-    const imageWidth = size !== undefined ? size.width : img.width;
-    const imageHeight = size !== undefined ? size.height : img.height;
+    const imageWidth = size !== undefined ? size.width : canvas.width;
+    const imageHeight = size !== undefined ? size.height : canvas.height;
     this.ctx.drawImage(canvas, 0,0, canvas.width, canvas.height, pos.x, pos.y, imageWidth, imageHeight);
   }
   // クリック待ち処理
@@ -208,7 +191,7 @@ export class Drawer {
       const clickHandler = () => {
         this.gameScreen.removeEventListener('click', clickHandler)
         this.waitCircle.style.visibility = 'hidden'
-        resolve()
+        resolve(null)
       }
       this.gameScreen.addEventListener('click', clickHandler)
 
@@ -221,11 +204,11 @@ export class Drawer {
   }
 
   // sleep関数
-  sleep(ms) {
+  sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
-  adjustScale(targetElement) {
+  adjustScale(targetElement: HTMLElement) {
     // ターゲット要素の元の幅と高さ
     const originalWidth = targetElement.scrollWidth; // 例: 1280px
     const originalHeight = targetElement.scrollHeight; // 例: 720px

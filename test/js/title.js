@@ -3,6 +3,7 @@ export const sceneConfig = {
   name: 'title',
   background: './resource/background/back.jpg',
   // template: './screen/title.html'
+  // bgm: './resource/audio/bgm.mp3'
 }
 export const scenario = [
  { 
