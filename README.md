@@ -85,7 +85,7 @@ canvasのメッセージウィンドウへ入力された条件でテキスト�
 	- 対応するWTS:`<text speed='' wait=''>msg</text>`
 	
 - newPage()
-  - overview: メッセージ
+  - overview: メッセージをクリアする
 - say(name:string, pattern: string, voice: {playの引数},  ...text)
 	- overview: textのrapperでキャラクターのセリフの時に使うことを想定している。キャラが表示されていないときは、表示する
 	- name: リソース定義オブジェクトのcharaのnameの値、定義していない値を指定可能。
@@ -94,8 +94,8 @@ canvasのメッセージウィンドウへ入力された条件でテキスト�
 	- 対応するWTS:`<say name='' pattern='' voice=''>msg</say>`
 		
 ### 画像の表示
-- show(path: string, name?: string, pos: {x: number, y: number}, look: ['right' | 'left'] ､ entry: {time: number, wait: boolean} ) -> Object
-	- overview: キャラクター立ち絵・背景・その他画像を表示する。
+- show(path: string, name?: string, pos: {x: number, y: number}, look: ['right' | 'left'] ､ entry: {time: number, wait: boolean}, option: {フィルターやアニメーションの指定} ) -> Object
+	- overview: キャラクター立ち絵・背景・その他画像を表示する。子要素でフィルターが指定されている場合は、フィルターを設定してから描画する。アニメーションの指定がある場合は、描画時かその直後にアニメーションを再生する。
 	- path: 表示する画像のファイルパスを指定する。
 	- name: リソース定義オブジェクトのnameの値
 		- ファイル名の前にスラッシュで区切ってリソース種類を指定する(記述例: chara/hogehoge)
@@ -103,7 +103,7 @@ canvasのメッセージウィンドウへ入力された条件でテキスト�
 	- pos: 画像を表示する座標を指定する。
 	- look: 表示画像の向きを指定できる。デフォルト値は、"Left"
 	- entry: 表示を開始するまでの時間と表示待ちの設定を指定できる。WTSの場合は、本属性を指定した時点で、表示待ちが有効になり、値が遅延時間と認識される。値の指定がない場合は、１秒に設定される。
-	- 対応するWTS: `<show path="" name="" left="" top="" look="left" wait="0.5"/>`
+	- 対応するWTS: `<show path="" name="" left="" top="" look="left" wait="0.5">フィルターやアニメーションの指定WSTタグをここに書ける</show>`
 		- 表示した画像のname（ないときは、path）をキーにして、戻り値をリソース管理オブジェクトに追加する。
 - hide(path:string, id?:string, name?:string, wait: number)
 	- overview: キャラクター立ち絵・背景・その他画像を画面から削除する。
@@ -122,7 +122,7 @@ canvasのメッセージウィンドウへ入力された条件でテキスト�
 
 ### 画像の操作
 表示時に返されたオブジェクトのメソッドの形で実装する。
- - 位置変更
+ - 位置変更(coreでやる)
  - アニメーション
  - 透明度の設定
  - セピア化
@@ -385,11 +385,13 @@ export const skipScenario = () => {
 │  │  ├─picture
 │  │  ├─se
 │  │  └─voice
-|   ├─title.html <- cssとjsをインライン化する
-|   ├─css
-|   ├─js
-|   |   ├─title.js <- title.sceneの変換後はjsファイルになる
-|   |   └─config.js
+|  ├─title.html <- cssとjsをインライン化する
+|  ├─css
+|  ├─js
+|  |  ├─title.js <- title.sceneの変換後はjsファイルになる
+|  |  └─config.js
+|  |-dist.js
+|  |-index.html
 
 
 ```

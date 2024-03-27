@@ -4,40 +4,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novel Game UI</title>
+    <title>WebTaleKit</title>
     <style>
         body,
         html {
             margin: 0;
             padding: 0;
-            width: 1280px;
-            height: 720px;
-            overflow: hidden;
+            height: 100%;
             font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            /* 水平方向の中央揃え */
+            align-items: center;
+            /* 垂直方向の中央揃え */
+            background-color: #000;
         }
 
         #gameContainer {
             position: relative;
-            width: 100%;
-            height: 100%;
+            width: 1280px;
+            height: 720px;
             background-color: #000;
             color: #fff;
+            display: flex;
+            /* Flexboxを有効化 */
+            justify-content: center;
+            /* 水平方向の中央揃え */
+            align-items: center;
+            /* 垂直方向の中央揃え */
         }
 
-        #header {
+        #interactiveView {
             position: absolute;
             width: 100%;
-            height: calc(720px * 1 / 8);
-        }
-
-        #gameScreen {
-            height: calc(720px * 2 / 4);
-            position: absolute;
-            width: 100%;
-            top: calc(720px * 1 / 8);
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: center;
+            top: 0px;
         }
 
         #messageWindow {
+            user-select: none;
             position: absolute;
             bottom: 30px;
             left: 0;
@@ -69,7 +79,7 @@
             color: #fff;
         }
 
-        #wait {
+        #waitCircle {
             position: absolute;
             right: 10px;
             bottom: 10px;
@@ -79,11 +89,11 @@
 
 <body>
     <div id="gameContainer">
-        <div id="header"></div>
-        <div id="gameScreen"></div>
+        <div id="interactiveView"></div>
         <div id="messageWindow">
-            <p></p>
-            <img id="wait" src="wait.gif" style="visibility: none;" width="20px" height="20px">
+            <p id="messageView"></p>
+            <img id="waitCircle" src="./resource/system/wait.gif" style="visibility: hidden;" width="20px"
+                height="20px">
         </div>
         <div class="controls">
             <a href="#" class="control-item">skip</a>

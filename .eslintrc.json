@@ -1,14 +1,16 @@
 {
-  "env": {
-    "browser": true,
-    "es2021": true
-  },
-  "extends": "standard",
+  "extends": ["eslint:recommended", "eslint-config-prettier", "prettier"],
   "parserOptions": {
-    "ecmaVersion": "latest",
+    "ecmaVersion": 2020,
     "sourceType": "module"
   },
   "rules": {
-    "space-before-function-paren": ["error", "never"]
+    "semi": ["error", "never"],
+    "semi-spacing": ["error", { "after": true, "before": false }],
+    "semi-style": ["error", "last"],
+    "no-extra-semi": "error",
+    "no-unexpected-multiline": "error",
+    "no-unreachable": "error",
+    "camelcase": ["error", { "properties": "always" }]
   }
 }
