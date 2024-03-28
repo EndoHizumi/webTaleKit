@@ -35,22 +35,6 @@ export class Drawer {
     this.adjustScale(this.gameScreen)
   }
 
-  setConfig(config: any) {
-    // 背景画像をcanvasに描画する
-    this.config = config
-    const img = new Image()
-    img.onload = () => {
-      this.ctx.drawImage(
-        img,
-        0,
-        0,
-        this.ctx.canvas.width,
-        this.ctx.canvas.height,
-      )
-    }
-    img.src = this.config.background
-  }
-
   async drawText(scene: any) {
     let isSkip = false
     // Enterキーが押されたら全文表示
@@ -103,7 +87,6 @@ export class Drawer {
     for (const choice of choices.items) {
       const backgroundImages =
         choices.src !== undefined ? choices.src : choice.src
-        console.log(backgroundImages)
       const defaultImage =
         backgroundImages?.default !== undefined
           ? backgroundImages.default
@@ -164,24 +147,35 @@ export class Drawer {
     })
   }
 
+  newPage() {
+    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+  }
   
-  show(img: any, pos = { x: 0, y: 0 }, size:any, reverse = false, entry = { time: 1, wait: false }) {
-      // 表示開始までの遅延処理
+  show(displayedImages: any) {
+    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+    for (let key in displayedImages) {
+      const img: ImageObject = displayedImages[key].image
+      const pos: {x: number, y:number} = displayedImages[key].pos || { x: 0, y: 0 }
+      const size: {width: number, height: number} = displayedImages[key].size
+      const reverse: boolean = displayedImages[key].reverse || false
+      const entry: {time: number, wait: boolean} = displayedImages[key].entry || { time: 1, wait: false }
       if (entry.wait) {
+        // 表示開始までの遅延処理
         setTimeout(() => {
           this.drawCanvas(img, pos, size, reverse)
         }, entry.time * 1000);
       } else {
         this.drawCanvas(img, pos, size, reverse);
       }
+    }
   }
 
   drawCanvas(img: ImageObject, pos: any, size: any, reverse: any) {
-    const canvas = img.draw(reverse);
+    const canvas = img.draw(reverse).getCanvas();
     // canvasから画像を取得して、this.ctxに描画
     const imageWidth = size !== undefined ? size.width : canvas.width;
     const imageHeight = size !== undefined ? size.height : canvas.height;
-    this.ctx.drawImage(canvas, 0,0, canvas.width, canvas.height, pos.x, pos.y, imageWidth, imageHeight);
+    this.ctx.drawImage(canvas, 0,0, canvas.width, canvas.height, pos.x, pos.y, imageWidth, imageHeight); //CanvasRenderingContext2D.drawImage: Passed-in canvas is empty
   }
   // クリック待ち処理
   clickWait() {

@@ -1,11 +1,14 @@
 export class ImageObject {
   // 表示済みの画像を管理するクラス
   private image: any = null
-  private imagePromise: any = null
+  private canvas: HTMLCanvasElement = null
+  private ctx: CanvasRenderingContext2D = null
 
   constructor() {
     // 画像の読み込みと表示処理
     this.image = new Image()
+    this.canvas = document.createElement('canvas')
+    this.ctx = this.canvas.getContext('2d')
   }
 
   getImage() {
@@ -18,12 +21,27 @@ export class ImageObject {
     return this
   }
 
+  getCanvas() {  
+    return this.canvas
+  }
+
+  setCanvas(canvas: HTMLCanvasElement) {
+    this.canvas = canvas
+    return this
+  }
+
+  getSize(){
+    return {width: this.image.width, height: this.image.height}
+  }
+
   async setImageAsync(src: string): Promise<ImageObject> {
     // 画像の読み込みと表示処理
     this.image.src = src
     return new Promise((resolve, reject) => {
       this.image.onload = () => {
         console.log('画像の読み込みに成功しました')
+        this.canvas.width = this.image.width
+        this.canvas.height = this.image.height
         resolve(this)
       }
       this.image.onError = () => {
@@ -33,89 +51,64 @@ export class ImageObject {
     })
   }
 
-  draw(reverse = false): HTMLCanvasElement {
-    const canvas = document.createElement('canvas')
-    canvas.width = this.image.width
-    canvas.height = this.image.height
-    const ctx = canvas.getContext('2d')
+  draw(reverse = false): ImageObject {// FIXME: this.imageの中身が空になってる??
+    console.log('draw')
+    console.log('reverse:', reverse)
+    console.dir('ImageObject.draw:', this.image)
     if (reverse) {
-      ctx.save();
-      ctx.scale(-1, 1);
-      ctx.drawImage(this.image, -canvas.width,0, canvas.width, canvas.height);
-      ctx.restore();
+      this.ctx.save();
+      this.ctx.scale(-1, 1);
+      this.ctx.drawImage(this.image, -this.image.width,0);
+      this.ctx.restore();
     } else {
-      ctx.drawImage(this.image, 0, 0, canvas.width, canvas.height);
+      this.ctx.drawImage(this.image, 0, 0); 
     }
-    return canvas
+    return this
   }
 
   // 画像の透明度を変更
-  setOpacity(opacity: number): HTMLCanvasElement {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-    canvas.width = this.image.width
-    canvas.height = this.image.height
-    ctx.drawImage(this.image, 0, 0)
+  setOpacity(opacity: number): ImageObject {
+    this.ctx.drawImage(this.image, 0, 0)
     // 透明度を設定
-    ctx.globalAlpha = opacity
-    return canvas
+    this.ctx.globalAlpha = opacity
+    return this
   }
 
   // アニメーション(フェードイン/フェードアウト)
 
   // セピア化
-  setSepia(num = 100): HTMLCanvasElement {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-    const img = this.image
-    canvas.width = img.width
-    canvas.height = img.height
-    ctx.drawImage(img, 0, 0)
+  setSepia(num = 100): ImageObject {
+    this.ctx.drawImage(this.image, 0, 0)
     // フィルターをかける
-    ctx.filter = `sepia(${num}%)}`
+    this.ctx.filter = `sepia(${num}%)}`
     // 画像データを取得
-    return canvas
+    return this
   }
 
   // モノクロ化
-  setMonochrome(num = 100) {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-    const img = this.image
-    canvas.width = img.width
-    canvas.height = img.height
-    ctx.drawImage(img, 0, 0)
+  setMonochrome(num = 100): ImageObject {
+    this.ctx.drawImage(this.image, 0, 0)
     // フィルターをかける
-    ctx.filter = `grayscale(${num}%)`
+    this.ctx.filter = `grayscale(${num}%)`
     // 画像データを取得
-    return canvas
+    return this
   }
 
   // ぼかし
-  setBlur(num = 2) {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-    const img = this.image
-    canvas.width = img.width
-    canvas.height = img.height
-    ctx.drawImage(img, 0, 0)
+  setBlur(num = 2): ImageObject {
+    this.ctx.drawImage(this.image, 0, 0)
     // フィルターをかける
-    ctx.filter = `blur(${num}px)`
+    this.ctx.filter = `blur(${num}px)`
     // 画像データを取得
-   return canvas
+   return this
   }
 
   // フィルターの解除
-  clearFilter() {
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
-    const img = this.image
-    canvas.width = img.width
-    canvas.height = img.height
-    ctx.drawImage(img, 0, 0)
+  clearFilter(): ImageObject {
+    this.ctx.drawImage(this.image, 0, 0)
     // フィルターをかける
-    ctx.filter = 'none'
+    this.ctx.filter = 'none'
     // 画像データを取得
-    return canvas
+    return this
   }
 }

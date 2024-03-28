@@ -19,7 +19,7 @@
 pathかnameで指定する。
 pathの場合は、画像を直接読み込みに行く。
 nameの場合は、ResourceManagerが管理するリソースマッパーオブジェクトから、画像を読み込む。
-表示した画像と表示座標は、pathかnameをキーにしてリソース管理オブジェクトに追加する。（pathとnameが両方が設定されている場合、画像には、keyにnameの値をvalueにpathを設定する。座標管理にはnameをkeyに。valueに表示座標を設定する）
+表示した画像と表示座標は、pathかnameをキーにしてリソース管理オブジェクトに追加する。（pathとnameが両方が設定されている場合、画像には、keyにnameの値をvalueにpathを設定する ）
 
 ## 引数詳細
 
