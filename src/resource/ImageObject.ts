@@ -1,14 +1,14 @@
 export class ImageObject {
   // 表示済みの画像を管理するクラス
   private image: any = null
-  private canvas: HTMLCanvasElement = null
-  private ctx: CanvasRenderingContext2D = null
+  private canvas: HTMLCanvasElement
+  private ctx: CanvasRenderingContext2D
 
   constructor() {
     // 画像の読み込みと表示処理
     this.image = new Image()
     this.canvas = document.createElement('canvas')
-    this.ctx = this.canvas.getContext('2d')
+    this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D
   }
 
   getImage() {
