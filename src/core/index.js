@@ -58,23 +58,23 @@ export class Core {
     }
   }
 
-  textHandler = async (line) => {
+  async textHandler(line) {
     await this.drawer.drawText(line)
     this.scenarioManager.setHistory(line.msg)
   }
 
-  choiceHandler = async (line) => {
+  async choiceHandler(line) {
     const { selectId, onSelect: selectHandler } =
       await this.drawer.drawChoices(line)
     await this.setScenario(0, selectHandler)
     this.scenarioManager.setHistory(line.prompt, selectId)
   }
 
-  jumpHandler = (line) => {
+  jumpHandler(line) {
     this.index = line.index
   }
 
-  showHandler = async (line) => {
+  async showHandler(line) {
     // 表示する画像の情報を管理オブジェクトに追加
     const key = line.name || line.path.split('/').pop()
     this.displayedImages[key] = {
@@ -102,7 +102,7 @@ export class Core {
     return image
   }
 
-  newpageHandler = () => {
+  newpageHandler() {
     this.displayedImages = {
       background: {
         image: this.scenarioManager.getBackground(),
