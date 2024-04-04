@@ -105,12 +105,11 @@ canvasのメッセージウィンドウへ入力された条件でテキスト�
 	- entry: 表示を開始するまでの時間と表示待ちの設定を指定できる。WTSの場合は、本属性を指定した時点で、表示待ちが有効になり、値が遅延時間と認識される。値の指定がない場合は、１秒に設定される。
 	- 対応するWTS: `<show path="" name="" left="" top="" look="left" wait="0.5">フィルターやアニメーションの指定WSTタグをここに書ける</show>`
 		- 表示した画像のname（ないときは、path）をキーにして、戻り値をリソース管理オブジェクトに追加する。
-- hide(path:string, id?:string, name?:string, wait: number)
+- hide(name?:string)
 	- overview: キャラクター立ち絵・背景・その他画像を画面から削除する。
-	- path: 表示する画像のファイルパスを指定する。
 	- name: リソース定義オブジェクトのnameの値
 		- ファイル名の前にスラッシュで区切ってリソース種類を指定する(記述例: chara/hogehoge)
-	-  対応するWTS: `<hide path="" name="/>`
+	-  対応するWTS: `<hide name="" >フィルターやアニメーションの指定WSTタグをここに書ける</show>`
 - setBackground(path: string, name?: string) -> Obejct
 	- overview: 指定した画像を背景レイヤーをに表示する。背景用のshowのエイリアス。
 	- path: 表示する画像のファイルパスを指定する。

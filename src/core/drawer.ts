@@ -14,9 +14,9 @@ export class Drawer {
 
   constructor(gameContainer: HTMLElement) {
     this.gameScreen = gameContainer
-    this.messageText = this.gameScreen.querySelector('#messageView')
-    this.waitCircle = this.gameScreen.querySelector('#waitCircle')
-    this.interactiveView = this.gameScreen.querySelector('#interactiveView')
+    this.messageText = this.gameScreen.querySelector('#messageView') as HTMLElement
+    this.waitCircle = this.gameScreen.querySelector('#waitCircle') as HTMLElement
+    this.interactiveView = this.gameScreen.querySelector('#interactiveView') as HTMLElement
 
     // canvasをDOMに追加する(800 x 600)
     const canvas = document.createElement('canvas')
@@ -24,7 +24,7 @@ export class Drawer {
     canvas.height = 720
     // canvasのコンテキストを取得する
     this.gameScreen.appendChild(canvas)
-    this.ctx = canvas.getContext('2d')
+    this.ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     // 黒で塗りつぶす
     this.ctx.fillStyle = 'black'
     this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
@@ -127,7 +127,7 @@ export class Drawer {
       button.innerHTML = choice.label
       button.onclick = () => {
         this.interactiveView.querySelectorAll('.choice').forEach((element) => {
-          element.parentNode.removeChild(element)
+          element.parentNode?.removeChild(element)
         })
         selectId = choice.id
         onSelect = choice.onSelect

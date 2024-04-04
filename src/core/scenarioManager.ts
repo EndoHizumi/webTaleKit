@@ -4,7 +4,7 @@ export class ScenarioManager {
   private saveDataList: any
   private progress: any
   private ctx: any
-  private background: ImageObject
+  private background: ImageObject = new ImageObject()
 
   constructor () {
     this.backlist = []
