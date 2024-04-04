@@ -35,6 +35,9 @@ export class ImageObject {
   }
 
   async setImageAsync(src: string): Promise<ImageObject> {
+    if (!src || src.length == 0) {
+      return this
+    }
     // 画像の読み込みと表示処理
     this.image.src = src
     return new Promise((resolve, reject) => {

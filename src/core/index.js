@@ -42,6 +42,19 @@ export class Core {
     document.getElementById('gameContainer').innerHTML = ''
   }
 
+  async getImageObject(lineSecnario) {
+    let image
+    // 既にインスタンスがある場合は、それを使う
+    if (line.name) {
+      const targetImage = this.displayedImages[line.name]
+      imageObject = targetImage ? targetImage.image : await new ImageObject()
+        image = imageObject.image.setImageAsync(line.path)
+    } else {
+      image = await new ImageObject().setImageAsync(line.path)
+    }
+    return image
+  }
+
   async setScenario(index, scenario) {
     // scenario配列をmapで処理して、ゲームを進行する。
     while (index < scenario.length) {
@@ -59,30 +72,15 @@ export class Core {
         index = line.index
         continue
       } else if (line.type == 'show') {
-        let image
-        // 既にインスタンスがある場合は、それを使う
-        if (line.name) {
-          if (this.displayedImages[line.name]) {
-            image = await this.displayedImages[line.name].image.setImageAsync(
-              this.resourceManager.getResourcePath(line.name),
-            )
-          } else {
-            image = await new ImageObject().setImageAsync(
-              this.resourceManager.getResourcePath(line.name),
-            )
-          }
-        } else {
-          image = await new ImageObject().setImageAsync(line.path)
-        }
-        // 表示する画像の情報を管理オブジェクトに追加
-        const key = line.name || line.path.split('/').pop()
-        this.displayedImages[key] = {
-          image,
-          pos: line.pos,
-          size: line.size,
-          look: line.look,
-          entry: line.entry,
-        }
+            // 表示する画像の情報を管理オブジェクトに追加
+    const key = line.name || line.path.split('/').pop()
+    this.displayedImages[key] = {
+      image: await this.getImageObject(line),
+      pos: line.pos,
+      size: line.size,
+      look: line.look,
+      entry: line.entry,
+    }
         //TODO: displayedImagesに登録されている画像を登録順に描画する
         this.drawer.show(this.displayedImages)
       } else if (line.type == 'newpage') {
