@@ -5,6 +5,13 @@ import { ImageObject } from '../resource/ImageObject.ts'
 import engineConfig from '../../engineConfig.json'
 
 export class Core {
+  commandList = {
+    text: this.textHandler,
+    choice: this.choiceHandler,
+    show: this.showHandler,
+    newpage: this.newpageHandler,
+  }
+
   constructor() {
     this.gameContainer = document.getElementById('gameContainer')
     // Drawerの初期化（canvasタグのサイズを設定する)
@@ -42,37 +49,33 @@ export class Core {
     document.getElementById('gameContainer').innerHTML = ''
   }
 
-  async getImageObject(lineSecnario) {
-    let image
-    // 既にインスタンスがある場合は、それを使う
-    if (line.name) {
-      const targetImage = this.displayedImages[line.name]
-      imageObject = targetImage ? targetImage.image : await new ImageObject()
-        image = imageObject.image.setImageAsync(line.path)
-    } else {
-      image = await new ImageObject().setImageAsync(line.path)
-    }
-    return image
-  }
-
   async setScenario(index, scenario) {
     // scenario配列をmapで処理して、ゲームを進行する。
     while (index < scenario.length) {
       const line = scenario[index]
-      if (line.type === 'text') {
-        await this.drawer.drawText(line)
-        this.scenarioManager.setHistory(line.msg)
-      } else if (line.type === 'choice') {
-        const { selectId, onSelect: selectHandler } =
-          await this.drawer.drawChoices(line)
-        await this.setScenario(0, selectHandler)
-        this.scenarioManager.setSelectedChoice(line.prompt, selectId)
-        this.scenarioManager.setHistory(line.prompt)
-      } else if (line.type === 'jump') {
-        index = line.index
-        continue
-      } else if (line.type == 'show') {
-            // 表示する画像の情報を管理オブジェクトに追加
+      this.commandList[line.type](line)
+      index++
+    }
+  }
+
+  textHandler = async (line) => {
+    await this.drawer.drawText(line)
+    this.scenarioManager.setHistory(line.msg)
+  }
+
+  choiceHandler = async (line) => {
+    const { selectId, onSelect: selectHandler } =
+      await this.drawer.drawChoices(line)
+    await this.setScenario(0, selectHandler)
+    this.scenarioManager.setHistory(line.prompt, selectId)
+  }
+
+  jumpHandler = (line) => {
+    this.index = line.index
+  }
+
+  showHandler = async (line) => {
+    // 表示する画像の情報を管理オブジェクトに追加
     const key = line.name || line.path.split('/').pop()
     this.displayedImages[key] = {
       image: await this.getImageObject(line),
@@ -81,20 +84,35 @@ export class Core {
       look: line.look,
       entry: line.entry,
     }
-        //TODO: displayedImagesに登録されている画像を登録順に描画する
-        this.drawer.show(this.displayedImages)
-      } else if (line.type == 'newpage') {
-        this.displayedImages = {'background': {
-          image: this.scenarioManager.getBackground(),
-          size: {
-            width: this.gameContainer.clientWidth,
-            height: this.gameContainer.clientHeight,
-          },
-        }}
-        this.drawer.newPage()
-        this.drawer.show(this.displayedImages)
-      }
-      index++
+    this.drawer.show(this.displayedImages)
+  }
+
+  async getImageObject(line) {
+    let image
+    // 既にインスタンスがある場合は、それを使う
+    if (line.name) {
+      const targetImage = this.displayedImages[line.name]
+      const imageObject = targetImage
+        ? targetImage.image
+        : await new ImageObject()
+      image = imageObject.image.setImageAsync(line.path)
+    } else {
+      image = await new ImageObject().setImageAsync(line.path)
     }
+    return image
+  }
+
+  newpageHandler = () => {
+    this.displayedImages = {
+      background: {
+        image: this.scenarioManager.getBackground(),
+        size: {
+          width: this.gameContainer.clientWidth,
+          height: this.gameContainer.clientHeight,
+        },
+      },
+    }
+    this.drawer.newPage()
+    this.drawer.show(this.displayedImages)
   }
 }

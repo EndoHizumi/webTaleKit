@@ -299,18 +299,20 @@ WebTaleScript(以下:WTS）という名称で、HTMLに似たマークアップ�
  ```vue
 %% WebTaleScriptのサンプル %%
 <scenario>
-<choice prompt="プロローグをスキップしますか？">
-   <item onSelect="">はい</item>
-   <item onSelect="">いいえ</item>
-</choice>
+  <choice prompt="プロローグをスキップしますか？">
+    <item label="はい">
+      <jump index="1"></jump>
+    </item>
+    <item label="いいえ"></item>
+  </choice>
   夏の陽気が残る９月の初旬
   <say name="燈火">「先輩、別れてください」</say>
-   <say name="智樹"> 「え、ごめん。今･･･なんて」</say>
-   聞き取れなかったわけじゃない。
-   言われた意味が分からなかった。
-   理解したくなかった。
-     <say name="燈火">「最初から好きじゃなかったんです･･･」</say>
-     <say name="智樹"> 「「そんな･･･そんなこと･･･」</say>
+  <say name="智樹"> 「え、ごめん。今･･･なんて」</say>
+  聞き取れなかったわけじゃない。
+  言われた意味が分からなかった。
+  理解したくなかった。
+  <say name="燈火">「最初から好きじゃなかったんです･･･」</say>
+  <say name="智樹"> 「「そんな･･･そんなこと･･･」</say>
    視界が揺らぎ、自分が立っているのか分からなくなる。
    額からはイヤな汗が首筋を伝わり落ちる。
    これは夢だとそうも思いたかった。
@@ -333,12 +335,11 @@ const sceneConfig = {
 	 background: '屋上.jpg'
  };
 export const scenario = [
-    {type: "choice", prompt: "プロローグをスキップしますか？", items: [{onSelect: skipScenario,label: "はい"},{onSelect: undefined,label: "いいえ"}]}
-	 {type: text, msg: "夏の陽気が残る９月の初旬"}
-	 {type: say, name:"燈火",msg: "先輩、別れてください")}
-	 {type: say, name: "智樹", msg: "え、ごめん。今･･･なんて")}
-	 type: text, msg: "聞き取れなかったわけじゃない。/n言われた意味が分からなかった。/n理解したくなかった。"
-   
+　{type: "choice", prompt: "プロローグをスキップしますか？", items: [{onSelect:   [{type: "jump", index: 1}],label: "はい"},{onSelect: undefined,label: "いいえ"}]},
+　{type: text, msg: "夏の陽気が残る９月の初旬"},
+　{type: say, name:"燈火",msg: "先輩、別れてください"},
+　{type: say, name: "智樹", msg: "え、ごめん。今･･･なんて"},
+　{type: text, msg: "聞き取れなかったわけじゃない。/n言われた意味が分からなかった。/n理解したくなかった。"}
  ]
  // 他のロジック
 export const skipScenario = () => {

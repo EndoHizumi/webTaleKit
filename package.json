@@ -16,7 +16,9 @@
     "axios": "^1.6.7",
     "html-inline-external": "^1.0.10",
     "html-to-image": "^1.11.11",
+    "html-to-json-parser": "^2.0.1",
     "http-server": "^14.1.1",
+    "jsdom": "^24.0.0",
     "ts-loader": "^9.5.1"
   },
   "devDependencies": {
