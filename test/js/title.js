@@ -35,6 +35,7 @@ export const scenario = [
           },
           {
             type: 'show',
+            name: '01_zundamon.png',
             path: './resource/character/01_zundamon/02_zundamon.png',
             pos: {
               x: 1280 / 2 - 350 / 2,
@@ -50,8 +51,46 @@ export const scenario = [
             msg: 'ずんだもんなのだ！',
           },
           {
-            type: 'text',
-            msg: '初見は帰れなのだ！',
+            type: 'choice',
+            prompt: 'どっちを言ってほしいのだ？',
+            items: [
+              {
+                id: 1,
+                label: 'ずんだもんなのだ！',
+                onSelect: [
+                  {
+                    type: 'text',
+                    msg: 'ずんだもんなのだ！',
+                  },
+                ],
+                src: {
+                  default:
+                    './resource/system/systemPicture/02_button/button.png',
+                  hover:
+                    './resource/system/systemPicture/02_button/button2.png',
+                  select:
+                    './resource/system/systemPicture/02_button/button3.png',
+                },
+              },
+              {
+                id: 2,
+                label: 'ずんだもんだよ！',
+                onSelect: [
+                  {
+                    type: 'text',
+                    msg: 'ずんだもんだよ！',
+                  },
+                ],
+                src: {
+                  default:
+                    './resource/system/systemPicture/02_button/button.png',
+                  hover:
+                    './resource/system/systemPicture/02_button/button2.png',
+                  select:
+                    './resource/system/systemPicture/02_button/button3.png',
+                },
+              },
+            ],
           },
         ],
         src: {

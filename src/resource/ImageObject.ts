@@ -42,22 +42,17 @@ export class ImageObject {
     this.image.src = src
     return new Promise((resolve, reject) => {
       this.image.onload = () => {
-        console.log('画像の読み込みに成功しました')
         this.canvas.width = this.image.width
         this.canvas.height = this.image.height
         resolve(this)
       }
       this.image.onError = () => {
-        console.error('画像の読み込みに失敗しました')
         reject(new Error('画像の読み込みに失敗しました'));
       }
     })
   }
 
-  draw(reverse = false): ImageObject {// FIXME: this.imageの中身が空になってる??
-    console.log('draw')
-    console.log('reverse:', reverse)
-    console.dir('ImageObject.draw:', this.image)
+  draw(reverse = false): ImageObject {
     if (reverse) {
       this.ctx.save();
       this.ctx.scale(-1, 1);

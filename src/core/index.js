@@ -11,6 +11,7 @@ export class Core {
     show: this.showHandler,
     newpage: this.newpageHandler,
     hide: this.hideHandler,
+    jump: this.jumpHandler,
   }
 
   constructor() {
@@ -45,17 +46,18 @@ export class Core {
     }
     this.drawer.show(this.displayedImages)
     this.scenarioManager.setBackground(background)
-    await this.setScenario(this.index, title.scenario)
+    await this.setScenario(title.scenario)
     // 実行が終了したら、真っ黒の画面を表示する
     document.getElementById('gameContainer').innerHTML = ''
   }
 
-  async setScenario(index, scenario) {
+  async setScenario(scenario) {
     // scenario配列をmapで処理して、ゲームを進行する。
-    while (index < scenario.length) {
-      const line = scenario[index]
-      this.commandList[line.type](line)
-      index++
+    while (this.index < scenario.length) {
+      const line = scenario[this.index]
+      this.index++
+      const boundFunction = this.commandList[line.type].bind(this)
+      await boundFunction(line)
     }
   }
 
@@ -67,7 +69,10 @@ export class Core {
   async choiceHandler(line) {
     const { selectId, onSelect: selectHandler } =
       await this.drawer.drawChoices(line)
-    await this.setScenario(0, selectHandler)
+    const pastIndex = this.index
+    this.index = 0
+    await this.setScenario(selectHandler)
+    this.index = pastIndex
     this.scenarioManager.setHistory(line.prompt, selectId)
   }
 
@@ -102,7 +107,7 @@ export class Core {
       const imageObject = targetImage
         ? targetImage.image
         : await new ImageObject()
-      image = imageObject.image.setImageAsync(line.path)
+      image = imageObject.setImageAsync(line.path)
     } else {
       image = await new ImageObject().setImageAsync(line.path)
     }
@@ -119,7 +124,7 @@ export class Core {
         },
       },
     }
-    this.drawer.newPage()
+    this.drawer.clear()
     this.drawer.show(this.displayedImages)
   }
 }
