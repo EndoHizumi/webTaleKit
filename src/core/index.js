@@ -10,6 +10,7 @@ export class Core {
     choice: this.choiceHandler,
     show: this.showHandler,
     newpage: this.newpageHandler,
+    hide: this.hideHandler,
   }
 
   constructor() {
@@ -84,6 +85,12 @@ export class Core {
       look: line.look,
       entry: line.entry,
     }
+    this.drawer.show(this.displayedImages)
+  }
+
+  hideHandler(line) {
+    const key = line.name
+    delete this.displayedImages[key]
     this.drawer.show(this.displayedImages)
   }
 

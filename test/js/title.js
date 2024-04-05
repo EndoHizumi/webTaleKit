@@ -106,6 +106,54 @@ export const scenario = [
     ],
   },
   {
+    type: 'choice',
+    prompt: '誰を消しますか？',
+    items: [
+      {
+        id: 1,
+        label: 'ずんだもん',
+        onSelect: [
+          {
+            type: 'hide',
+            name: '01_zundamon.png',
+          },
+          {
+            type: 'text',
+            msg: 'ずんだもんを消しました。',
+          },
+        ],
+        src: {
+          default: './resource/system/systemPicture/02_button/button.png',
+          hover: './resource/system/systemPicture/02_button/button2.png',
+          select: './resource/system/systemPicture/02_button/button3.png',
+        },
+      },
+      {
+        id: 2,
+        label: '春日部つむぎ',
+        onSelect: [
+          {
+            type: 'hide',
+            name: '01_kasukabeTsumugi.png',
+          },
+          {
+            type: 'hide',
+            name: '02_kasukabeTsumugi.png',
+          },
+          {
+            type: 'text',
+            msg: '春日部つむぎを消しました。',
+          },
+        ],
+        src: {
+          default: './resource/system/systemPicture/02_button/button.png',
+          hover: './resource/system/systemPicture/02_button/button2.png',
+          select: './resource/system/systemPicture/02_button/button3.png',
+        },
+      },
+    ],
+  },
+  {
     type: 'jump',
     index: 0,
   },
