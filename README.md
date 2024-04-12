@@ -110,7 +110,7 @@ canvasのメッセージウィンドウへ入力された条件でテキスト�
 	- name: リソース定義オブジェクトのnameの値
 		- ファイル名の前にスラッシュで区切ってリソース種類を指定する(記述例: chara/hogehoge)
 	-  対応するWTS: `<hide name="" >フィルターやアニメーションの指定WSTタグをここに書ける</show>`
-- setBackground(path: string, name?: string) -> Obejct
+- setBackground(path: string, name?: string0) -> Obejct
 	- overview: 指定した画像を背景レイヤーをに表示する。背景用のshowのエイリアス。
 	- path: 表示する画像のファイルパスを指定する。
 	- name: リソース定義オブジェクトのbackgroundのnameの値
