@@ -1,7 +1,8 @@
 import { Drawer } from './drawer.ts'
-import { ResourceManager } from './resourceManager.js'
 import { ScenarioManager } from './scenarioManager.ts'
-import { ImageObject } from '../resource/ImageObject.ts'
+import { ImageObject } from '../resource/ImageObject'
+import { ResourceManager } from './resourceManager.js'
+import { SoundObject } from '../resource/soundObject'
 import engineConfig from '../../engineConfig.json'
 
 export class Core {
@@ -12,6 +13,7 @@ export class Core {
     newpage: this.newpageHandler,
     hide: this.hideHandler,
     jump: this.jumpHandler,
+    sound: this.soundHandler,
   }
 
   constructor() {
@@ -27,6 +29,7 @@ export class Core {
     this.isNext = false
     this.index = 0
     this.displayedImages = {}
+    this.usedSounds = {}
   }
 
   async start() {
@@ -104,14 +107,43 @@ export class Core {
     // 既にインスタンスがある場合は、それを使う
     if (line.name) {
       const targetImage = this.displayedImages[line.name]
-      const imageObject = targetImage
-        ? targetImage.image
-        : await new ImageObject()
-      image = imageObject.setImageAsync(line.path)
+      const imageObject = targetImage ? targetImage.image: new ImageObject()
+      image = await imageObject.setImageAsync(line.path)
     } else {
       image = await new ImageObject().setImageAsync(line.path)
     }
     return image
+  }
+
+  async soundHandler(line) {
+    // soundObjectを作成
+    const soundObject = await new SoundObject().setAudioAsync(line.path)
+    // playプロパティが存在する場合は、再生する
+
+    if ("play" in line) {
+      soundObject.play()
+    } else if (line.stop) {
+      soundObject.stop()
+    } else if (line.pause) {
+      soundObject.pause()
+    }
+    // soundObjectを管理オブジェクトに追加
+    const key = line.name || line.path.split('/').pop()
+    this.usedSounds[key] = {
+      audio: soundObject
+    }
+  }
+
+  async getSoundObject(line) {
+    let resource
+    if (line.name) {
+      const targetResource = this.usedSounds[line.name]
+      const soundObject = targetResource ? targetResource.audio : new SoundObject()
+      resource = await soundObject.setSoundAsync(line.path)
+    } else {
+      resource = await new SoundObject().setSoundAsync(line.path)
+    }
+    return resource
   }
 
   newpageHandler() {

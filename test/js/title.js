@@ -47,6 +47,11 @@ export const scenario = [
             },
           },
           {
+            type: 'sound',
+            path: './resource/voice/01_zundamon.wav',
+            play: null,
+          },
+          {
             type: 'text',
             msg: 'ずんだもんなのだ！',
           },

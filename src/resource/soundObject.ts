@@ -1,8 +1,8 @@
 export class SoundObject {
   // 表示済みの画像を管理するクラス
   private audio: any = null
-  private ctx: AudioContext
-  public source: AudioBufferSourceNode
+  private ctx: AudioContext = new AudioContext()
+  public source: AudioBufferSourceNode = this.ctx.createBufferSource()
 
   constructor() {
     this.ctx = new AudioContext()
@@ -12,10 +12,10 @@ export class SoundObject {
     return this.audio
   }
 
-  setAudio(track: ArrayBuffer) {
+  async setAudio(track: ArrayBuffer) {
     // 画像の読み込みと表示処理
     this.audio = await this.ctx.decodeAudioData(track)
-    const source = await this.ctx.createBufferSource()
+    const source = this.ctx.createBufferSource()
     source.buffer = this.audio
     source.connect(this.ctx.destination)
     return this
@@ -25,7 +25,7 @@ export class SoundObject {
     return this.ctx
   }
 
-  setContext(context) {
+  setContext(context: AudioContext) {
     this.ctx = context
     return this
   }
@@ -42,17 +42,17 @@ export class SoundObject {
    const arrayBuffer = await (await fetch(src)).arrayBuffer()
    this.audio = await this.ctx.decodeAudioData(arrayBuffer)
    this.source = await this.ctx.createBufferSource()
-   source.buffer = this.audio
-   source.connect(this.ctx.destination)
+   this.source.buffer = this.audio
+   this.source.connect(this.ctx.destination)
    return this
   }
 
   // music control
-  async play(): void {
+  play(): void {
     this.source.start(0)
   }
 
-  async stop(): boolean {
+  stop(): void {
    this.source.stop()
   }
 
