@@ -1,4 +1,6 @@
 import { Drawer } from './drawer.ts'
+import { ScenarioManager } from './scenarioManager.ts'
+import { ImageObject } from '../resource/ImageObject'
 import { ResourceManager } from './resourceManager.js'
 import { SoundObject } from '../resource/soundObject'
 import engineConfig from '../../engineConfig.json'
