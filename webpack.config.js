@@ -17,6 +17,9 @@ module.exports = {
   devServer: {
     static: './dist',
     port: 8080,
+    headers: {
+      'Feature-Policy': "autoplay 'self'"
+    },
   },
   module: {
     rules: [

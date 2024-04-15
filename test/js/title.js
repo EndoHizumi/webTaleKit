@@ -7,7 +7,15 @@ export const sceneConfig = {
 }
 export const scenario = [
   {
+    msg: 'タップでスタート',
+  },
+  {
     type: 'newpage',
+  },
+  {
+    type:'sound',
+    path: './resource/bgm/maou_game_village05.mp3',
+    play: null,
   },
   {
     type: 'choice',
@@ -47,13 +55,13 @@ export const scenario = [
             },
           },
           {
-            type: 'sound',
-            path: './resource/voice/01_zundamon.wav',
-            play: null,
-          },
-          {
-            type: 'text',
-            msg: 'ずんだもんなのだ！',
+            type: 'say',
+            name: 'ずんだもん',
+            text:{ msg: 'ずんだもんなのだ！' },
+            voice: {
+              path: './resource/voice/01_zundamon.wav',
+              play: null,
+            },
           },
           {
             type: 'choice',
@@ -199,6 +207,6 @@ export const scenario = [
   },
   {
     type: 'jump',
-    index: 0,
+    index: 1,
   },
 ]
