@@ -46,6 +46,26 @@
             top: 0px;
         }
 
+        #nameView {
+            user-select: none;
+            position: absolute;
+            top: -10px;
+            left: 0;
+            width: 10%;
+            height: 50px;
+            color: #fff;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            font-weight: bold;
+            font-size: larger;
+        }
+
+        p#messageView {
+            padding-left: 30px;
+            padding-top: 30px;
+        }
+
         #messageWindow {
             user-select: none;
             position: absolute;
@@ -91,6 +111,7 @@
     <div id="gameContainer">
         <div id="interactiveView"></div>
         <div id="messageWindow">
+            <p id="nameView"></p>
             <p id="messageView"></p>
             <img id="waitCircle" src="./resource/system/wait.gif" style="visibility: hidden;" width="20px"
                 height="20px">

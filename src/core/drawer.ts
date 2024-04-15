@@ -6,6 +6,7 @@ import { ImageObject } from '../resource/ImageObject.js'
 */
 export class Drawer {
   private gameScreen: HTMLElement;
+  private nameview: HTMLElement;
   private messageText: HTMLElement;
   private waitCircle: HTMLElement;
   private interactiveView: HTMLElement;
@@ -14,6 +15,7 @@ export class Drawer {
 
   constructor(gameContainer: HTMLElement) {
     this.gameScreen = gameContainer
+    this.nameview = this.gameScreen.querySelector('#nameView') as HTMLElement
     this.messageText = this.gameScreen.querySelector('#messageView') as HTMLElement
     this.waitCircle = this.gameScreen.querySelector('#waitCircle') as HTMLElement
     this.interactiveView = this.gameScreen.querySelector('#interactiveView') as HTMLElement
@@ -35,7 +37,7 @@ export class Drawer {
     this.adjustScale(this.gameScreen)
   }
 
-  async drawText(scene: any) {
+  async drawText(scene: any, name: string) {
     let isSkip = false
     // Enterキーが押されたら全文表示
     setTimeout(() => {
@@ -48,6 +50,11 @@ export class Drawer {
     }, 100)
     if (scene.clear === undefined || scene.clear === true) {
       this.messageText.innerHTML = ''
+    }
+    if(name !== undefined) {
+      this.nameview.innerHTML = name
+    }else{
+      this.nameview.innerHTML = ''
     }
     const displayText = scene.msg.split('\n')
     for (const line of displayText) {
