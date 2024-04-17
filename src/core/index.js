@@ -34,6 +34,7 @@ export class Core {
   }
 
   async start() {
+    // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
     // titleタグの内容を書き換える
     document.title = engineConfig.title
     const title = await import(/* webpackIgnore: true */ './js/title.js') //  webpackIgnoreでバンドルを無視する
@@ -128,10 +129,10 @@ export class Core {
     const soundObject = await this.getSoundObject(line)
     // playプロパティが存在する場合は、再生する
     if ("play" in line) {
-      soundObject.play()
-    } else if (line.stop) {
+      "loop" in line ? soundObject.play(true) : soundObject.play()
+    } else if ("stop" in line) {
       soundObject.stop()
-    } else if (line.pause) {
+    } else if ("pause" in line) {
       soundObject.pause()
     }
     // soundObjectを管理オブジェクトに追加

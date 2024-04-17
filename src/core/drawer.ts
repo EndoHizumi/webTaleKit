@@ -90,6 +90,13 @@ export class Drawer {
     // 選択肢のタイトルを表示
     this.messageText.innerHTML = choices.prompt
 
+    // 選択肢ボタンの配置を設定する
+    const interactiveView = document.querySelector('#interactiveView') as HTMLElement
+    if (choices.position == 'auto' || choices.position === undefined) {
+      interactiveView.className = 'auto'
+    } else {
+      interactiveView.className = 'manual'
+    }
     // 選択肢を表示
     for (const choice of choices.items) {
       const backgroundImages =
@@ -108,6 +115,11 @@ export class Drawer {
           : './resource/system/systemPicture/02_button/button3.png'
       const button = document.createElement('div')
       button.className = 'choice'
+      if (interactiveView.className == 'manual'){
+        button.style.position = 'absolute'
+        button.style.top = choice.position?.y || 0
+        button.style.left = choice.position?.x || 0
+      }
       button.style.color = choice.color !== undefined ? choice.color.default : 'black'
       button.style.width = '100%'
       button.style.height = '50px'

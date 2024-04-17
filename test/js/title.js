@@ -21,6 +21,7 @@ export const scenario = [
   {
     type: 'choice',
     prompt: '誰を呼び出しますか？',
+    position: 'auto',
     items: [
       {
         id: 1,
@@ -161,6 +162,7 @@ export const scenario = [
   {
     type: 'choice',
     prompt: '誰を消しますか？',
+    position: 'manual',
     items: [
       {
         id: 1,
@@ -180,6 +182,10 @@ export const scenario = [
           hover: './resource/system/systemPicture/02_button/button2.png',
           select: './resource/system/systemPicture/02_button/button3.png',
         },
+        position: {
+          x:0,
+          y:0
+        }
       },
       {
         id: 2,
@@ -202,7 +208,11 @@ export const scenario = [
           default: './resource/system/systemPicture/02_button/button.png',
           hover: './resource/system/systemPicture/02_button/button2.png',
           select: './resource/system/systemPicture/02_button/button3.png',
-        },
+        },        
+        position: {
+          x:500,
+          y:0
+        }
       },
     ],
   },
