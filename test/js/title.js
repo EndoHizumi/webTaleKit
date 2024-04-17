@@ -16,6 +16,7 @@ export const scenario = [
     type:'sound',
     path: './resource/bgm/maou_game_village05.mp3',
     play: null,
+    loop: null
   },
   {
     type: 'choice',
