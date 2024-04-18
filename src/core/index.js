@@ -66,6 +66,24 @@ export class Core {
     }
   }
 
+  forHandler(line) {
+    // itrの値をイテレートする
+    line.itr.map(async item => {
+      // 実行前にイテレートした値をセットする
+      line.items.map(async handler => {
+        // item.items内のline.variableNameの値と同じ値を持つプロパティの値をitemの値で置換する
+        Object.keys(handler).map(key => {
+          if (handler[key] === line.variableName) {
+            handler[key] = item
+          }
+        })
+        // ほかのハンドラーにバイパスする
+        const boundFunction = this.commandList[handler.type].bind(this)
+        await boundFunction(handler)
+      })
+    })
+  }
+
   async textHandler(line) {
     await this.drawer.drawText(line)
     this.scenarioManager.setHistory(line.msg)
