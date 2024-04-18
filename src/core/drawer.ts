@@ -6,6 +6,7 @@ import { ImageObject } from '../resource/ImageObject.js'
 */
 export class Drawer {
   private gameScreen: HTMLElement;
+  private nameview: HTMLElement;
   private messageText: HTMLElement;
   private waitCircle: HTMLElement;
   private interactiveView: HTMLElement;
@@ -14,6 +15,7 @@ export class Drawer {
 
   constructor(gameContainer: HTMLElement) {
     this.gameScreen = gameContainer
+    this.nameview = this.gameScreen.querySelector('#nameView') as HTMLElement
     this.messageText = this.gameScreen.querySelector('#messageView') as HTMLElement
     this.waitCircle = this.gameScreen.querySelector('#waitCircle') as HTMLElement
     this.interactiveView = this.gameScreen.querySelector('#interactiveView') as HTMLElement
@@ -35,7 +37,7 @@ export class Drawer {
     this.adjustScale(this.gameScreen)
   }
 
-  async drawText(scene: any) {
+  async drawText(scene: any, name: string) {
     let isSkip = false
     // Enterキーが押されたら全文表示
     setTimeout(() => {
@@ -48,6 +50,11 @@ export class Drawer {
     }, 100)
     if (scene.clear === undefined || scene.clear === true) {
       this.messageText.innerHTML = ''
+    }
+    if(name !== undefined) {
+      this.nameview.innerHTML = name
+    }else{
+      this.nameview.innerHTML = ''
     }
     const displayText = scene.msg.split('\n')
     for (const line of displayText) {
@@ -83,6 +90,13 @@ export class Drawer {
     // 選択肢のタイトルを表示
     this.messageText.innerHTML = choices.prompt
 
+    // 選択肢ボタンの配置を設定する
+    const interactiveView = document.querySelector('#interactiveView') as HTMLElement
+    if (choices.position == 'auto' || choices.position === undefined) {
+      interactiveView.className = 'auto'
+    } else {
+      interactiveView.className = 'manual'
+    }
     // 選択肢を表示
     for (const choice of choices.items) {
       const backgroundImages =
@@ -101,6 +115,11 @@ export class Drawer {
           : './resource/system/systemPicture/02_button/button3.png'
       const button = document.createElement('div')
       button.className = 'choice'
+      if (interactiveView.className == 'manual'){
+        button.style.position = 'absolute'
+        button.style.top = choice.position?.y || 0
+        button.style.left = choice.position?.x || 0
+      }
       button.style.color = choice.color !== undefined ? choice.color.default : 'black'
       button.style.width = '100%'
       button.style.height = '50px'

@@ -14,6 +14,7 @@ export class Core {
     hide: this.hideHandler,
     jump: this.jumpHandler,
     sound: this.soundHandler,
+    say: this.sayHandler,
   }
 
   constructor() {
@@ -33,6 +34,7 @@ export class Core {
   }
 
   async start() {
+    // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
     // titleタグの内容を書き換える
     document.title = engineConfig.title
     const title = await import(/* webpackIgnore: true */ './js/title.js') //  webpackIgnoreでバンドルを無視する
@@ -59,13 +61,20 @@ export class Core {
     while (this.index < scenario.length) {
       const line = scenario[this.index]
       this.index++
-      const boundFunction = this.commandList[line.type].bind(this)
+      const boundFunction = this.commandList[line.type || 'text'].bind(this)
       await boundFunction(line)
     }
   }
 
   async textHandler(line) {
     await this.drawer.drawText(line)
+    this.scenarioManager.setHistory(line.msg)
+  }
+
+  async sayHandler(line) {
+    // say(name:string, pattern: string, voice: {playの引数},  ...text)
+    await this.soundHandler(line.voice)
+    await this.drawer.drawText(line.text, line.name)
     this.scenarioManager.setHistory(line.msg)
   }
 
@@ -117,14 +126,13 @@ export class Core {
 
   async soundHandler(line) {
     // soundObjectを作成
-    const soundObject = await new SoundObject().setAudioAsync(line.path)
+    const soundObject = await this.getSoundObject(line)
     // playプロパティが存在する場合は、再生する
-
     if ("play" in line) {
-      soundObject.play()
-    } else if (line.stop) {
+      "loop" in line ? soundObject.play(true) : soundObject.play()
+    } else if ("stop" in line) {
       soundObject.stop()
-    } else if (line.pause) {
+    } else if ("pause" in line) {
       soundObject.pause()
     }
     // soundObjectを管理オブジェクトに追加
@@ -139,9 +147,9 @@ export class Core {
     if (line.name) {
       const targetResource = this.usedSounds[line.name]
       const soundObject = targetResource ? targetResource.audio : new SoundObject()
-      resource = await soundObject.setSoundAsync(line.path)
+      resource = await soundObject.setAudioAsync(line.path)
     } else {
-      resource = await new SoundObject().setSoundAsync(line.path)
+      resource = await new SoundObject().setAudioAsync(line.path)
     }
     return resource
   }

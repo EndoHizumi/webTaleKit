@@ -7,11 +7,21 @@ export const sceneConfig = {
 }
 export const scenario = [
   {
+    msg: 'タップでスタート',
+  },
+  {
     type: 'newpage',
+  },
+  {
+    type:'sound',
+    path: './resource/bgm/maou_game_village05.mp3',
+    play: null,
+    loop: null
   },
   {
     type: 'choice',
     prompt: '誰を呼び出しますか？',
+    position: 'auto',
     items: [
       {
         id: 1,
@@ -47,13 +57,13 @@ export const scenario = [
             },
           },
           {
-            type: 'sound',
-            path: './resource/voice/01_zundamon.wav',
-            play: null,
-          },
-          {
-            type: 'text',
-            msg: 'ずんだもんなのだ！',
+            type: 'say',
+            name: 'ずんだもん',
+            text:{ msg: 'ずんだもんなのだ！' },
+            voice: {
+              path: './resource/voice/01_zundamon.wav',
+              play: null,
+            },
           },
           {
             type: 'choice',
@@ -152,6 +162,7 @@ export const scenario = [
   {
     type: 'choice',
     prompt: '誰を消しますか？',
+    position: 'manual',
     items: [
       {
         id: 1,
@@ -171,6 +182,10 @@ export const scenario = [
           hover: './resource/system/systemPicture/02_button/button2.png',
           select: './resource/system/systemPicture/02_button/button3.png',
         },
+        position: {
+          x:0,
+          y:0
+        }
       },
       {
         id: 2,
@@ -193,12 +208,16 @@ export const scenario = [
           default: './resource/system/systemPicture/02_button/button.png',
           hover: './resource/system/systemPicture/02_button/button2.png',
           select: './resource/system/systemPicture/02_button/button3.png',
-        },
+        },        
+        position: {
+          x:500,
+          y:0
+        }
       },
     ],
   },
   {
     type: 'jump',
-    index: 0,
+    index: 1,
   },
 ]

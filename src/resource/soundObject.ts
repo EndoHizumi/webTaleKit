@@ -21,7 +21,7 @@ export class SoundObject {
     return this
   }
 
-  getContext() {  
+  getContext() {
     return this.ctx
   }
 
@@ -30,30 +30,40 @@ export class SoundObject {
     return this
   }
 
-  getFileInfo(){
+  getFileInfo() {
     // return filename, fileSize, playTime
-    return 
+    return
   }
 
   async setAudioAsync(src: string): Promise<SoundObject> {
     if (!src || src.length == 0) {
       return this
     }
-   const arrayBuffer = await (await fetch(src)).arrayBuffer()
-   this.audio = await this.ctx.decodeAudioData(arrayBuffer)
-   this.source = await this.ctx.createBufferSource()
-   this.source.buffer = this.audio
-   this.source.connect(this.ctx.destination)
-   return this
+    const arrayBuffer = await (await fetch(src)).arrayBuffer()
+    this.audio = await this.ctx.decodeAudioData(arrayBuffer)
+    this.source = await this.ctx.createBufferSource()
+    this.source.buffer = this.audio
+    this.source.connect(this.ctx.destination)
+    return this
   }
 
   // music control
-  play(): void {
+  play(loop: boolean): void {
+    // 無音の短い音声を作成
+    const silentBuffer = this.ctx.createBuffer(1, 1, 22050);
+    const silentSource = this.ctx.createBufferSource();
+    silentSource.buffer = silentBuffer;
+    silentSource.connect(this.ctx.destination);
+    // 無音の音声を再生
+    silentSource.start(0);
+
+    // 本当の音声を再生
+    this.source.loop = loop;
     this.source.start(0)
   }
 
   stop(): void {
-   this.source.stop()
+    this.source.stop()
   }
 
   // other effect 
