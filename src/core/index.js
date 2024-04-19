@@ -15,6 +15,7 @@ export class Core {
     jump: this.jumpHandler,
     sound: this.soundHandler,
     say: this.sayHandler,
+    for: this.forHandler
   }
 
   constructor() {
@@ -70,7 +71,7 @@ export class Core {
     // itrの値をイテレートする
     line.itr.map(async item => {
       // 実行前にイテレートした値をセットする
-      line.items.map(async handler => {
+      line.items.forEach(async handler => {
         // item.items内のline.variableNameの値と同じ値を持つプロパティの値をitemの値で置換する
         Object.keys(handler).map(key => {
           if (handler[key] === line.variableName) {

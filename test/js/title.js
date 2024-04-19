@@ -217,6 +217,26 @@ export const scenario = [
     ],
   },
   {
+    type: 'for',
+    itr: [100, 250,500],
+    variableName:'point',
+    items:[
+      {
+        type: 'show',
+        name: '01_zundamon.png',
+        path: './resource/character/01_zundamon/02_zundamon.png',
+        pos: {
+          x: 1280 / 2 - 350 / 2,
+          y: 'point',
+        },
+        size: {
+          width: 550,
+          height: 700,
+        },
+      }
+    ]
+  },
+  {
     type: 'jump',
     index: 1,
   },
