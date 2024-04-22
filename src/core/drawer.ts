@@ -6,20 +6,27 @@ import { ImageObject } from '../resource/ImageObject.js'
 */
 export class Drawer {
   private gameScreen: HTMLElement;
-  private nameview: HTMLElement;
-  private messageText: HTMLElement;
-  private waitCircle: HTMLElement;
-  private interactiveView: HTMLElement;
-  private ctx: CanvasRenderingContext2D;
+  private nameview!: HTMLElement;
+  private messageText!: HTMLElement;
+  private waitCircle!: HTMLElement;
+  private interactiveView!: HTMLElement;
+  private ctx!: CanvasRenderingContext2D;
   private config: any;
 
   constructor(gameContainer: HTMLElement) {
     this.gameScreen = gameContainer
-    this.nameview = this.gameScreen.querySelector('#nameView') as HTMLElement
-    this.messageText = this.gameScreen.querySelector('#messageView') as HTMLElement
-    this.waitCircle = this.gameScreen.querySelector('#waitCircle') as HTMLElement
-    this.interactiveView = this.gameScreen.querySelector('#interactiveView') as HTMLElement
+    // ウィンドウのリサイズ時にスケールを調整
+    window.addEventListener('resize', () => this.adjustScale(this.gameScreen))
+    // 初期ロード時にもスケールを調整
+    this.adjustScale(this.gameScreen)
+  }
 
+  setScreen(screenHtml: HTMLElement) {
+    this.nameview = screenHtml.querySelector('#nameView') as HTMLElement
+    this.messageText = screenHtml.querySelector('#messageView') as HTMLElement
+    this.waitCircle = screenHtml.querySelector('#waitCircle') as HTMLElement
+    this.interactiveView = screenHtml.querySelector('#interactiveView') as HTMLElement
+  
     // canvasをDOMに追加する(800 x 600)
     const canvas = document.createElement('canvas')
     canvas.width = 1280
@@ -30,9 +37,6 @@ export class Drawer {
     // 黒で塗りつぶす
     this.ctx.fillStyle = 'black'
     this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
-    // ウィンドウのリサイズ時にスケールを調整
-    window.addEventListener('resize', () => this.adjustScale(this.gameScreen))
-
     // 初期ロード時にもスケールを調整
     this.adjustScale(this.gameScreen)
   }

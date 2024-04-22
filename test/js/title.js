@@ -2,8 +2,8 @@ let index = 0
 export const sceneConfig = {
   name: 'title',
   background: './resource/background/back.jpg',
-  // template: './screen/title.html'
-  // bgm: './resource/audio/bgm.mp3'
+  template: './screen/title.html',
+  bgm: './resource/bgm/maou_game_village05.mp3'
 }
 export const scenario = [
   {

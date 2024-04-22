@@ -37,10 +37,31 @@ export class Core {
     // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
     // titleタグの内容を書き換える
     document.title = engineConfig.title
-    const title = await import(/* webpackIgnore: true */ './js/title.js') //  webpackIgnoreでバンドルを無視する
-    this.scenarioManager.progress.currentScene = title.sceneConfig.name
+    // タイトル画面を表示する
+    const title = await this.loadScreen('title')
+    await this.setScenario(title.scenario)
+    // 実行が終了したら、真っ黒の画面を表示する
+    document.getElementById('gameContainer').innerHTML = ''
+  }
+
+  async loadScreen(path) {
+    const screen = await import(/* webpackIgnore: true */ `./js/${path}.js`) //  webpackIgnoreでバンドルを無視する
+    // this.sceneConfig.templateを読み込んで、HTMLを表示する
+    const template = await fetch(screen.sceneConfig.template)
+    const htmlString = await template.text()
+    // 読み込んだhtmlからIDにmainを持つdivタグとStyleタグ以下を取り出して、gameContainerに表示する
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(htmlString, "text/html");
+    this.gameContainer.innerHTML = doc.getElementById('main').innerHTML;
+    // Styleタグを取り出して、headタグに追加する
+    const styleElement = doc.head.getElementsByTagName('style')[0];
+    document.head.appendChild(styleElement)
+    // ゲーム進行用に必要な情報をセットする
+    this.drawer.setScreen(this.gameContainer)
+    // シナリオの進行状況を保存
+    this.scenarioManager.progress.currentScene = screen.sceneConfig.name
     const background = await new ImageObject().setImageAsync(
-      title.sceneConfig.background,
+      screen.sceneConfig.background,
     )
     this.displayedImages['background'] = {
       image: background,
@@ -51,9 +72,10 @@ export class Core {
     }
     this.drawer.show(this.displayedImages)
     this.scenarioManager.setBackground(background)
-    await this.setScenario(title.scenario)
-    // 実行が終了したら、真っ黒の画面を表示する
-    document.getElementById('gameContainer').innerHTML = ''
+    // BGMを再生する
+    const bgm = await new SoundObject().setAudioAsync(screen.sceneConfig.bgm)
+    bgm.play(true)
+    return screen
   }
 
   async setScenario(scenario) {
@@ -116,7 +138,7 @@ export class Core {
     // 既にインスタンスがある場合は、それを使う
     if (line.name) {
       const targetImage = this.displayedImages[line.name]
-      const imageObject = targetImage ? targetImage.image: new ImageObject()
+      const imageObject = targetImage ? targetImage.image : new ImageObject()
       image = await imageObject.setImageAsync(line.path)
     } else {
       image = await new ImageObject().setImageAsync(line.path)
