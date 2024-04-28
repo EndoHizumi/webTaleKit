@@ -67,9 +67,12 @@ export class Core {
     }
   }
 
-  forHandler(line) { 
+  forHandler(line) {
+    console.log('forHandler: line: ', line, ': 72')
+    // とても分かりづらいが、再帰関数を使って、ハンドラの中の変数を置換している。returnはない。（やると訳が分からなくなるため）
     const replacer = (handler, item) => {
-      Object.keys(handler).map(key => {
+     console.log('replacer: ', handler, ': 72')
+     Object.keys(handler).map(key => {
         if (handler[key] instanceof Object) { replacer(handler[key], item) }
         if (handler[key] === line.variableName) {
           handler[key] = item
@@ -78,27 +81,33 @@ export class Core {
     }
      line.itr.forEach(async (itr) => {
       console.log(`forHandler: ${itr}: 80`)
-      line.items.forEach(async handler => { //NOTE: 非同期だっけ？？
-        replacer(handler, itr)
-        const boundFunction = this.commandList[handler.type || 'text'].bind(this)
-        await boundFunction(handler)
+      line.items.forEach(async handler => {
+        // handlerをコピーして、中身を置換する。（そうじゃないと２回目以降の処理で、前回の値が残ってしまう）
+        const replaceHandler = structuredClone(handler)
+        replacer(replaceHandler, itr)
+        console.log('forHandler: replaceHandler: ', replaceHandler, ': 84')
+        const boundFunction = this.commandList[replaceHandler.type || 'text'].bind(this)
+        await boundFunction(replaceHandler)
       })
     })
   }
 
   async textHandler(line) {
+    console.log('textHandler: ', line, ': 90')
     await this.drawer.drawText(line)
     this.scenarioManager.setHistory(line.msg)
   }
 
   async sayHandler(line) {
     // say(name:string, pattern: string, voice: {playの引数},  ...text)
+    console.log('sayHandler: ', line, ': 96')
     await this.soundHandler(line.voice)
     await this.drawer.drawText(line.text, line.name)
     this.scenarioManager.setHistory(line.msg)
   }
 
   async choiceHandler(line) {
+    console.log('choiceHandler: ', line, ': 104')
     const { selectId, onSelect: selectHandler } =
       await this.drawer.drawChoices(line)
     const pastIndex = this.index
@@ -109,32 +118,36 @@ export class Core {
   }
 
   jumpHandler(line) {
+    console.log('jumpHandler: ', line, ': 115')
     this.index = line.index
   }
 
   async showHandler(line) {
+    console.log('showHandler: ', line, ': 120')
     // 表示する画像の情報を管理オブジェクトに追加
     const key = line.name || line.path.split('/').pop()
-    const image = {
-      image: await this.getImageObject(line),
-      pos: line.pos,
-      size: line.size,
-      look: line.look,
-      entry: line.entry,
-    }
-    this.displayedImages[key] = image
-    console.log('displayedImages: showHandler: 126')
-    console.dir(this.displayedImages)
-    this.drawer.show(this.displayedImages)
+      const image = {
+        image: await this.getImageObject(line),
+        pos: line.pos,
+        size: line.size,
+        look: line.look,
+        entry: line.entry,
+      }
+      this.displayedImages[key] = image
+      console.log('displayedImages:', this.displayedImages, 'showHandler: 126')
+      console.dir(this.displayedImages)
+      this.drawer.show(this.displayedImages)
   }
 
   hideHandler(line) {
+    console.log('hideHandler: ', line, ': 137')
     const key = line.name
     delete this.displayedImages[key]
     this.drawer.show(this.displayedImages)
   }
 
   async getImageObject(line) {
+    console.log('getImageObject: ', line, ': 144')
     let image
     // 既にインスタンスがある場合は、それを使う
     if (line.name) {
@@ -148,14 +161,15 @@ export class Core {
   }
 
   async soundHandler(line) {
+    console.log('soundHandler: ', line, ': 158')
     // soundObjectを作成
     const soundObject = await this.getSoundObject(line)
     // playプロパティが存在する場合は、再生する
-    if ("play" in line) {
-      "loop" in line ? soundObject.play(true) : soundObject.play()
-    } else if ("stop" in line) {
+    if ('play' in line) {
+      'loop' in line ? soundObject.play(true) : soundObject.play()
+    } else if ('stop' in line) {
       soundObject.stop()
-    } else if ("pause" in line) {
+    } else if ('pause' in line) {
       soundObject.pause()
     }
     // soundObjectを管理オブジェクトに追加
@@ -166,6 +180,7 @@ export class Core {
   }
 
   async getSoundObject(line) {
+    console.log('getSoundObject: ', line, ': 177')
     let resource
     if (line.name) {
       const targetResource = this.usedSounds[line.name]
@@ -178,6 +193,7 @@ export class Core {
   }
 
   newpageHandler() {
+    console.log('newpageHandler: ', ': 190')
     this.displayedImages = {
       background: {
         image: this.scenarioManager.getBackground(),

@@ -1,4 +1,4 @@
-import { ImageObject } from "../resource/ImageObject"
+import { ImageObject } from '../resource/ImageObject'
 export class ScenarioManager {
   private backlist: any
   private saveDataList: any

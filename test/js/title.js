@@ -237,6 +237,17 @@ export const scenario = [
     ]
   },
   {
+    type: 'for',
+    itr: [100, 250,500],
+    variableName:'point',
+    items:[
+      {
+        type: 'text',
+        msg: 'point'
+      }
+    ]
+  },
+  {
     type: 'jump',
     index: 1,
   },

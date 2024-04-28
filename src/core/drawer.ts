@@ -14,6 +14,7 @@ export class Drawer {
   private config: any;
 
   constructor(gameContainer: HTMLElement) {
+    console.log('drawer.constructor: gameContainer: ', gameContainer, ': 17')
     this.gameScreen = gameContainer
     this.nameview = this.gameScreen.querySelector('#nameView') as HTMLElement
     this.messageText = this.gameScreen.querySelector('#messageView') as HTMLElement
@@ -38,6 +39,7 @@ export class Drawer {
   }
 
   async drawText(scene: any, name: string) {
+    console.log('drawer.drawText: scene: ', scene, ': 42')
     let isSkip = false
     // Enterキーが押されたら全文表示
     setTimeout(() => {
@@ -56,6 +58,7 @@ export class Drawer {
     }else{
       this.nameview.innerHTML = ''
     }
+    console.log('drawer.drawText: scene.msg: ', scene.msg, ': 62')
     const displayText = scene.msg.split('\n')
     for (const line of displayText) {
       for (const char of line) {
@@ -84,6 +87,7 @@ export class Drawer {
   }
 
   async drawChoices(choices: any) {
+    console.log('drawer.drawChoices: choices: ', choices, ': 89')
     let isSelect = false
     let selectId = 0
     let onSelect = 0
@@ -167,10 +171,12 @@ export class Drawer {
   }
 
   clear() {
+    console.log('drawer.clear: 173')
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
   }
   
   show(displayedImages: any) {
+    console.log('drawer.show: displayedImages: ', displayedImages, ': 177')
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
     for (let key in displayedImages) {
       const img: ImageObject = displayedImages[key].image
@@ -190,6 +196,7 @@ export class Drawer {
   }
 
   drawCanvas(img: ImageObject, pos: any, size: any, reverse: any) {
+    console.log('drawer.drawCanvas: img: ', img, ' pos:', pos, ' size:', size, ' reverse: ', reverse, ' :177')
     const canvas = img.draw(reverse).getCanvas();
     // canvasから画像を取得して、this.ctxに描画
     const imageWidth = size !== undefined ? size.width : canvas.width;
@@ -198,6 +205,7 @@ export class Drawer {
   }
   // クリック待ち処理
   clickWait() {
+    console.log('drawer.clickWait: 207')
     this.waitCircle.style.visibility = 'visible'
 
     return new Promise((resolve) => {
@@ -218,10 +226,12 @@ export class Drawer {
 
   // sleep関数
   sleep(ms: number) {
+    console.log('drawer.sleep: ms: ', ms, ': 228')
     return new Promise((resolve) => setTimeout(resolve, ms))
   }
 
   adjustScale(targetElement: HTMLElement) {
+    console.log('drawer.adjustScale: targetElement: ', targetElement, ': 233')
     // ターゲット要素の元の幅と高さ
     const originalWidth = targetElement.scrollWidth; // 例: 1280px
     const originalHeight = targetElement.scrollHeight; // 例: 720px
