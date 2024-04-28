@@ -67,19 +67,20 @@ export class Core {
     }
   }
 
-  forHandler(line) {
-    // itrの値をイテレートする
-    line.itr.map(async item => {
-      // 実行前にイテレートした値をセットする
-      line.items.forEach(async handler => {
-        // item.items内のline.variableNameの値と同じ値を持つプロパティの値をitemの値で置換する
-        Object.keys(handler).map(key => {
-          if (handler[key] === line.variableName) {
-            handler[key] = item
-          }
-        })
-        // ほかのハンドラーにバイパスする
-        const boundFunction = this.commandList[handler.type].bind(this)
+  forHandler(line) { 
+    const replacer = (handler, item) => {
+      Object.keys(handler).map(key => {
+        if (handler[key] instanceof Object) { replacer(handler[key], item) }
+        if (handler[key] === line.variableName) {
+          handler[key] = item
+        }
+      })
+    }
+     line.itr.forEach(async (itr) => {
+      console.log(`forHandler: ${itr}: 80`)
+      line.items.forEach(async handler => { //NOTE: 非同期だっけ？？
+        replacer(handler, itr)
+        const boundFunction = this.commandList[handler.type || 'text'].bind(this)
         await boundFunction(handler)
       })
     })
@@ -114,13 +115,16 @@ export class Core {
   async showHandler(line) {
     // 表示する画像の情報を管理オブジェクトに追加
     const key = line.name || line.path.split('/').pop()
-    this.displayedImages[key] = {
+    const image = {
       image: await this.getImageObject(line),
       pos: line.pos,
       size: line.size,
       look: line.look,
       entry: line.entry,
     }
+    this.displayedImages[key] = image
+    console.log('displayedImages: showHandler: 126')
+    console.dir(this.displayedImages)
     this.drawer.show(this.displayedImages)
   }
 
@@ -135,7 +139,7 @@ export class Core {
     // 既にインスタンスがある場合は、それを使う
     if (line.name) {
       const targetImage = this.displayedImages[line.name]
-      const imageObject = targetImage ? targetImage.image: new ImageObject()
+      const imageObject = targetImage ? targetImage.image : new ImageObject()
       image = await imageObject.setImageAsync(line.path)
     } else {
       image = await new ImageObject().setImageAsync(line.path)
