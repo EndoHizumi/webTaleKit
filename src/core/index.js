@@ -15,6 +15,8 @@ export class Core {
     jump: this.jumpHandler,
     sound: this.soundHandler,
     say: this.sayHandler,
+    if: this.ifHandler,
+    call: this.callHandler,
   }
 
   constructor() {
@@ -188,5 +190,45 @@ export class Core {
     }
     this.drawer.clear()
     this.drawer.show(this.displayedImages)
+  }
+
+  // Sceneファイルに、ビルド時に判断処理を追加して、そこに処理をお願いしたほうがいいかも？
+  async ifHandler(line) {
+    outputLog('', 'debug')
+    const isTrue = this.executeCode(line.condition, this.sceneFile)
+    outputLog(`${isTrue}`, 'debug')
+    if (isTrue) {
+      outputLog('', 'debug', line.then)
+      const pastIndex = this.index
+      this.index = 0
+      await this.setScenario(line.then)
+      this.index = pastIndex
+    } else {
+      outputLog('', 'debug', line.else)
+      const pastIndex = this.index
+      this.index = 0
+      await this.setScenario(line.else)
+      this.index = pastIndex
+    }
+  }
+
+  // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？
+  callHandler(line) {
+    outputLog('', 'debug')
+    this.executeCode(line.func, this.sceneFile)
+  }
+
+  executeCode(code, sceneFile) {
+    outputLog('', 'debug', arguments)
+    const func = new Function('sceneFile', `
+      const { ${Object.keys(this.sceneFile).join(',')} } = sceneFile;
+      return ${code};
+    `)
+    try {
+      return func(sceneFile);
+    } catch (error) {
+      
+      throw error;
+    }
   }
 }

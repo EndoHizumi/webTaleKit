@@ -162,7 +162,6 @@ export const scenario = [
   {
     type: 'choice',
     prompt: '誰を消しますか？',
-    position: 'manual',
     items: [
       {
         id: 1,
@@ -181,10 +180,6 @@ export const scenario = [
           default: './resource/system/systemPicture/02_button/button.png',
           hover: './resource/system/systemPicture/02_button/button2.png',
           select: './resource/system/systemPicture/02_button/button3.png',
-        },
-        position: {
-          x:0,
-          y:0
         }
       },
       {
@@ -208,11 +203,47 @@ export const scenario = [
           default: './resource/system/systemPicture/02_button/button.png',
           hover: './resource/system/systemPicture/02_button/button2.png',
           select: './resource/system/systemPicture/02_button/button3.png',
-        },        
-        position: {
-          x:500,
-          y:0
         }
+      },
+    ],
+  },
+  {
+    type: 'call',
+    func: 'hoge=1;'
+  },
+  {
+    type: 'if',
+    condition: 'hoge==1',
+    then: [
+      {
+        type: 'text',
+        msg: 'hogeは1だよ！',
+      },
+    ],
+    else: [
+      {
+        type: 'text',
+        msg: 'hogeは1じゃないよ！',
+      },
+    ],
+  },
+  {
+    type: 'call',
+    func: 'hoge=2;'
+  },
+  {
+    type: 'if',
+    condition: 'hoge==1',
+    then: [
+      {
+        type: 'text',
+        msg: 'hogeは1だよ！',
+      },
+    ],
+    else: [
+      {
+        type: 'text',
+        msg: 'hogeは1じゃないよ！',
       },
     ],
   },
