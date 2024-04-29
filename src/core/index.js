@@ -4,8 +4,10 @@ import { ImageObject } from '../resource/ImageObject'
 import { ResourceManager } from './resourceManager.js'
 import { SoundObject } from '../resource/soundObject'
 import engineConfig from '../../engineConfig.json'
+import { outputLog } from '../utils/logger.js'
 
 export class Core {
+  sceneFile = {}
   commandList = {
     text: this.textHandler,
     choice: this.choiceHandler,
@@ -36,18 +38,27 @@ export class Core {
   }
 
   async start() {
+    outputLog('', 'debug')
     // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
     // titleタグの内容を書き換える
     document.title = engineConfig.title
-    // タイトル画面を表示する
-    const title = await this.loadScreen('title')
-    await this.setScenario(title.scenario)
+    this.loadScene('title')
     // 実行が終了したら、真っ黒の画面を表示する
     document.getElementById('gameContainer').innerHTML = ''
   }
 
-  async loadScreen(path) {
-    const screen = await import(/* webpackIgnore: true */ `./js/${path}.js`) //  webpackIgnoreでバンドルを無視する
+  async loadScene(sceneFileName) {
+    outputLog('', 'debug', sceneFileName)
+    // sceneファイルを読み込む
+    this.sceneFile = await import(/* webpackIgnore: true */ `./js/${sceneFileName}.js`) //  webpackIgnoreでバンドルを無視する
+    // 画面を表示する
+    await this.loadScreen(this.sceneFile)
+    // シナリオを進行する
+    await this.setScenario(this.sceneFile.scenario)
+  }
+
+  async loadScreen(screen) {
+    outputLog('', 'debug', screen)
     // this.sceneConfig.templateを読み込んで、HTMLを表示する
     const template = await fetch(screen.sceneConfig.template)
     const htmlString = await template.text()
@@ -77,25 +88,29 @@ export class Core {
     // BGMを再生する
     const bgm = await new SoundObject().setAudioAsync(screen.sceneConfig.bgm)
     bgm.play(true)
-    return screen
   }
 
   async setScenario(scenario) {
+    outputLog('', 'debug', scenario)
     // scenario配列をmapで処理して、ゲームを進行する。
     while (this.index < scenario.length) {
+      outputLog(`this.index:${this.index}`, 'debug')
       const line = scenario[this.index]
       this.index++
       const boundFunction = this.commandList[line.type || 'text'].bind(this)
+      outputLog(` boundFunction:${boundFunction.name.split(' ')[1]}`, 'debug', line)
       await boundFunction(line)
     }
   }
 
   async textHandler(line) {
+    outputLog('', 'debug')
     await this.drawer.drawText(line)
     this.scenarioManager.setHistory(line.msg)
   }
 
   async sayHandler(line) {
+    outputLog('', 'debug')
     // say(name:string, pattern: string, voice: {playの引数},  ...text)
     await this.soundHandler(line.voice)
     await this.drawer.drawText(line.text, line.name)
@@ -103,6 +118,7 @@ export class Core {
   }
 
   async choiceHandler(line) {
+    outputLog('', 'debug')
     const { selectId, onSelect: selectHandler } =
       await this.drawer.drawChoices(line)
     const pastIndex = this.index
@@ -113,10 +129,12 @@ export class Core {
   }
 
   jumpHandler(line) {
+    outputLog('', 'debug')
     this.index = line.index
   }
 
   async showHandler(line) {
+    outputLog('', 'debug')
     // 表示する画像の情報を管理オブジェクトに追加
     const key = line.name || line.path.split('/').pop()
     this.displayedImages[key] = {
@@ -130,12 +148,14 @@ export class Core {
   }
 
   hideHandler(line) {
+    outputLog('', 'debug')
     const key = line.name
     delete this.displayedImages[key]
     this.drawer.show(this.displayedImages)
   }
 
   async getImageObject(line) {
+    outputLog('', 'debug')
     let image
     // 既にインスタンスがある場合は、それを使う
     if (line.name) {
@@ -149,6 +169,7 @@ export class Core {
   }
 
   async soundHandler(line) {
+    outputLog('', 'debug')
     // soundObjectを作成
     const soundObject = await this.getSoundObject(line)
     // playプロパティが存在する場合は、再生する
@@ -167,6 +188,7 @@ export class Core {
   }
 
   async getSoundObject(line) {
+    outputLog('', 'debug')
     let resource
     if (line.name) {
       const targetResource = this.usedSounds[line.name]
@@ -179,6 +201,7 @@ export class Core {
   }
 
   newpageHandler() {
+    outputLog('', 'debug')
     this.displayedImages = {
       background: {
         image: this.scenarioManager.getBackground(),
