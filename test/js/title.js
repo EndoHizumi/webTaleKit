@@ -1,9 +1,9 @@
-let index = 0
+export let index = 0
 export const sceneConfig = {
   name: 'title',
   background: './resource/background/back.jpg',
   template: './screen/title.html',
-  bgm: './resource/bgm/maou_game_village05.mp3'
+  bgm: './resource/bgm/maou_game_village05.mp3',
 }
 export const scenario = [
   {
@@ -13,10 +13,10 @@ export const scenario = [
     type: 'newpage',
   },
   {
-    type:'sound',
+    type: 'sound',
     path: './resource/bgm/maou_game_village05.mp3',
     play: null,
-    loop: null
+    loop: null,
   },
   {
     type: 'choice',
@@ -59,7 +59,7 @@ export const scenario = [
           {
             type: 'say',
             name: 'ずんだもん',
-            text:{ msg: 'ずんだもんなのだ！' },
+            text: { msg: 'ずんだもんなのだ！' },
             voice: {
               path: './resource/voice/01_zundamon.wav',
               play: null,
@@ -168,6 +168,25 @@ export const scenario = [
         label: 'ずんだもん',
         onSelect: [
           {
+            type: 'show',
+            name: '01_zundamon.png',
+            path: './resource/character/01_zundamon/02_zundamon.png',
+            mono: 100,
+            pos: {
+              x: 1280 / 2 - 350 / 2,
+              y: 0,
+            },
+            size: {
+              width: 350,
+              height: 700,
+            },
+          },
+          {
+            type: 'say',
+            name: 'ずんだもん',
+            text: { msg: '諸行無常なのだ' },
+          },
+          {
             type: 'hide',
             name: '01_zundamon.png',
           },
@@ -180,7 +199,7 @@ export const scenario = [
           default: './resource/system/systemPicture/02_button/button.png',
           hover: './resource/system/systemPicture/02_button/button2.png',
           select: './resource/system/systemPicture/02_button/button3.png',
-        }
+        },
       },
       {
         id: 2,
@@ -203,33 +222,29 @@ export const scenario = [
           default: './resource/system/systemPicture/02_button/button.png',
           hover: './resource/system/systemPicture/02_button/button2.png',
           select: './resource/system/systemPicture/02_button/button3.png',
-        }
+        },
       },
     ],
   },
   {
-    type: 'call',
-    func: 'hoge=1;'
-  },
-  {
     type: 'if',
-    condition: 'hoge==1',
+    condition: 'index==1',
     then: [
       {
         type: 'text',
-        msg: 'hogeは1だよ！',
+        msg: 'indexは0だよ！',
       },
     ],
     else: [
       {
         type: 'text',
-        msg: 'hogeは1じゃないよ！',
+        msg: 'indexは1じゃないよ！',
       },
     ],
   },
   {
     type: 'call',
-    func: 'hoge=2;'
+    func: 'hoge=2;',
   },
   {
     type: 'if',

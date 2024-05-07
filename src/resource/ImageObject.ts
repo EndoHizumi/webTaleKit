@@ -3,6 +3,7 @@ export class ImageObject {
   private image: any = null
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
+  private filter: string[] = []
 
   constructor() {
     // 画像の読み込みと表示処理
@@ -78,27 +79,30 @@ export class ImageObject {
   setSepia(num = 100): ImageObject {
     this.ctx.drawImage(this.image, 0, 0)
     // フィルターをかける
-    this.ctx.filter = `sepia(${num}%)}`
+    this.filter.push(`sepia(${num}%)`)
+    this.ctx.filter = this.filter.join(' ')
     // 画像データを取得
-    return this
+    return this.draw()
   }
 
   // モノクロ化
   setMonochrome(num = 100): ImageObject {
     this.ctx.drawImage(this.image, 0, 0)
     // フィルターをかける
-    this.ctx.filter = `grayscale(${num}%)`
+    this.filter.push(`grayscale(${num}%)`)
+    this.ctx.filter = this.filter.join(' ')
     // 画像データを取得
-    return this
+    return this.draw()
   }
 
   // ぼかし
   setBlur(num = 2): ImageObject {
     this.ctx.drawImage(this.image, 0, 0)
     // フィルターをかける
-    this.ctx.filter = `blur(${num}px)`
+    this.filter.push(`blur(${num}px)`)
+    this.ctx.filter = this.filter.join(' ')
     // 画像データを取得
-   return this
+    return this.draw()
   }
 
   // フィルターの解除
@@ -107,6 +111,6 @@ export class ImageObject {
     // フィルターをかける
     this.ctx.filter = 'none'
     // 画像データを取得
-    return this
+    return this.draw()
   }
 }

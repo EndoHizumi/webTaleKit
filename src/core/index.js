@@ -50,7 +50,9 @@ export class Core {
   async loadScene(sceneFileName) {
     outputLog('', 'debug', sceneFileName)
     // sceneファイルを読み込む
-    this.sceneFile = await import(/* webpackIgnore: true */ `./js/${sceneFileName}.js`) //  webpackIgnoreでバンドルを無視する
+    this.sceneFile = await import(
+      /* webpackIgnore: true */ `./js/${sceneFileName}.js`
+    ) //  webpackIgnoreでバンドルを無視する
     // 画面を表示する
     await this.loadScreen(this.sceneFile)
     // シナリオを進行する
@@ -63,11 +65,11 @@ export class Core {
     const template = await fetch(screen.sceneConfig.template)
     const htmlString = await template.text()
     // 読み込んだhtmlからIDにmainを持つdivタグとStyleタグ以下を取り出して、gameContainerに表示する
-    var parser = new DOMParser();
-    var doc = parser.parseFromString(htmlString, "text/html");
-    this.gameContainer.innerHTML = doc.getElementById('main').innerHTML;
+    var parser = new DOMParser()
+    var doc = parser.parseFromString(htmlString, 'text/html')
+    this.gameContainer.innerHTML = doc.getElementById('main').innerHTML
     // Styleタグを取り出して、headタグに追加する
-    const styleElement = doc.head.getElementsByTagName('style')[0];
+    const styleElement = doc.head.getElementsByTagName('style')[0]
     document.head.appendChild(styleElement)
     // ゲーム進行用に必要な情報をセットする
     this.drawer.setScreen(this.gameContainer)
@@ -98,7 +100,11 @@ export class Core {
       const line = scenario[this.index]
       this.index++
       const boundFunction = this.commandList[line.type || 'text'].bind(this)
-      outputLog(` boundFunction:${boundFunction.name.split(' ')[1]}`, 'debug', line)
+      outputLog(
+        ` boundFunction:${boundFunction.name.split(' ')[1]}`,
+        'debug',
+        line,
+      )
       await boundFunction(line)
     }
   }
@@ -112,7 +118,7 @@ export class Core {
   async sayHandler(line) {
     outputLog('', 'debug')
     // say(name:string, pattern: string, voice: {playの引数},  ...text)
-    await this.soundHandler(line.voice)
+    if (line.voice) await this.soundHandler(line.voice)
     await this.drawer.drawText(line.text, line.name)
     this.scenarioManager.setHistory(line.msg)
   }
@@ -144,6 +150,11 @@ export class Core {
       look: line.look,
       entry: line.entry,
     }
+    outputLog('line.sepia', 'debug', line.sepia)
+    if (line.sepia) this.displayedImages[key].image.setSepia(line.sepia)
+    if (line.mono) this.displayedImages[key].image.setMonochrome(line.mono)
+    if (line.blur) this.displayedImages[key].image.setBlur(line.blur)
+    if (line.opacity) this.displayedImages[key].image.setOpacity(line.opacity)
     this.drawer.show(this.displayedImages)
   }
 
@@ -173,17 +184,17 @@ export class Core {
     // soundObjectを作成
     const soundObject = await this.getSoundObject(line)
     // playプロパティが存在する場合は、再生する
-    if ("play" in line) {
-      "loop" in line ? soundObject.play(true) : soundObject.play()
-    } else if ("stop" in line) {
+    if ('play' in line) {
+      'loop' in line ? soundObject.play(true) : soundObject.play()
+    } else if ('stop' in line) {
       soundObject.stop()
-    } else if ("pause" in line) {
+    } else if ('pause' in line) {
       soundObject.pause()
     }
     // soundObjectを管理オブジェクトに追加
     const key = line.name || line.path.split('/').pop()
     this.usedSounds[key] = {
-      audio: soundObject
+      audio: soundObject,
     }
   }
 
@@ -192,7 +203,9 @@ export class Core {
     let resource
     if (line.name) {
       const targetResource = this.usedSounds[line.name]
-      const soundObject = targetResource ? targetResource.audio : new SoundObject()
+      const soundObject = targetResource
+        ? targetResource.audio
+        : new SoundObject()
       resource = await soundObject.setAudioAsync(line.path)
     } else {
       resource = await new SoundObject().setAudioAsync(line.path)
@@ -243,15 +256,17 @@ export class Core {
 
   executeCode(code, sceneFile) {
     outputLog('', 'debug', arguments)
-    const func = new Function('sceneFile', `
+    const func = new Function(
+      'sceneFile',
+      `
       const { ${Object.keys(this.sceneFile).join(',')} } = sceneFile;
       return ${code};
-    `)
+    `,
+    )
     try {
-      return func(sceneFile);
+      return func(sceneFile)
     } catch (error) {
-      
-      throw error;
+      throw error
     }
   }
 }
