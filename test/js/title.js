@@ -10,13 +10,13 @@ export const scenario = [
     msg: 'タップでスタート',
   },
   {
-    type: 'newpage',
-  },
-  {
     type: 'sound',
     path: './resource/bgm/maou_game_village05.mp3',
     play: null,
     loop: null,
+  },
+  {
+    type: 'newpage',
   },
   {
     type: 'choice',
@@ -31,7 +31,7 @@ export const scenario = [
             type: 'show',
             path: './resource/character/01_zundamon/01_zundamon.png',
             pos: {
-              x: 1280 / 2 - 350 / 2,
+              x: 500,
               y: 0,
             },
             size: {
@@ -48,7 +48,7 @@ export const scenario = [
             name: '01_zundamon.png',
             path: './resource/character/01_zundamon/02_zundamon.png',
             pos: {
-              x: 1280 / 2 - 350 / 2,
+              x: 500,
               y: 0,
             },
             size: {
@@ -173,7 +173,7 @@ export const scenario = [
             path: './resource/character/01_zundamon/02_zundamon.png',
             mono: 100,
             pos: {
-              x: 1280 / 2 - 350 / 2,
+              x: 500,
               y: 0,
             },
             size: {
@@ -243,27 +243,60 @@ export const scenario = [
     ],
   },
   {
-    type: 'call',
-    func: 'hoge=2;',
+    type: 'text',
+    msg: 'アニメーションのテスト',
   },
   {
-    type: 'if',
-    condition: 'hoge==1',
-    then: [
-      {
-        type: 'text',
-        msg: 'hogeは1だよ！',
-      },
-    ],
-    else: [
-      {
-        type: 'text',
-        msg: 'hogeは1じゃないよ！',
-      },
-    ],
+    type: 'show',
+    name: '01_zundamon.png',
+    path: './resource/character/01_zundamon/02_zundamon.png',
+    pos: {
+      x: 500,
+      y: 0,
+    },
+    size: {
+      width: 350,
+      height: 700,
+    },
+  },
+  {
+    type: 'moveTo',
+    x: 0,
+    y: -150,
+    name: '01_zundamon.png',
+    duration: 0.000001,
+  },
+  {
+    type: 'moveTo',
+    x: 0,
+    y: 150,
+    name: '01_zundamon.png',
+    duration: 0.000001,
+  },
+  {
+    type: 'moveTo',
+    x: 500,
+    y: 0,
+    name: '01_zundamon.png',
+    duration: 0.1,
+  },
+  {
+    type: 'moveTo',
+    x: -500,
+    y: 2.5,
+    name: '01_zundamon.png',
+    duration: 0.1,
   },
   {
     type: 'jump',
-    index: 1,
+    index: 3,
   },
 ]
+export const executeCode = (code) => {
+  try {
+    console.log(code)
+    return eval(code)
+  } catch (error) {
+    throw error
+  }
+}
