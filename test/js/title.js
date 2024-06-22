@@ -5,6 +5,9 @@ export const sceneConfig = {
   template: './screen/title.html',
   bgm: './resource/bgm/maou_game_village05.mp3',
 }
+export function returnConfig() {
+  return sceneConfig
+}
 export const scenario = [
   {
     msg: 'タップでスタート',
@@ -227,22 +230,6 @@ export const scenario = [
     ],
   },
   {
-    type: 'if',
-    condition: 'index==1',
-    then: [
-      {
-        type: 'text',
-        msg: 'indexは{{index}}だよ！',
-      },
-    ],
-    else: [
-      {
-        type: 'text',
-        msg: 'indexは{{index}}だよ！',
-      },
-    ],
-  },
-  {
     type: 'text',
     msg: 'アニメーションのテスト',
   },
@@ -288,15 +275,35 @@ export const scenario = [
     duration: 0.1,
   },
   {
+    type: 'text',
+    msg: 'アニメーションのテスト終了',
+  },
+  {
+    type: 'text',
+    msg: '変数展開のテスト',
+  },
+  {
+    type: 'if',
+    condition: 'index==1',
+    then: [
+      {
+        type: 'text',
+        msg: 'indexは{{index}}だよ！',
+      },
+    ],
+    else: [
+      {
+        type: 'text',
+        msg: 'indexは１じゃなくて、{{index}}だったよ！',
+      },
+    ],
+  },
+  {
+    type: 'text',
+    msg: 'このシーンの設定は{{returnConfig()}}だよ！',
+  },
+  {
     type: 'jump',
     index: 3,
   },
 ]
-export const executeCode = (code) => {
-  try {
-    console.log(code)
-    return eval(code)
-  } catch (error) {
-    throw error
-  }
-}
