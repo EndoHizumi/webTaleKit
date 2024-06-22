@@ -270,6 +270,16 @@ export class Core {
   // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？
   callHandler(line) {
     outputLog('call', 'debug', line)
-    this.sceneFile.executeCode(line.func)
+    this.executeCode(line.func)
+  }
+
+  executeCode(code) {
+    try {
+      const context = { ...this.sceneFile }
+      const func = new Function(...Object.keys(context), code)
+      return func.apply(null, Object.values(context))
+    } catch (error) {
+      console.error('Error executing code:', error)
+    }
   }
 }
