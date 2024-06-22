@@ -69,20 +69,16 @@ export class Drawer {
           isSkip = false
           break
         }
-        await this.sleep(50) // 50ミリ秒待機
+        await this.sleep(scene.speed || 50) // 50ミリ秒待機
         this.messageText.innerHTML += char
       }
-      if (
-        scene.wait === undefined ||
-        scene.wait === true ||
-        typeof scene.wait === 'number'
-      ) {
-        if (typeof scene.wait === 'number') {
+      if (typeof scene.wait === 'number') {
+        if (scene.wait > 0) {
           await this.sleep(scene.wait)
-        } else {
-          // 改行ごとにクリック待ち
-          await this.clickWait()
         }
+      } else {
+        // 改行ごとにクリック待ち
+        await this.clickWait()
       }
     }
   }
@@ -91,8 +87,6 @@ export class Drawer {
     let isSelect = false
     let selectId = 0
     let onSelect = 0
-    // 選択肢のタイトルを表示
-    this.messageText.innerHTML = choices.prompt
 
     // 選択肢ボタンの配置を設定する
     const interactiveView = document.querySelector('#interactiveView') as HTMLElement

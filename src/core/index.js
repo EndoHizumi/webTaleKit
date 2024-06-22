@@ -111,6 +111,10 @@ export class Core {
 
   async textHandler(line) {
     outputLog('', 'debug')
+    line.msg = line.msg.replace(/{{([^{}]+)}}/g, (match, p1, offset, string) => {
+      const expr = match.slice(2, -2);
+      return this.executeCode(expr, this.sceneFile)
+    })
     await this.drawer.drawText(line)
     this.scenarioManager.setHistory(line.msg)
   }
@@ -125,6 +129,7 @@ export class Core {
 
   async choiceHandler(line) {
     outputLog('', 'debug')
+    this.drawer.drawText({wait:0, msg:line.prompt})
     const { selectId, onSelect: selectHandler } =
       await this.drawer.drawChoices(line)
     const pastIndex = this.index

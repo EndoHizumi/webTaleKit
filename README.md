@@ -75,8 +75,8 @@ TIPS: 対応するWTSがある場合のみ、説明に記述がある
 - load(id: **number**) // 指定したIDにあるパスからJSONを読む込むする。
 
 ### テキスト表示
-canvasのメッセージウィンドウへ入力された条件でテキストを表示する。
-- text(msg: string,speed:number,wait: boolean､clear: boolean)
+HTMLのメッセージウィンドウへ入力された条件でテキストを表示する。
+- text(msg: string,speed:number,wait: number､clear: boolean)
 	- overview: メッセージウインドウに入力された条件でテキストを表示する
 	- msg: 表示するテキスト
 	- speed: テキストの表示間隔。初期値は、0.5s

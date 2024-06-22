@@ -232,13 +232,13 @@ export const scenario = [
     then: [
       {
         type: 'text',
-        msg: 'indexは0だよ！',
+        msg: 'indexは{{index}}だよ！',
       },
     ],
     else: [
       {
         type: 'text',
-        msg: 'indexは1じゃないよ！',
+        msg: 'indexは{{index}}だよ！',
       },
     ],
   },
