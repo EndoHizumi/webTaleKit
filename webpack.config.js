@@ -1,5 +1,5 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const path = require('path')
 
 module.exports = {
   mode: 'development',
@@ -7,6 +7,7 @@ module.exports = {
   output: {
     filename: 'bundle.js', // 出力ファイル名
     path: path.resolve(__dirname, 'dist'), // 出力ディレクトリ
+    chunkFilename: '[name].bundle.js', // チャンクファイル名
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -18,7 +19,7 @@ module.exports = {
     static: './dist',
     port: 8080,
     headers: {
-      'Feature-Policy': "autoplay 'self'"
+      'Feature-Policy': "autoplay 'self'",
     },
   },
   module: {
@@ -26,12 +27,12 @@ module.exports = {
       {
         test: /\.tsx?$/,
         use: 'ts-loader',
-        exclude: /node_modules/
-      }
-    ]
+        exclude: /node_modules/,
+      },
+    ],
   },
   resolve: {
-    extensions: ['.tsx', '.ts', '.js']
+    extensions: ['.tsx', '.ts', '.js'],
   },
-  devtool: 'source-map'
-};
+  devtool: 'source-map',
+}

@@ -19,6 +19,7 @@ export class Core {
     say: this.sayHandler,
     if: this.ifHandler,
     call: this.callHandler,
+    moveTo: this.moveToHandler,
   }
 
   constructor() {
@@ -38,7 +39,7 @@ export class Core {
   }
 
   async start() {
-    outputLog('', 'debug')
+    outputLog('call', 'debug')
     // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
     // titleタグの内容を書き換える
     document.title = engineConfig.title
@@ -48,11 +49,11 @@ export class Core {
   }
 
   async loadScene(sceneFileName) {
-    outputLog('', 'debug', sceneFileName)
+    outputLog('call', 'debug', sceneFileName)
     // sceneファイルを読み込む
     this.sceneFile = await import(
-      /* webpackIgnore: true */ `./js/${sceneFileName}.js`
-    ) //  webpackIgnoreでバンドルを無視する
+      /* webpackChunkName: "scenario" */ `/test/js/${sceneFileName}.js`
+    )
     // 画面を表示する
     await this.loadScreen(this.sceneFile)
     // シナリオを進行する
@@ -60,7 +61,7 @@ export class Core {
   }
 
   async loadScreen(screen) {
-    outputLog('', 'debug', screen)
+    outputLog('call', 'debug', screen)
     // this.sceneConfig.templateを読み込んで、HTMLを表示する
     const template = await fetch(screen.sceneConfig.template)
     const htmlString = await template.text()
@@ -93,15 +94,16 @@ export class Core {
   }
 
   async setScenario(scenario) {
-    outputLog('', 'debug', scenario)
+    outputLog('setScenario:scenario', 'debug', scenario)
     // scenario配列をmapで処理して、ゲームを進行する。
     while (this.index < scenario.length) {
-      outputLog(`this.index:${this.index}`, 'debug')
+      outputLog('this.index', 'debug', this.index)
       const line = scenario[this.index]
+      outputLog('setScenario:line', 'debug', line)
       this.index++
       const boundFunction = this.commandList[line.type || 'text'].bind(this)
       outputLog(
-        ` boundFunction:${boundFunction.name.split(' ')[1]}`,
+        `boundFunction:${boundFunction.name.split(' ')[1]}`,
         'debug',
         line,
       )
@@ -110,7 +112,7 @@ export class Core {
   }
 
   async textHandler(line) {
-    outputLog('', 'debug')
+    outputLog('call', 'debug', line)
     line.msg = line.msg.replace(/{{([^{}]+)}}/g, (match, p1, offset, string) => {
       const expr = match.slice(2, -2);
       return this.executeCode(expr, this.sceneFile)
@@ -120,7 +122,7 @@ export class Core {
   }
 
   async sayHandler(line) {
-    outputLog('', 'debug')
+    outputLog('call', 'debug', line)
     // say(name:string, pattern: string, voice: {playの引数},  ...text)
     if (line.voice) await this.soundHandler(line.voice)
     await this.drawer.drawText(line.text, line.name)
@@ -129,7 +131,6 @@ export class Core {
 
   async choiceHandler(line) {
     outputLog('', 'debug')
-    this.drawer.drawText({wait:0, msg:line.prompt})
     const { selectId, onSelect: selectHandler } =
       await this.drawer.drawChoices(line)
     const pastIndex = this.index
@@ -145,7 +146,7 @@ export class Core {
   }
 
   async showHandler(line) {
-    outputLog('', 'debug')
+    outputLog('showHandler:line', 'debug', line)
     // 表示する画像の情報を管理オブジェクトに追加
     const key = line.name || line.path.split('/').pop()
     this.displayedImages[key] = {
@@ -155,23 +156,36 @@ export class Core {
       look: line.look,
       entry: line.entry,
     }
-    outputLog('line.sepia', 'debug', line.sepia)
+    outputLog('showHandler:displayedImages', 'debug', this.displayedImages[key])
     if (line.sepia) this.displayedImages[key].image.setSepia(line.sepia)
     if (line.mono) this.displayedImages[key].image.setMonochrome(line.mono)
     if (line.blur) this.displayedImages[key].image.setBlur(line.blur)
     if (line.opacity) this.displayedImages[key].image.setOpacity(line.opacity)
     this.drawer.show(this.displayedImages)
+    outputLog('showHandler:this.displayedImages', 'debug', this.displayedImages)
   }
 
   hideHandler(line) {
-    outputLog('', 'debug')
+    outputLog('call', 'debug', line)
     const key = line.name
     delete this.displayedImages[key]
     this.drawer.show(this.displayedImages)
   }
 
+  async moveToHandler(line) {
+    outputLog('moveToHandler:line', 'debug', line)
+    const key = line.name
+    outputLog('moveToHandler:displayedImages', 'debug', this.displayedImages)
+    await this.drawer.moveTo(
+      key,
+      this.displayedImages,
+      { x: line.x, y: line.y },
+      line.duration | 1,
+    )
+  }
+
   async getImageObject(line) {
-    outputLog('', 'debug')
+    outputLog('call', 'debug', line)
     let image
     // 既にインスタンスがある場合は、それを使う
     if (line.name) {
@@ -185,7 +199,7 @@ export class Core {
   }
 
   async soundHandler(line) {
-    outputLog('', 'debug')
+    outputLog('call', 'debug', line)
     // soundObjectを作成
     const soundObject = await this.getSoundObject(line)
     // playプロパティが存在する場合は、再生する
@@ -204,7 +218,7 @@ export class Core {
   }
 
   async getSoundObject(line) {
-    outputLog('', 'debug')
+    outputLog('call', 'debug', line)
     let resource
     if (line.name) {
       const targetResource = this.usedSounds[line.name]
@@ -219,7 +233,7 @@ export class Core {
   }
 
   newpageHandler() {
-    outputLog('', 'debug')
+    outputLog('call', 'debug')
     this.displayedImages = {
       background: {
         image: this.scenarioManager.getBackground(),
@@ -235,8 +249,8 @@ export class Core {
 
   // Sceneファイルに、ビルド時に判断処理を追加して、そこに処理をお願いしたほうがいいかも？
   async ifHandler(line) {
-    outputLog('', 'debug')
-    const isTrue = this.executeCode(line.condition, this.sceneFile)
+    outputLog('call', 'debug', line)
+    const isTrue = this.sceneFile.executeCode(line.condition)
     outputLog(`${isTrue}`, 'debug')
     if (isTrue) {
       outputLog('', 'debug', line.then)
@@ -255,23 +269,7 @@ export class Core {
 
   // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？
   callHandler(line) {
-    outputLog('', 'debug')
-    this.executeCode(line.func, this.sceneFile)
-  }
-
-  executeCode(code, sceneFile) {
-    outputLog('', 'debug', arguments)
-    const func = new Function(
-      'sceneFile',
-      `
-      const { ${Object.keys(this.sceneFile).join(',')} } = sceneFile;
-      return ${code};
-    `,
-    )
-    try {
-      return func(sceneFile)
-    } catch (error) {
-      throw error
-    }
+    outputLog('call', 'debug', line)
+    this.sceneFile.executeCode(line.func)
   }
 }

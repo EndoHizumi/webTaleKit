@@ -170,6 +170,7 @@ HTMLのメッセージウィンドウへ入力された条件でテキストを�
    - call(name: string)
    - overview: logicセクションで宣言したメソッドを呼び出す。
    - name: 呼び出すメソッドの名称を記載する
+   - restriction: 変数や関数の定義は実行後に消えるため、ほかのタグから呼び出せない。
  - リソース定義
 	 - define(type: ['audio'|'se'|'voice'|'chara'|'picture'|'background'|'key'], name: string, path: string)
 	 - リソースのパスを任意の名前と紐づけたオブジェクトを対応するオブジェクトに追加する。
