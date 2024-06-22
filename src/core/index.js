@@ -113,10 +113,16 @@ export class Core {
 
   async textHandler(line) {
     outputLog('call', 'debug', line)
-    line.msg = line.msg.replace(/{{([^{}]+)}}/g, (match, p1, offset, string) => {
-      const expr = match.slice(2, -2);
-      return this.executeCode(expr, this.sceneFile)
-    })
+    line.msg = line.msg.replace(
+      /{{([^{}]+)}}/g,
+      (match, p1, offset, string) => {
+        const expr = match.slice(2, -2)
+        const returnValue = this.executeCode(`return ${expr}`)
+        return typeof returnValue == 'object'
+          ? JSON.stringify(returnValue)
+          : returnValue
+      },
+    )
     await this.drawer.drawText(line)
     this.scenarioManager.setHistory(line.msg)
   }
@@ -250,7 +256,7 @@ export class Core {
   // Sceneファイルに、ビルド時に判断処理を追加して、そこに処理をお願いしたほうがいいかも？
   async ifHandler(line) {
     outputLog('call', 'debug', line)
-    const isTrue = this.sceneFile.executeCode(line.condition)
+    const isTrue = this.executeCode(`return ${line.condition}`)
     outputLog(`${isTrue}`, 'debug')
     if (isTrue) {
       outputLog('', 'debug', line.then)
