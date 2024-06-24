@@ -75,8 +75,8 @@ TIPS: 対応するWTSがある場合のみ、説明に記述がある
 - load(id: **number**) // 指定したIDにあるパスからJSONを読む込むする。
 
 ### テキスト表示
-canvasのメッセージウィンドウへ入力された条件でテキストを表示する。
-- text(msg: string,speed:number,wait: boolean､clear: boolean)
+HTMLのメッセージウィンドウへ入力された条件でテキストを表示する。
+- text(msg: string,speed:number,wait: number､clear: boolean)
 	- overview: メッセージウインドウに入力された条件でテキストを表示する
 	- msg: 表示するテキスト
 	- speed: テキストの表示間隔。初期値は、0.5s
@@ -110,7 +110,7 @@ canvasのメッセージウィンドウへ入力された条件でテキスト�
 	- name: リソース定義オブジェクトのnameの値
 		- ファイル名の前にスラッシュで区切ってリソース種類を指定する(記述例: chara/hogehoge)
 	-  対応するWTS: `<hide name="" >フィルターやアニメーションの指定WSTタグをここに書ける</show>`
-- setBackground(path: string, name?: string) -> Obejct
+- setBackground(path: string, name?: string0) -> Obejct
 	- overview: 指定した画像を背景レイヤーをに表示する。背景用のshowのエイリアス。
 	- path: 表示する画像のファイルパスを指定する。
 	- name: リソース定義オブジェクトのbackgroundのnameの値
@@ -170,6 +170,7 @@ canvasのメッセージウィンドウへ入力された条件でテキスト�
    - call(name: string)
    - overview: logicセクションで宣言したメソッドを呼び出す。
    - name: 呼び出すメソッドの名称を記載する
+   - restriction: 変数や関数の定義は実行後に消えるため、ほかのタグから呼び出せない。
  - リソース定義
 	 - define(type: ['audio'|'se'|'voice'|'chara'|'picture'|'background'|'key'], name: string, path: string)
 	 - リソースのパスを任意の名前と紐づけたオブジェクトを対応するオブジェクトに追加する。

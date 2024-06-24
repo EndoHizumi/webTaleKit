@@ -1,17 +1,30 @@
-let index = 0
+export let index = 0
 export const sceneConfig = {
   name: 'title',
   background: './resource/background/back.jpg',
-  // template: './screen/title.html'
-  // bgm: './resource/audio/bgm.mp3'
+  template: './screen/title.html',
+  bgm: './resource/bgm/maou_game_village05.mp3',
+}
+export function returnConfig() {
+  return sceneConfig
 }
 export const scenario = [
+  {
+    msg: 'タップでスタート',
+  },
+  {
+    type: 'sound',
+    path: './resource/bgm/maou_game_village05.mp3',
+    play: null,
+    loop: null,
+  },
   {
     type: 'newpage',
   },
   {
     type: 'choice',
     prompt: '誰を呼び出しますか？',
+    position: 'auto',
     items: [
       {
         id: 1,
@@ -21,7 +34,7 @@ export const scenario = [
             type: 'show',
             path: './resource/character/01_zundamon/01_zundamon.png',
             pos: {
-              x: 1280 / 2 - 350 / 2,
+              x: 500,
               y: 0,
             },
             size: {
@@ -38,7 +51,7 @@ export const scenario = [
             name: '01_zundamon.png',
             path: './resource/character/01_zundamon/02_zundamon.png',
             pos: {
-              x: 1280 / 2 - 350 / 2,
+              x: 500,
               y: 0,
             },
             size: {
@@ -47,8 +60,13 @@ export const scenario = [
             },
           },
           {
-            type: 'text',
-            msg: 'ずんだもんなのだ！',
+            type: 'say',
+            name: 'ずんだもん',
+            text: { msg: 'ずんだもんなのだ！' },
+            voice: {
+              path: './resource/voice/01_zundamon.wav',
+              play: null,
+            },
           },
           {
             type: 'choice',
@@ -153,6 +171,25 @@ export const scenario = [
         label: 'ずんだもん',
         onSelect: [
           {
+            type: 'show',
+            name: '01_zundamon.png',
+            path: './resource/character/01_zundamon/02_zundamon.png',
+            mono: 100,
+            pos: {
+              x: 500,
+              y: 0,
+            },
+            size: {
+              width: 350,
+              height: 700,
+            },
+          },
+          {
+            type: 'say',
+            name: 'ずんだもん',
+            text: { msg: '諸行無常なのだ' },
+          },
+          {
             type: 'hide',
             name: '01_zundamon.png',
           },
@@ -193,7 +230,80 @@ export const scenario = [
     ],
   },
   {
+    type: 'text',
+    msg: 'アニメーションのテスト',
+  },
+  {
+    type: 'show',
+    name: '01_zundamon.png',
+    path: './resource/character/01_zundamon/02_zundamon.png',
+    pos: {
+      x: 500,
+      y: 0,
+    },
+    size: {
+      width: 350,
+      height: 700,
+    },
+  },
+  {
+    type: 'moveTo',
+    x: 0,
+    y: -150,
+    name: '01_zundamon.png',
+    duration: 0.000001,
+  },
+  {
+    type: 'moveTo',
+    x: 0,
+    y: 150,
+    name: '01_zundamon.png',
+    duration: 0.000001,
+  },
+  {
+    type: 'moveTo',
+    x: 500,
+    y: 0,
+    name: '01_zundamon.png',
+    duration: 0.1,
+  },
+  {
+    type: 'moveTo',
+    x: -500,
+    y: 2.5,
+    name: '01_zundamon.png',
+    duration: 0.1,
+  },
+  {
+    type: 'text',
+    msg: 'アニメーションのテスト終了',
+  },
+  {
+    type: 'text',
+    msg: '変数展開のテスト',
+  },
+  {
+    type: 'if',
+    condition: 'index==1',
+    then: [
+      {
+        type: 'text',
+        msg: 'indexは{{index}}だよ！',
+      },
+    ],
+    else: [
+      {
+        type: 'text',
+        msg: 'indexは１じゃなくて、{{index}}だったよ！',
+      },
+    ],
+  },
+  {
+    type: 'text',
+    msg: 'このシーンの設定は{{returnConfig()}}だよ！',
+  },
+  {
     type: 'jump',
-    index: 0,
+    index: 3,
   },
 ]
