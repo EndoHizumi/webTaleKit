@@ -4,7 +4,9 @@ export function outputLog(msg = 'None', level = 'log', option) {
   // スタックトレースの3番目の要素が呼び出し元の情報
   const callerInfo = stack[2].trim()
   // 呼び出し元の情報から行数とメソッド名を抽出
-  const matched = callerInfo.match(/[at|@] (.+?)(?:\s+\((.+)\))?$/)
+  const matched = callerInfo.match(
+    /([\w./]+)(?:@|\s*\()(http:\/\/\S+):(\d+):(\d+)/,
+  )
   // prettier-ignore
   console[level](level.toUpperCase(),matched[1],msg,option || undefined,matched[2])
 }
