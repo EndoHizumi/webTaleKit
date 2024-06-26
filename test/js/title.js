@@ -9,9 +9,7 @@ export function returnConfig() {
   return sceneConfig
 }
 export const scenario = [
-  {
-    msg: 'タップでスタート',
-  },
+  'タップでスタート',
   {
     type: 'sound',
     path: './resource/bgm/maou_game_village05.mp3',
@@ -25,169 +23,135 @@ export const scenario = [
     type: 'choice',
     prompt: '誰を呼び出しますか？',
     position: 'auto',
-    items: [
+    content: [
       {
         id: 1,
         label: 'ずんだもん',
-        onSelect: [
+        content: [
           {
             type: 'show',
             path: './resource/character/01_zundamon/01_zundamon.png',
-            pos: {
-              x: 500,
-              y: 0,
-            },
-            size: {
-              width: 350,
-              height: 700,
-            },
+            x: 500,
+            y: 0,
+            width: 350,
+            height: 700,
           },
           {
             type: 'text',
-            msg: 'ずんだもんを呼び出しました。',
+            content: ['ずんだもんを呼び出しました。'],
           },
           {
             type: 'show',
             name: '01_zundamon.png',
             path: './resource/character/01_zundamon/02_zundamon.png',
-            pos: {
-              x: 500,
-              y: 0,
-            },
-            size: {
-              width: 350,
-              height: 700,
-            },
+            x: 500,
+            y: 0,
+            width: 350,
+            height: 700,
           },
           {
             type: 'say',
             name: 'ずんだもん',
-            text: { msg: 'ずんだもんなのだ！' },
-            voice: {
-              path: './resource/voice/01_zundamon.wav',
-              play: null,
-            },
+            content: ['ずんだもんなのだ！'],
+            voice: './resource/voice/01_zundamon.wav',
           },
           {
             type: 'choice',
             prompt: 'どっちを言ってほしいのだ？',
-            items: [
+            content: [
               {
+                type: 'item',
                 id: 1,
                 label: 'ずんだもんなのだ！',
-                onSelect: [
+                content: [
                   {
                     type: 'text',
-                    msg: 'ずんだもんなのだ！',
+                    content: ['ずんだもんなのだ！'],
                   },
                 ],
-                src: {
-                  default:
-                    './resource/system/systemPicture/02_button/button.png',
-                  hover:
-                    './resource/system/systemPicture/02_button/button2.png',
-                  select:
-                    './resource/system/systemPicture/02_button/button3.png',
-                },
+                default: './resource/system/systemPicture/02_button/button.png',
+                hover: './resource/system/systemPicture/02_button/button2.png',
+                select: './resource/system/systemPicture/02_button/button3.png',
               },
               {
+                type: 'item',
                 id: 2,
                 label: 'ずんだもんだよ！',
-                onSelect: [
+                content: [
                   {
                     type: 'text',
-                    msg: 'ずんだもんだよ！',
+                    content: ['ずんだもんだよ！'],
                   },
                 ],
-                src: {
-                  default:
-                    './resource/system/systemPicture/02_button/button.png',
-                  hover:
-                    './resource/system/systemPicture/02_button/button2.png',
-                  select:
-                    './resource/system/systemPicture/02_button/button3.png',
-                },
+                default: './resource/system/systemPicture/02_button/button.png',
+                hover: './resource/system/systemPicture/02_button/button2.png',
+                select: './resource/system/systemPicture/02_button/button3.png',
               },
             ],
           },
         ],
-        src: {
-          default: './resource/system/systemPicture/02_button/button.png',
-          hover: './resource/system/systemPicture/02_button/button2.png',
-          select: './resource/system/systemPicture/02_button/button3.png',
-        },
+        default: './resource/system/systemPicture/02_button/button.png',
+        hover: './resource/system/systemPicture/02_button/button2.png',
+        select: './resource/system/systemPicture/02_button/button3.png',
       },
       {
         id: 2,
         label: '春日部つむぎ',
-        onSelect: [
+        content: [
           {
             type: 'show',
             path: './resource/character/02_kasukabeTsumugi/01_kasukabeTsumugi.png',
-            pos: {
-              x: 1280 / 2 - 350 / 2,
-              y: 0,
-            },
-            size: {
-              width: 350,
-              height: 700,
-            },
+            x: 1280 / 2 - 350 / 2,
+            y: 0,
+            width: 350,
+            height: 700,
           },
           {
             type: 'text',
-            msg: '春日部つむぎを呼び出しました。',
+            content: ['春日部つむぎを呼び出しました。'],
           },
           {
             type: 'show',
             path: './resource/character/02_kasukabeTsumugi/02_kasukabeTsumugi.png',
-            pos: {
-              x: 1280 / 2 - 350 / 2,
-              y: 0,
-            },
-            size: {
-              width: 350,
-              height: 700,
-            },
+            x: 1280 / 2 - 350 / 2,
+            y: 0,
+            width: 350,
+            height: 700,
           },
           {
             type: 'text',
-            msg: 'こんにちは！あーしは春日部つむぎだよ！',
+            content: ['こんにちは！あーしは春日部つむぎだよ！'],
           },
         ],
-        src: {
-          default: './resource/system/systemPicture/02_button/button.png',
-          hover: './resource/system/systemPicture/02_button/button2.png',
-          select: './resource/system/systemPicture/02_button/button3.png',
-        },
+        default: './resource/system/systemPicture/02_button/button.png',
+        hover: './resource/system/systemPicture/02_button/button2.png',
+        select: './resource/system/systemPicture/02_button/button3.png',
       },
     ],
   },
   {
     type: 'choice',
     prompt: '誰を消しますか？',
-    items: [
+    content: [
       {
+        type: 'item',
         id: 1,
         label: 'ずんだもん',
-        onSelect: [
+        content: [
           {
             type: 'show',
             name: '01_zundamon.png',
             path: './resource/character/01_zundamon/02_zundamon.png',
             mono: 100,
-            pos: {
-              x: 500,
-              y: 0,
-            },
-            size: {
-              width: 350,
-              height: 700,
-            },
+            x: 500,
+            y: 0,
+            width: 350,
+            height: 700,
           },
           {
             type: 'say',
             name: 'ずんだもん',
-            text: { msg: '諸行無常なのだ' },
+            content: ['諸行無常なのだ'],
           },
           {
             type: 'hide',
@@ -195,19 +159,17 @@ export const scenario = [
           },
           {
             type: 'text',
-            msg: 'ずんだもんを消しました。',
+            content: ['ずんだもんを消しました。'],
           },
         ],
-        src: {
-          default: './resource/system/systemPicture/02_button/button.png',
-          hover: './resource/system/systemPicture/02_button/button2.png',
-          select: './resource/system/systemPicture/02_button/button3.png',
-        },
+        default: './resource/system/systemPicture/02_button/button.png',
+        hover: './resource/system/systemPicture/02_button/button2.png',
+        select: './resource/system/systemPicture/02_button/button3.png',
       },
       {
         id: 2,
         label: '春日部つむぎ',
-        onSelect: [
+        content: [
           {
             type: 'hide',
             name: '01_kasukabeTsumugi.png',
@@ -218,33 +180,27 @@ export const scenario = [
           },
           {
             type: 'text',
-            msg: '春日部つむぎを消しました。',
+            content: ['春日部つむぎを消しました。'],
           },
         ],
-        src: {
-          default: './resource/system/systemPicture/02_button/button.png',
-          hover: './resource/system/systemPicture/02_button/button2.png',
-          select: './resource/system/systemPicture/02_button/button3.png',
-        },
+        default: './resource/system/systemPicture/02_button/button.png',
+        hover: './resource/system/systemPicture/02_button/button2.png',
+        select: './resource/system/systemPicture/02_button/button3.png',
       },
     ],
   },
   {
     type: 'text',
-    msg: 'アニメーションのテスト',
+    content: ['アニメーションのテスト'],
   },
   {
     type: 'show',
     name: '01_zundamon.png',
     path: './resource/character/01_zundamon/02_zundamon.png',
-    pos: {
-      x: 500,
-      y: 0,
-    },
-    size: {
-      width: 350,
-      height: 700,
-    },
+    x: 500,
+    y: 0,
+    width: 350,
+    height: 700,
   },
   {
     type: 'moveTo',
@@ -276,34 +232,75 @@ export const scenario = [
   },
   {
     type: 'text',
-    msg: 'アニメーションのテスト終了',
+    content: ['アニメーションのテスト終了'],
   },
   {
     type: 'text',
-    msg: '変数展開のテスト',
+    content: ['変数展開のテスト'],
   },
   {
     type: 'if',
     condition: 'index==1',
-    then: [
+    content: [
       {
-        type: 'text',
-        msg: 'indexは{{index}}だよ！',
+        type: 'then',
+        content: [
+          {
+            type: 'text',
+            content: ['indexは{{index}}だよ！'],
+          },
+        ],
+      },
+      {
+        type: 'else',
+        content: [
+          {
+            type: 'text',
+            content: ['indexは１じゃなくて、{{index}}だったよ！'],
+          },
+        ],
       },
     ],
-    else: [
+  },
+  {
+    type: 'if',
+    condition: 'index==0',
+    content: [
       {
-        type: 'text',
-        msg: 'indexは１じゃなくて、{{index}}だったよ！',
+        type: 'then',
+        content: [
+          {
+            type: 'text',
+            content: ['indexは{{index}}だよ！'],
+          },
+        ],
+      },
+      {
+        type: 'else',
+        content: [
+          {
+            type: 'text',
+            content: ['indexは１じゃなくて、{{index}}だったよ！'],
+          },
+        ],
       },
     ],
   },
   {
     type: 'text',
-    msg: 'このシーンの設定は{{returnConfig()}}だよ！',
+    content: ['このシーンの設定は{{returnConfig()}}だよ！'],
   },
   {
-    type: 'jump',
-    index: 3,
+    type: 'text',
+    content: ['変数展開のテスト終了'],
+  },
+  { type: 'newpage' },
+  {
+    type: 'text',
+    content: ['scene切り替えのテスト'],
+  },
+  {
+    type: 'route',
+    to: 'sample',
   },
 ]
