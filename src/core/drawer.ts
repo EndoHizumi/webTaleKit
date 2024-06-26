@@ -44,7 +44,7 @@ export class Drawer {
     this.adjustScale(this.gameScreen)
   }
 
-  async drawText(scene: any, name: string) {
+  async drawText(scene: any) {
     let isSkip = false
     // Enterキーが押されたら全文表示
     setTimeout(() => {
@@ -58,13 +58,13 @@ export class Drawer {
     if (scene.clear === undefined || scene.clear === true) {
       this.messageText.innerHTML = ''
     }
-    if (name !== undefined) {
-      this.nameview.innerHTML = name
+    if (scene.name !== undefined) {
+      this.nameview.innerHTML = scene.name
     } else {
       this.nameview.innerHTML = ''
     }
-    const displayText = scene.msg.split('\n')
-    for (const line of displayText) {
+    
+    for (const line of scene.content) {
       for (const char of line) {
         if (isSkip) {
           this.messageText.innerHTML = ''
@@ -90,7 +90,7 @@ export class Drawer {
     let isSelect = false
     let selectId = 0
     let onSelect = 0
-
+    
     // 選択肢ボタンの配置を設定する
     const interactiveView = document.querySelector(
       '#interactiveView',
@@ -101,20 +101,18 @@ export class Drawer {
       interactiveView.className = 'manual'
     }
     // 選択肢を表示
-    for (const choice of choices.items) {
-      const backgroundImages =
-        choices.src !== undefined ? choices.src : choice.src
+    for (const choice of choices.content) {
       const defaultImage =
-        backgroundImages?.default !== undefined
-          ? backgroundImages.default
+        choice.default !== undefined
+          ? choice.default
           : './resource/system/systemPicture/02_button/button.png'
       const hoverImage =
-        backgroundImages?.hover !== undefined
-          ? backgroundImages.hover
+        choice.hover !== undefined
+          ? choice.hover
           : './resource/system/systemPicture/02_button/button2.png'
       const selectImage =
-        backgroundImages?.select !== undefined
-          ? backgroundImages.select
+        choice.select !== undefined
+          ? choice.select
           : './resource/system/systemPicture/02_button/button3.png'
       const button = document.createElement('div')
       button.className = 'choice'
@@ -156,7 +154,7 @@ export class Drawer {
           element.parentNode?.removeChild(element)
         })
         selectId = choice.id
-        onSelect = choice.onSelect
+        onSelect = choice.content
         isSelect = true
       }
       this.interactiveView.appendChild(button)
