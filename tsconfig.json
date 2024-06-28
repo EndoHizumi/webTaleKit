@@ -2,7 +2,7 @@
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "outDir": "./dist/",
+    "outDir": "./dist/src",
     "sourceMap": true,
     "noImplicitAny": true,
     "module": "es6",
@@ -10,7 +10,9 @@
     "jsx": "react",
     "allowJs": true,
     "esModuleInterop": true,
-    "noEmitOnError": true
+    "noEmitOnError": true,
+    "moduleResolution": "node",
+    "types": ["node", "jest"],
   },
   "include": ["src/**/*"]
 }
