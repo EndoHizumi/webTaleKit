@@ -1,14 +1,11 @@
 {
   "name": "webtalekit",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Web知識でノベルゲーを作ることを目指したやつ",
   "main": "src/index.js",
   "scripts": {
     "test": "jest",
-    "play": "rm -rf ./dist/ && webpack --mode development && cp -r test/* dist/ && npx webpack-dev-server --open --mode development",
-    "dev": "rm -rf ./dist/ && webpack --mode development && cp -r test/* dist/ && npx webpack-dev-server --mode development",
-    "build": "rm -rf ./dist/ && webpack --mode development && cp -r test/* dist/",
-    "build:prod": "webpack --mode production"
+    "build": "rm -rf ./dist/ && webpack --mode production"
   },
   "author": "EndoHizumi",
   "license": "MIT",
