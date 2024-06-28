@@ -8,6 +8,7 @@ import { outputLog } from '../utils/logger.js'
 
 export class Core {
   sceneFile = {}
+  sceneConfig = {}
   commandList = {
     text: this.textHandler,
     choice: this.choiceHandler,
@@ -20,6 +21,7 @@ export class Core {
     if: this.ifHandler,
     call: this.callHandler,
     moveTo: this.moveToHandler,
+    route: this.routeHandler,
   }
 
   constructor() {
@@ -52,18 +54,20 @@ export class Core {
     outputLog('call', 'debug', sceneFileName)
     // sceneファイルを読み込む
     this.sceneFile = await import(
-      /* webpackChunkName: "scenario" */ `/test/js/${sceneFileName}.js`
+      /* webpackIgnore: true */ `/test/js/${sceneFileName}.js`
     )
+    this.sceneConfig = { ...this.sceneConfig, ...this.sceneFile.sceneConfig }
+    outputLog('loadScene:sceneFile', 'debug', this.sceneConfig)
     // 画面を表示する
-    await this.loadScreen(this.sceneFile)
+    await this.loadScreen(this.sceneConfig)
     // シナリオを進行する
     await this.setScenario(this.sceneFile.scenario)
   }
 
-  async loadScreen(screen) {
-    outputLog('call', 'debug', screen)
-    // this.sceneConfig.templateを読み込んで、HTMLを表示する
-    const template = await fetch(screen.sceneConfig.template)
+  async loadScreen(sceneConfig) {
+    outputLog('call', 'debug', sceneConfig)
+    // sceneConfig.templateを読み込んで、HTMLを表示する
+    const template = await fetch(sceneConfig.template)
     const htmlString = await template.text()
     // 読み込んだhtmlからIDにmainを持つdivタグとStyleタグ以下を取り出して、gameContainerに表示する
     var parser = new DOMParser()
@@ -75,9 +79,9 @@ export class Core {
     // ゲーム進行用に必要な情報をセットする
     this.drawer.setScreen(this.gameContainer)
     // シナリオの進行状況を保存
-    this.scenarioManager.progress.currentScene = screen.sceneConfig.name
+    this.scenarioManager.progress.currentScene = sceneConfig.name
     const background = await new ImageObject().setImageAsync(
-      screen.sceneConfig.background,
+      sceneConfig.background,
     )
     this.displayedImages['background'] = {
       image: background,
@@ -89,7 +93,7 @@ export class Core {
     this.drawer.show(this.displayedImages)
     this.scenarioManager.setBackground(background)
     // BGMを再生する
-    const bgm = await new SoundObject().setAudioAsync(screen.sceneConfig.bgm)
+    const bgm = await new SoundObject().setAudioAsync(sceneConfig.bgm)
     bgm.play(true)
   }
 
@@ -112,38 +116,45 @@ export class Core {
   }
 
   async textHandler(line) {
+    outputLog('textHandler:line', 'debug', line)
+    // 文章だけの場合は、contentプロパティに配列として設定する
+    if (typeof line === 'string') line = { content: [line] }
     outputLog('call', 'debug', line)
-    line.msg = line.msg.replace(
-      /{{([^{}]+)}}/g,
-      (match, p1, offset, string) => {
+    // {{}}が含まれている場合は、変換処理を行う
+    line.content = line.content.map((text) =>
+      text.replace(/{{([^{}]+)}}/g, (match, p1, offset, string) => {
         const expr = match.slice(2, -2)
         const returnValue = this.executeCode(`return ${expr}`)
         return typeof returnValue == 'object'
           ? JSON.stringify(returnValue)
           : returnValue
-      },
+      }),
     )
     await this.drawer.drawText(line)
-    this.scenarioManager.setHistory(line.msg)
+    this.scenarioManager.setHistory(line)
   }
 
   async sayHandler(line) {
     outputLog('call', 'debug', line)
     // say(name:string, pattern: string, voice: {playの引数},  ...text)
-    if (line.voice) await this.soundHandler(line.voice)
-    await this.drawer.drawText(line.text, line.name)
-    this.scenarioManager.setHistory(line.msg)
+    if (line.voice)
+      await this.soundHandler({ path: line.voice, play: undefined })
+    await this.textHandler({ content: line.content, name: line.name })
+    this.scenarioManager.setHistory(line)
   }
 
   async choiceHandler(line) {
     outputLog('', 'debug')
+    this.textHandler(line.prompt)
     const { selectId, onSelect: selectHandler } =
       await this.drawer.drawChoices(line)
-    const pastIndex = this.index
-    this.index = 0
-    await this.setScenario(selectHandler)
-    this.index = pastIndex
-    this.scenarioManager.setHistory(line.prompt, selectId)
+    if (selectHandler !== undefined) {
+      const pastIndex = this.index
+      this.index = 0
+      await this.setScenario(selectHandler)
+      this.index = pastIndex
+    }
+    this.scenarioManager.setHistory({ line, ...selectId })
   }
 
   jumpHandler(line) {
@@ -157,8 +168,8 @@ export class Core {
     const key = line.name || line.path.split('/').pop()
     this.displayedImages[key] = {
       image: await this.getImageObject(line),
-      pos: line.pos,
-      size: line.size,
+      pos: { x: line.x, y: line.y },
+      size: { width: line.width, height: line.height },
       look: line.look,
       entry: line.entry,
     }
@@ -259,18 +270,26 @@ export class Core {
     const isTrue = this.executeCode(`return ${line.condition}`)
     outputLog(`${isTrue}`, 'debug')
     if (isTrue) {
-      outputLog('', 'debug', line.then)
+      outputLog('', 'debug', line.content[0].content)
       const pastIndex = this.index
       this.index = 0
-      await this.setScenario(line.then)
+      await this.setScenario(line.content[0].content)
       this.index = pastIndex
     } else {
-      outputLog('', 'debug', line.else)
+      outputLog('', 'debug', line.content[1].content)
       const pastIndex = this.index
       this.index = 0
-      await this.setScenario(line.else)
+      await this.setScenario(line.content[1].content)
       this.index = pastIndex
     }
+  }
+
+  async routeHandler(line) {
+    outputLog('call', 'debug', line)
+    this.index = 0
+    this.displayedImages = {}
+    this.usedSounds = {}
+    await this.loadScene(line.to)
   }
 
   // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？
