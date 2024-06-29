@@ -23,8 +23,10 @@
       "type": "node",
       "request": "launch",
       "name": "Debug Node.js with Args",
-      "program": "${workspaceFolder}/src/sceneParser.js",
-      "args": ["test/js/sample.scene"],
+      "program": "${workspaceFolder}/cli.js",
+      "args": [
+        "C:/Users/endoh/Dropbox/Development/testGame/src/scene/sample.scene"
+      ],
       "console": "integratedTerminal"
     }
   ]
