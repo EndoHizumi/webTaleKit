@@ -3,7 +3,7 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "outDir": "./dist/src",
-    "sourceMap": true,
+    "sourceMap": false,
     "noImplicitAny": true,
     "module": "es6",
     "target": "es5",
