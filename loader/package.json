@@ -1,0 +1,11 @@
+{
+  "name": "wtsloder",
+  "version": "0.1.0",
+  "description": "WebTaleScriptのコンパイラです",
+  "main": "cli.js",
+  "author": "EndoHizumi",
+  "license": "MIT",
+  "dependencies": {
+    "html-to-json-parser": "^2.0.1"
+  }
+}
