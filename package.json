@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "build": "rm -rf ./dist/ && tsc && cp package.json engineConfig.json dist/ && npm pack ./dist/",
-    "build:loader": "npm pack ./loader"
+    "build:parser": "npm pack ./parser"
   },
   "author": "EndoHizumi",
   "license": "MIT",
