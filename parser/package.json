@@ -1,5 +1,5 @@
 {
-  "name": "wtsloder",
+  "name": "wtc",
   "version": "0.1.0",
   "description": "WebTaleScriptのコンパイラです",
   "main": "cli.js",

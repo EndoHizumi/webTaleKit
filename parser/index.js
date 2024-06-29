@@ -21,7 +21,6 @@ fs.readFile(targetScript, 'utf8', async (err, data) => {
     console.error(err)
     return
   }
-  console.log(data)
   // パーサーを呼び出す。
   const { scenario, logic } = await parse(data)
   fs.writeFile(
