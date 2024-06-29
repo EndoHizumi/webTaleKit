@@ -1,10 +1,10 @@
-import { Drawer } from './drawer.ts'
-import { ScenarioManager } from './scenarioManager.ts'
+import { Drawer } from './drawer'
+import { ScenarioManager } from './scenarioManager'
 import { ImageObject } from '../resource/ImageObject'
-import { ResourceManager } from './resourceManager.js'
+import { ResourceManager } from './resourceManager'
 import { SoundObject } from '../resource/soundObject'
 import engineConfig from '../../engineConfig.json'
-import { outputLog } from '../utils/logger.js'
+import { outputLog } from '../utils/logger'
 
 export class Core {
   sceneFile = {}
@@ -30,9 +30,9 @@ export class Core {
     this.drawer = new Drawer(this.gameContainer)
     // ScenarioManagerの初期化（変数の初期値設定）
     this.scenarioManager = new ScenarioManager()
-    // ResourceManagerの初期化（引数にconfig.jsを渡して、リソース管理配列を作る）
+    // ResourceManagerの初期化（引数にconfigを渡して、リソース管理配列を作る）
     this.resourceManager = new ResourceManager(
-      import(/* webpackIgnore: true */ './resource/config.js'),
+      import(/* webpackIgnore: true */ './resource/config'),
     ) //  webpackIgnoreでバンドルを無視する
     this.isNext = false
     this.index = 0
@@ -54,7 +54,7 @@ export class Core {
     outputLog('call', 'debug', sceneFileName)
     // sceneファイルを読み込む
     this.sceneFile = await import(
-      /* webpackChunkName: "[request]" */ `/js/${sceneFileName}.js`
+      /* webpackChunkName: "[request]" */ `/js/${sceneFileName}`
     )
     this.sceneConfig = { ...this.sceneConfig, ...this.sceneFile.sceneConfig }
     outputLog('loadScene:sceneFile', 'debug', this.sceneConfig)

@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "test": "jest",
-    "build": "rm -rf ./dist/ && tsc && cp package.json engineConfig.json dist/ && npm pack ./dist/",
+    "build": "rm -rf ./dist/ && tsc && cp package.json engineConfig.json dist/ && npm pack ./dist/ && rm -rf ./dist/",
     "build:parser": "npm pack ./parser"
   },
   "author": "EndoHizumi",

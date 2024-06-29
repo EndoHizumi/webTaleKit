@@ -1,5 +1,5 @@
-import { ImageObject } from '../resource/ImageObject.js'
-import { outputLog } from '../utils/logger.js'
+import { ImageObject } from '../resource/ImageObject'
+import { outputLog } from '../utils/logger'
 
 /*
  drawerの目的
