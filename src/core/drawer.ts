@@ -105,15 +105,15 @@ export class Drawer {
       const defaultImage =
         choice.default !== undefined
           ? choice.default
-          : './resource/system/systemPicture/02_button/button.png'
+          : './src/resource/system/systemPicture/02_button/button.png'
       const hoverImage =
         choice.hover !== undefined
           ? choice.hover
-          : './resource/system/systemPicture/02_button/button2.png'
+          : './src/resource/system/systemPicture/02_button/button2.png'
       const selectImage =
         choice.select !== undefined
           ? choice.select
-          : './resource/system/systemPicture/02_button/button3.png'
+          : './src/resource/system/systemPicture/02_button/button3.png'
       const button = document.createElement('div')
       button.className = 'choice'
       if (interactiveView.className == 'manual') {

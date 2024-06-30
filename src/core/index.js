@@ -32,7 +32,7 @@ export class Core {
     this.scenarioManager = new ScenarioManager()
     // ResourceManagerの初期化（引数にconfigを渡して、リソース管理配列を作る）
     this.resourceManager = new ResourceManager(
-      import(/* webpackIgnore: true */ './resource/config'),
+      import(/* webpackIgnore: true */ '/src/resource/config.js'),
     ) //  webpackIgnoreでバンドルを無視する
     this.isNext = false
     this.index = 0
