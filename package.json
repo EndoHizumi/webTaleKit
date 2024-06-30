@@ -1,15 +1,39 @@
 {
-  "name": "gyarugejs",
-  "version": "0.0.1",
+  "name": "webtalekit",
+  "version": "0.1.0",
   "description": "Web知識でノベルゲーを作ることを目指したやつ",
-  "main": "index.js",
+  "main": "./src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "build": "rm -rf ./dist/ && tsc && cp -r package.json engineConfig.json parser/ dist/ && npm pack ./dist/"
+  },
+  "bin": {
+    "wtc": "./parser/cli.js"
   },
   "author": "EndoHizumi",
   "license": "MIT",
   "dependencies": {
-    "html-inline-external": "^1.0.10",
-    "html-to-image": "^1.11.11"
+    "html-to-json-parser": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.28",
+    "esdoc": "^1.1.0",
+    "esdoc-standard-plugin": "^1.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^16.6.2",
+    "eslint-plugin-promise": "^6.1.1",
+    "html-webpack-plugin": "^5.6.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.2.5",
+    "ts-jest": "^29.1.2",
+    "ts-loader": "^9.5.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.2",
+    "webpack": "^5.90.3",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.2"
   }
 }

@@ -1,0 +1,16 @@
+{
+  "extends": ["eslint:recommended", "eslint-config-prettier", "prettier"],
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "rules": {
+    "semi": ["error", "never"],
+    "semi-spacing": ["error", { "after": true, "before": false }],
+    "semi-style": ["error", "last"],
+    "no-extra-semi": "error",
+    "no-unexpected-multiline": "error",
+    "no-unreachable": "error",
+    "camelcase": ["error", { "properties": "always" }]
+  }
+}
