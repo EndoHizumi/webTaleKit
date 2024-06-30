@@ -54,7 +54,7 @@ export class Core {
     outputLog('call', 'debug', sceneFileName)
     // sceneファイルを読み込む
     this.sceneFile = await import(
-      /* webpackChunkName: "[request]" */ `/js/${sceneFileName}`
+      /* webpackIgnore: true */ `./src/js/${sceneFileName}.js`
     )
     this.sceneConfig = { ...this.sceneConfig, ...this.sceneFile.sceneConfig }
     outputLog('loadScene:sceneFile', 'debug', this.sceneConfig)
