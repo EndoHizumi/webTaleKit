@@ -20,6 +20,36 @@ webTaleKitは、現在アルファ版です。
 開発進捗は、[@endo_hizumi](https://x.com/endo_hizumi) で行っております。
 Hashtag: #webTalekit
 
+## アルファ版(0.1.0)機能未実装
+
+- Desktopアプリケーションへのビルド
+- Android(iOS)向けのビルド
+- オートモード
+- スキップ
+- 画面各種のボタン
+- sayタグ
+  - キャラが表示されていないときは、表示する
+- セーブ＆ロード機能
+- showタグ / hideタグ
+  - 子要素でフィルター指定
+  - 子要素でアニメーション指定
+  - スラッシュで区切ってリソース種類を指定
+- scenarioManager.setBackground
+- scenarioManager.getBackground
+- soundタグ
+  - pause
+  - setVolume
+  - getVolume
+  - bgmエイリアス
+  - voiceエイリアス
+  - seエイリアス
+- quakeタグ（画面を揺らす）
+- maskタグ（画面の暗転）
+- リソース定義メソッド
+- セーブファイル管理配列
+- ゲーム設定ファイルの反映
+- html・css・jsのインライン化・minify
+
 ## WebTaleKitチュートリアル
 
 このチュートリアルでは、WebTaleKitを使ってビジュアルノベルゲームを作成する方法を学びます。
@@ -131,36 +161,6 @@ Hashtag: #webTalekit
 
 以上がWebTaleKitを使ってビジュアルノベルゲームを作成するための基本的な流れです。
 タグの詳細については、[WebTaleKit仕様](documents/spec.md)を参照してください。
-
-## アルファ版(0.1.0)機能未実装
-
-- Desktopアプリケーションへのビルド
-- Android(iOS)向けのビルド
-- オートモード
-- スキップ
-- 画面各種のボタン
-- sayタグ
-  - キャラが表示されていないときは、表示する
-- セーブ＆ロード機能
-- showタグ / hideタグ
-  - 子要素でフィルター指定
-  - 子要素でアニメーション指定
-  - スラッシュで区切ってリソース種類を指定
-- scenarioManager.setBackground
-- scenarioManager.getBackground
-- soundタグ
-  - pause
-  - setVolume
-  - getVolume
-  - bgmエイリアス
-  - voiceエイリアス
-  - seエイリアス
-- quakeタグ（画面を揺らす）
-- maskタグ（画面の暗転）
-- リソース定義メソッド
-- セーブファイル管理配列
-- ゲーム設定ファイルの反映
-- html・css・jsのインライン化・minify
 
 ## アイコン素材
 
