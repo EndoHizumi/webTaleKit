@@ -11,7 +11,7 @@ VS Codeの拡張機能を用いたGUIエディタやREST API呼び出しによ�
 
 ## 動作確認
 
-動作確認のデモゲームは、こちらのリポジトリのREADMEを元にセットアップできます。
+動作確認のデモゲームは、こちらのリポジトリのREADMEを元にセットアップすることでプレイできます。
 https://github.com/EndoHizumi/testGame
 
 ## 現在の状況
