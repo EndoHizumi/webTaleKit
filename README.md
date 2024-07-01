@@ -168,4 +168,6 @@ Hashtag: #webTalekit
 
 ## カラーコード
 
-02a889
+青: #3178C6 (TypeScript BLue)
+緑: #02a889 (WebTaleKit Green)
+白: #f8f8f8 (White Smoke)
