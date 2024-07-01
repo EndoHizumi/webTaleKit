@@ -5,7 +5,7 @@
   "main": "./src/index.js",
   "scripts": {
     "test": "jest",
-    "build": "rm -rf ./dist/ && tsc && cp -r package.json engineConfig.json parser/ dist/ && npm pack ./dist/"
+    "build": "rm -rf ./dist/ && tsc && cp -r package.json engineConfig.json parser/ dist/ && cp -r src/utils/ dist/src && cp src/core/index.js src/core/resourceManager.js dist/src/core/ && npm pack ./dist/"
   },
   "bin": {
     "wtc": "./parser/cli.js"
