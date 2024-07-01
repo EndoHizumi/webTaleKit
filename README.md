@@ -20,7 +20,7 @@ webTaleKitは、現在アルファ版です。
 開発進捗は、[@endo_hizumi](https://x.com/endo_hizumi) で行っております。
 Hashtag: #webTalekit
 
-## アルファ版(0.1.0)機能未実装
+## アルファ版(0.1.x)機能未実装
 
 - Desktopアプリケーションへのビルド
 - Android(iOS)向けのビルド
