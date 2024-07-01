@@ -12,6 +12,11 @@
     "noEmitOnError": true,
     "moduleResolution": "node"
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/core/drawer.ts",
+    "src/core/scenarioManager.ts",
+    "src/resource/ImageObject.ts",
+    "src/resource/soundObject.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }
