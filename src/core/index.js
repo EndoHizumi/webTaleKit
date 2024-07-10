@@ -45,9 +45,15 @@ export class Core {
     // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
     // titleタグの内容を書き換える
     document.title = engineConfig.title
-    this.loadScene('title')
-    // 実行が終了したら、真っ黒の画面を表示する
-    document.getElementById('gameContainer').innerHTML = ''
+    // sceneファイルを読み込む
+    await this.loadScene('title')
+    // 画面を表示する
+    await this.loadScreen(this.sceneConfig)
+    // シナリオを進行する
+    while (1) {
+      this.index = 0
+      await this.setScenario(this.sceneFile.scenario)
+    }
   }
 
   async loadScene(sceneFileName) {
@@ -57,18 +63,13 @@ export class Core {
       /* webpackChunkName: "[request]" */ `/src/js/${sceneFileName}.js`
     )
     this.sceneConfig = { ...this.sceneConfig, ...this.sceneFile.sceneConfig }
-    outputLog('loadScene:sceneFile', 'debug', this.sceneConfig)
-    // 画面を表示する
-    await this.loadScreen(this.sceneConfig)
-    // シナリオを進行する
-    await this.setScenario(this.sceneFile.scenario)
+    outputLog('sceneFile', 'debug', this.sceneFile)
   }
 
   async loadScreen(sceneConfig) {
     outputLog('call', 'debug', sceneConfig)
     // sceneConfig.templateを読み込んで、HTMLを表示する
-    const template = await fetch(sceneConfig.template)
-    const htmlString = await template.text()
+    const htmlString = await (await fetch(sceneConfig.template)).text()
     // 読み込んだhtmlからIDにmainを持つdivタグとStyleタグ以下を取り出して、gameContainerに表示する
     var parser = new DOMParser()
     var doc = parser.parseFromString(htmlString, 'text/html')
@@ -80,6 +81,7 @@ export class Core {
     this.drawer.setScreen(this.gameContainer)
     // シナリオの進行状況を保存
     this.scenarioManager.progress.currentScene = sceneConfig.name
+    // 背景画像を表示する
     const background = await new ImageObject().setImageAsync(
       sceneConfig.background,
     )
@@ -103,7 +105,7 @@ export class Core {
     // scenario配列をmapで処理して、ゲームを進行する。
     while (this.index < scenario.length) {
       outputLog('this.index', 'debug', this.index)
-      const line = scenario[this.index]
+      let line = scenario[this.index]
       outputLog('setScenario:line', 'debug', line)
       this.index++
       const boundFunction = this.commandList[line.type || 'text'].bind(this)
@@ -170,7 +172,7 @@ export class Core {
   }
 
   async showHandler(line) {
-    outputLog('showHandler:line', 'debug', line)
+    outputLog('line', 'debug', line)
     // 表示する画像の情報を管理オブジェクトに追加
     const key = line.name || line.path.split('/').pop()
     this.displayedImages[key] = {
@@ -180,13 +182,13 @@ export class Core {
       look: line.look,
       entry: line.entry,
     }
-    outputLog('showHandler:displayedImages', 'debug', this.displayedImages[key])
+    outputLog('displayedImages', 'debug', this.displayedImages[key])
     if (line.sepia) this.displayedImages[key].image.setSepia(line.sepia)
     if (line.mono) this.displayedImages[key].image.setMonochrome(line.mono)
     if (line.blur) this.displayedImages[key].image.setBlur(line.blur)
     if (line.opacity) this.displayedImages[key].image.setOpacity(line.opacity)
     this.drawer.show(this.displayedImages)
-    outputLog('showHandler:this.displayedImages', 'debug', this.displayedImages)
+    outputLog('this.displayedImages', 'debug', this.displayedImages)
   }
 
   hideHandler(line) {
@@ -293,10 +295,12 @@ export class Core {
 
   async routeHandler(line) {
     outputLog('call', 'debug', line)
-    this.index = 0
-    this.displayedImages = {}
-    this.usedSounds = {}
+    // 現在のシナリオを終了させる
+    this.index = this.sceneFile.scenario.length + 1
+    // sceneファイルを読み込む
     await this.loadScene(line.to)
+    // 画面を表示する
+    await this.loadScreen(this.sceneConfig)
   }
 
   // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？
@@ -304,6 +308,7 @@ export class Core {
     outputLog('call', 'debug', line)
     this.executeCode(line.func)
   }
+
 
   executeCode(code) {
     try {
