@@ -98,6 +98,7 @@ export class Core {
   }
 
   async setScenario(scenario) {
+    const returnValues = []
     outputLog('setScenario:scenario', 'debug', scenario)
     // scenario配列をmapで処理して、ゲームを進行する。
     while (this.index < scenario.length) {
@@ -106,13 +107,17 @@ export class Core {
       outputLog('setScenario:line', 'debug', line)
       this.index++
       const boundFunction = this.commandList[line.type || 'text'].bind(this)
-      outputLog(
-        `boundFunction:${boundFunction.name.split(' ')[1]}`,
-        'debug',
-        line,
-      )
-      await boundFunction(line)
+      returnValues.push(await boundFunction(line))
     }
+    return returnValues
+      .filter((v) => v)
+      .reduce(
+        (acc, content) => ({
+          ...acc,
+          [content.type]: content.item,
+        }),
+        {},
+      )
   }
 
   async textHandler(line) {
@@ -144,22 +149,24 @@ export class Core {
   }
 
   async choiceHandler(line) {
-    outputLog('', 'debug')
+    outputLog('call', 'debug', line)
     this.textHandler(line.prompt)
     const { selectId, onSelect: selectHandler } =
       await this.drawer.drawChoices(line)
     if (selectHandler !== undefined) {
       const pastIndex = this.index
       this.index = 0
-      await this.setScenario(selectHandler)
-      this.index = pastIndex
+      const returns = await this.setScenario(selectHandler)
+      outputLog('choiceHandler:returns', 'debug', returns)
+      this.index = returns?.jump ? returns.jump : pastIndex
     }
     this.scenarioManager.setHistory({ line, ...selectId })
   }
 
   jumpHandler(line) {
-    outputLog('', 'debug')
-    this.index = line.index
+    outputLog('currentIndex:', 'debug', this.index)
+    outputLog('jump.index:', 'debug', line.index)
+    return { type: 'jump', item: line.index }
   }
 
   async showHandler(line) {
