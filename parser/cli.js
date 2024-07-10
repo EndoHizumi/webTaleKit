@@ -8,7 +8,7 @@ const path = require('path')
 // ファイル名を取得する。（拡張子を除く）
 const targetScript = process.argv.slice(2)[0]
 const fileName = path.basename(targetScript).split('.')[0]
-const outputPath = process.argv.slice(2)[1] || ''
+let outputPath = process.argv.slice(2)[1] || ''
 // 末尾にスラッシュがない場合、追加する
 if (outputPath.length > 0) {
   if (outputPath.slice(-1) !== '/') {
