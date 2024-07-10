@@ -13,7 +13,7 @@
   "author": "EndoHizumi",
   "license": "MIT",
   "dependencies": {
-    "html-to-json-parser": "^2.0.1"
+    "stacktrace-js": "^2.0.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
