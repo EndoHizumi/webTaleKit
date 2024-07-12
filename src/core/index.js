@@ -109,6 +109,9 @@ export class Core {
       outputLog('setScenario:line', 'debug', line)
       this.index++
       const boundFunction = this.commandList[line.type || 'text'].bind(this)
+      // prettier-ignore
+      outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`,'debug',line)
+      line = await this.httpHandler(line)
       returnValues.push(await boundFunction(line))
     }
     return returnValues
@@ -126,6 +129,10 @@ export class Core {
     outputLog('textHandler:line', 'debug', line)
     // 文章だけの場合は、contentプロパティに配列として設定する
     if (typeof line === 'string') line = { content: [line] }
+    // httpレスポンスがある場合は、list.contentに追加して、表示対象に加える
+    if (line.then || line.error) {
+      line.content = line.content.concat(line.then || line.error)
+    }
     outputLog('call', 'debug', line)
     // {{}}が含まれている場合は、変換処理を行う
     line.content = line.content.map((text) =>
@@ -309,6 +316,79 @@ export class Core {
     this.executeCode(line.func)
   }
 
+  async httpHandler(line) {
+    if (!(line.get || line.post || line.put || line.delete)) {
+      return line
+    }
+    outputLog('call', 'debug', line)
+    // progress属性を処理する
+    // prettier-ignore
+    const progressText = line.content.filter((content) => content.type === 'progress')[0]
+    if (progressText) {
+      await this.textHandler(progressText)
+    }
+    // get,post,put,delete属性を処理する
+    const headers = line.content
+      .filter((content) => content.type === 'header')[0]
+      .content.reduce(
+        (acc, header) => ({
+          ...acc,
+          [header.type]: header.content,
+        }),
+        {},
+      )
+    const body = line.content
+      .filter((content) => content.type === 'data')[0]
+      .content.reduce(
+        (acc, header) => ({
+          ...acc,
+          [header.type]: header.content,
+        }),
+        {},
+      )
+    outputLog('headers', 'debug', headers)
+    outputLog('body', 'debug', body)
+    const response = await fetch(
+      line.get || line.post || line.put || line.delete,
+      {
+        method: line.get
+          ? 'GET'
+          : line.post
+            ? 'POST'
+            : line.put
+              ? 'PUT'
+              : 'DELETE',
+        headers: headers,
+        body: JSON.stringify(body),
+      },
+    )
+    if (response.ok) {
+      const json = await response.json()
+      this.sceneFile.res = json
+      outputLog('res', 'debug', json)
+      line.then = line.content.filter(
+        (content) => content.type === 'then',
+      )[0].content
+    } else {
+      line.error = line.content.filter(
+        (content) => content.type === 'then',
+      )[0].content
+    }
+    if (line.content) {
+      line.content = line.content.filter(
+        (content) =>
+          !(
+            content.type &&
+            (content.type === 'header' ||
+              content.type === 'data' ||
+              content.type === 'then' ||
+              content.type === 'error' ||
+              content.type === 'progress')
+          ),
+      )
+    }
+    return line
+  }
 
   executeCode(code) {
     try {
