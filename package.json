@@ -13,6 +13,8 @@
   "author": "EndoHizumi",
   "license": "MIT",
   "dependencies": {
+    "html-minifier": "^4.0.0",
+    "html-to-json-parser": "^2.0.1",
     "stacktrace-js": "^2.0.2"
   },
   "devDependencies": {
@@ -28,6 +30,7 @@
     "html-webpack-plugin": "^5.6.0",
     "jest": "^29.7.0",
     "prettier": "^3.2.5",
+    "storejs": "^2.1.0",
     "ts-jest": "^29.1.2",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
