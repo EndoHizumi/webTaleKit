@@ -23,14 +23,14 @@ fs.readFile(targetScript, 'utf8', async (err, data) => {
     return
   }
   // パーサーを呼び出す。
-  const { scenario, logic } = await parse(data)
+  const { scenario, script } = await parse(data)
   // jsディレクトリがない場合、作成する
   if (!fs.existsSync(outputPath)) {
     fs.mkdirSync(outputPath)
   }
   fs.writeFile(
     `${outputPath}${fileName}.js`,
-    `${logic};\nexport const scenario = ${JSON.stringify(scenario)}; `,
+    `${script};\nexport const scenario = ${JSON.stringify(scenario)}; `,
     (err) => {
       if (err) {
         console.error(err)
