@@ -1,7 +1,7 @@
-import storejs from 'storejs'
+import store from 'storejs'
 
-export const generateStore = () => {
-  const allData = storejs.getAll()
+const generateStore = () => {
+  const allData = store.getAll()
 
   class Store {
     constructor(data) {
@@ -29,3 +29,4 @@ export const generateStore = () => {
     },
   })
 }
+export default generateStore
