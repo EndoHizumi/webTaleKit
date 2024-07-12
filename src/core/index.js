@@ -45,9 +45,15 @@ export class Core {
     // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
     // titleタグの内容を書き換える
     document.title = engineConfig.title
-    this.loadScene('title')
-    // 実行が終了したら、真っ黒の画面を表示する
-    document.getElementById('gameContainer').innerHTML = ''
+    // sceneファイルを読み込む
+    await this.loadScene('title')
+    // 画面を表示する
+    await this.loadScreen(this.sceneConfig)
+    // シナリオを進行する
+    while (1) {
+      this.index = 0
+      await this.setScenario(this.sceneFile.scenario)
+    }
   }
 
   async loadScene(sceneFileName) {
@@ -57,18 +63,13 @@ export class Core {
       /* webpackChunkName: "[request]" */ `/src/js/${sceneFileName}.js`
     )
     this.sceneConfig = { ...this.sceneConfig, ...this.sceneFile.sceneConfig }
-    outputLog('loadScene:sceneFile', 'debug', this.sceneConfig)
-    // 画面を表示する
-    await this.loadScreen(this.sceneConfig)
-    // シナリオを進行する
-    await this.setScenario(this.sceneFile.scenario)
+    outputLog('sceneFile', 'debug', this.sceneFile)
   }
 
   async loadScreen(sceneConfig) {
     outputLog('call', 'debug', sceneConfig)
     // sceneConfig.templateを読み込んで、HTMLを表示する
-    const template = await fetch(sceneConfig.template)
-    const htmlString = await template.text()
+    const htmlString = await (await fetch(sceneConfig.template)).text()
     // 読み込んだhtmlからIDにmainを持つdivタグとStyleタグ以下を取り出して、gameContainerに表示する
     var parser = new DOMParser()
     var doc = parser.parseFromString(htmlString, 'text/html')
@@ -80,6 +81,7 @@ export class Core {
     this.drawer.setScreen(this.gameContainer)
     // シナリオの進行状況を保存
     this.scenarioManager.progress.currentScene = sceneConfig.name
+    // 背景画像を表示する
     const background = await new ImageObject().setImageAsync(
       sceneConfig.background,
     )
@@ -98,27 +100,39 @@ export class Core {
   }
 
   async setScenario(scenario) {
+    const returnValues = []
     outputLog('setScenario:scenario', 'debug', scenario)
     // scenario配列をmapで処理して、ゲームを進行する。
     while (this.index < scenario.length) {
       outputLog('this.index', 'debug', this.index)
-      const line = scenario[this.index]
+      let line = scenario[this.index]
       outputLog('setScenario:line', 'debug', line)
       this.index++
       const boundFunction = this.commandList[line.type || 'text'].bind(this)
-      outputLog(
-        `boundFunction:${boundFunction.name.split(' ')[1]}`,
-        'debug',
-        line,
-      )
-      await boundFunction(line)
+      // prettier-ignore
+      outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`,'debug',line)
+      line = await this.httpHandler(line)
+      returnValues.push(await boundFunction(line))
     }
+    return returnValues
+      .filter((v) => v)
+      .reduce(
+        (acc, content) => ({
+          ...acc,
+          [content.type]: content.item,
+        }),
+        {},
+      )
   }
 
   async textHandler(line) {
     outputLog('textHandler:line', 'debug', line)
     // 文章だけの場合は、contentプロパティに配列として設定する
     if (typeof line === 'string') line = { content: [line] }
+    // httpレスポンスがある場合は、list.contentに追加して、表示対象に加える
+    if (line.then || line.error) {
+      line.content = line.content.concat(line.then || line.error)
+    }
     outputLog('call', 'debug', line)
     // {{}}が含まれている場合は、変換処理を行う
     line.content = line.content.map((text) =>
@@ -144,26 +158,28 @@ export class Core {
   }
 
   async choiceHandler(line) {
-    outputLog('', 'debug')
+    outputLog('call', 'debug', line)
     this.textHandler(line.prompt)
     const { selectId, onSelect: selectHandler } =
       await this.drawer.drawChoices(line)
     if (selectHandler !== undefined) {
       const pastIndex = this.index
       this.index = 0
-      await this.setScenario(selectHandler)
-      this.index = pastIndex
+      const returns = await this.setScenario(selectHandler)
+      outputLog('choiceHandler:returns', 'debug', returns)
+      this.index = returns?.jump ? returns.jump : pastIndex
     }
     this.scenarioManager.setHistory({ line, ...selectId })
   }
 
   jumpHandler(line) {
-    outputLog('', 'debug')
-    this.index = line.index
+    outputLog('currentIndex:', 'debug', this.index)
+    outputLog('jump.index:', 'debug', line.index)
+    return { type: 'jump', item: line.index }
   }
 
   async showHandler(line) {
-    outputLog('showHandler:line', 'debug', line)
+    outputLog('line', 'debug', line)
     // 表示する画像の情報を管理オブジェクトに追加
     const key = line.name || line.path.split('/').pop()
     this.displayedImages[key] = {
@@ -173,13 +189,13 @@ export class Core {
       look: line.look,
       entry: line.entry,
     }
-    outputLog('showHandler:displayedImages', 'debug', this.displayedImages[key])
+    outputLog('displayedImages', 'debug', this.displayedImages[key])
     if (line.sepia) this.displayedImages[key].image.setSepia(line.sepia)
     if (line.mono) this.displayedImages[key].image.setMonochrome(line.mono)
     if (line.blur) this.displayedImages[key].image.setBlur(line.blur)
     if (line.opacity) this.displayedImages[key].image.setOpacity(line.opacity)
     this.drawer.show(this.displayedImages)
-    outputLog('showHandler:this.displayedImages', 'debug', this.displayedImages)
+    outputLog('this.displayedImages', 'debug', this.displayedImages)
   }
 
   hideHandler(line) {
@@ -286,16 +302,92 @@ export class Core {
 
   async routeHandler(line) {
     outputLog('call', 'debug', line)
-    this.index = 0
-    this.displayedImages = {}
-    this.usedSounds = {}
+    // 現在のシナリオを終了させる
+    this.index = this.sceneFile.scenario.length + 1
+    // sceneファイルを読み込む
     await this.loadScene(line.to)
+    // 画面を表示する
+    await this.loadScreen(this.sceneConfig)
   }
 
   // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？
   callHandler(line) {
     outputLog('call', 'debug', line)
     this.executeCode(line.func)
+  }
+
+  async httpHandler(line) {
+    if (!(line.get || line.post || line.put || line.delete)) {
+      return line
+    }
+    outputLog('call', 'debug', line)
+    // progress属性を処理する
+    // prettier-ignore
+    const progressText = line.content.filter((content) => content.type === 'progress')[0]
+    if (progressText) {
+      await this.textHandler(progressText)
+    }
+    // get,post,put,delete属性を処理する
+    const headers = line.content
+      .filter((content) => content.type === 'header')[0]
+      .content.reduce(
+        (acc, header) => ({
+          ...acc,
+          [header.type]: header.content,
+        }),
+        {},
+      )
+    const body = line.content
+      .filter((content) => content.type === 'data')[0]
+      .content.reduce(
+        (acc, header) => ({
+          ...acc,
+          [header.type]: header.content,
+        }),
+        {},
+      )
+    outputLog('headers', 'debug', headers)
+    outputLog('body', 'debug', body)
+    const response = await fetch(
+      line.get || line.post || line.put || line.delete,
+      {
+        method: line.get
+          ? 'GET'
+          : line.post
+            ? 'POST'
+            : line.put
+              ? 'PUT'
+              : 'DELETE',
+        headers: headers,
+        body: JSON.stringify(body),
+      },
+    )
+    if (response.ok) {
+      const json = await response.json()
+      this.sceneFile.res = json
+      outputLog('res', 'debug', json)
+      line.then = line.content.filter(
+        (content) => content.type === 'then',
+      )[0].content
+    } else {
+      line.error = line.content.filter(
+        (content) => content.type === 'then',
+      )[0].content
+    }
+    if (line.content) {
+      line.content = line.content.filter(
+        (content) =>
+          !(
+            content.type &&
+            (content.type === 'header' ||
+              content.type === 'data' ||
+              content.type === 'then' ||
+              content.type === 'error' ||
+              content.type === 'progress')
+          ),
+      )
+    }
+    return line
   }
 
   executeCode(code) {

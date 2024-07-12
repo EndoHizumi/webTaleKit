@@ -1,30 +1,13 @@
-export function outputLog(msg = 'None', level = 'log', option) {
-  // prettier-ignore
-  console[level](level.toUpperCase(),msg,option || undefined)
-}
+import StackTrace from 'stacktrace-js'
 
-export function getOriginalPosition(line, column, sourceMap) {
-  const consumer = new sourceMap.SourceMapConsumer(sourceMap)
-  const position = consumer.originalPositionFor({ line, column })
-  consumer.destroy()
-  return position
-}
-
-export function hookMethods(module) {
-  const originalMethods = {}
-
-  for (const key in module) {
-    if (typeof module[key] === 'function') {
-      originalMethods[key] = module[key]
-
-      module[key] = function (...args) {
-        const callerInfo = getCallerInfo()
-        console.log(
-          `Called from ${callerInfo.method} at line ${callerInfo.line}`,
-        )
-        const result = originalMethods[key].apply(this, args)
-        return result
-      }
-    }
+export async function outputLog(msg = 'None', level = 'log', option) {
+  if (!['log', 'debug', 'warn', 'error'].includes(level)) {
+    level = 'log'
   }
+  StackTrace.get().then((stack) => {
+    const caller = stack[1]
+    const callerText = `${caller.functionName}:${caller.lineNumber}:${caller.columnNumber}`
+    // prettier-ignore
+    console[level](level.toUpperCase(), callerText, msg, option || '')
+  })
 }
