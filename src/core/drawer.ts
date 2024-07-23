@@ -7,11 +7,11 @@ import { outputLog } from '../utils/logger'
 */
 export class Drawer {
   private gameScreen: HTMLElement
-  private nameview!: HTMLElement
+  private nameView!: HTMLElement
   private messageText!: HTMLElement
-  private waitCircle!: HTMLElement
   private interactiveView!: HTMLElement
   private ctx!: CanvasRenderingContext2D
+  private screenHtml!: HTMLElement
   private config: any
 
   constructor(gameContainer: HTMLElement) {
@@ -22,18 +22,18 @@ export class Drawer {
     this.adjustScale(this.gameScreen)
   }
 
-  setScreen(screenHtml: HTMLElement) {
-    this.nameview = screenHtml.querySelector('#nameView') as HTMLElement
+  setScreen(screenHtml: HTMLElement, resolution: { width: number; height: number }) {
+    this.screenHtml = screenHtml
+    this.nameView = screenHtml.querySelector('#nameView') as HTMLElement
     this.messageText = screenHtml.querySelector('#messageView') as HTMLElement
-    this.waitCircle = screenHtml.querySelector('#waitCircle') as HTMLElement
     this.interactiveView = screenHtml.querySelector(
       '#interactiveView',
     ) as HTMLElement
 
-    // canvasをDOMに追加する(800 x 600)
+    // canvasをDOMに追加する
     const canvas = document.createElement('canvas')
-    canvas.width = 1280
-    canvas.height = 720
+    canvas.width = resolution.width || 1280
+    canvas.height = resolution.height || 720
     // canvasのコンテキストを取得する
     this.gameScreen.appendChild(canvas)
     this.ctx = canvas.getContext('2d') as CanvasRenderingContext2D

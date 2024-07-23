@@ -78,7 +78,7 @@ export class Core {
     const styleElement = doc.head.getElementsByTagName('style')[0]
     document.head.appendChild(styleElement)
     // ゲーム進行用に必要な情報をセットする
-    this.drawer.setScreen(this.gameContainer)
+    this.drawer.setScreen(this.gameContainer, engineConfig.resolution)
     // シナリオの進行状況を保存
     this.scenarioManager.progress.currentScene = sceneConfig.name
     // 背景画像を表示する
