@@ -184,7 +184,7 @@ export class Drawer {
         y: 0,
       }
       const size: { width: number; height: number } = displayedImages[key].size
-      const reverse: boolean = displayedImages[key].reverse || false
+      const reverse: boolean = displayedImages[key].look || false
       const entry: { time: number; wait: boolean } = displayedImages[key]
         .entry || { time: 1, wait: false }
       if (entry.wait) {

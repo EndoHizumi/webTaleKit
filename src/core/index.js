@@ -181,11 +181,41 @@ export class Core {
   async showHandler(line) {
     outputLog('line', 'debug', line)
     // 表示する画像の情報を管理オブジェクトに追加
-    const key = line.name || line.path.split('/').pop()
+    const key = line.name || line.src.split('/').pop()
+    const baseLine = engineConfig.resolution.height / 2
+    const centerPoint = {
+      left: { x: engineConfig.resolution.width * 0.25, y: baseLine },
+      center: { x: engineConfig.resolution.width * 0.5, y: baseLine },
+      right: { x: engineConfig.resolution.width * 0.75, y: baseLine },
+    }
+
+    const image = await this.getImageObject(line)
+    // 画像の表示位置を設定
+    const position = { x: line.x, y: line.y }
+    // prettier-ignore
+    const size = line.width && line.height ? { width: line.width, height: line.height } : { width: image.getSize().width, height: image.getSize().height }
+
+    if (line.pos) {
+      const pos = line.pos.split(':')
+      const baseLines = {
+        top: 0,
+        middle: engineConfig.resolution.height / 2,
+        bottom: engineConfig.resolution.height,
+      }
+      // エイリアスが設定されている場合、画像の中心点を求めて、画像の表示位置を設定する
+      position.x = centerPoint[pos[0]].x - size.width / 2
+      if (pos[1] === 'middle') {
+        position.y = baseLines[pos[1]] - size.width / 2
+      } else if (pos[1]) {
+        position.y = baseLines[pos[1]]
+      } else {
+        position.y = baseLine / 2
+      }
+    }
     this.displayedImages[key] = {
-      image: await this.getImageObject(line),
-      pos: { x: line.x, y: line.y },
-      size: { width: line.width, height: line.height },
+      image,
+      pos: position,
+      size: size,
       look: line.look,
       entry: line.entry,
     }
@@ -209,12 +239,7 @@ export class Core {
     outputLog('moveToHandler:line', 'debug', line)
     const key = line.name
     outputLog('moveToHandler:displayedImages', 'debug', this.displayedImages)
-    await this.drawer.moveTo(
-      key,
-      this.displayedImages,
-      { x: line.x, y: line.y },
-      line.duration | 1,
-    )
+    await this.drawer.moveTo(key, this.displayedImages, { x: line.x, y: line.y }, line.duration | 1)
   }
 
   async getImageObject(line) {
@@ -224,9 +249,9 @@ export class Core {
     if (line.name) {
       const targetImage = this.displayedImages[line.name]
       const imageObject = targetImage ? targetImage.image : new ImageObject()
-      image = await imageObject.setImageAsync(line.path)
+      image = await imageObject.setImageAsync(line.src)
     } else {
-      image = await new ImageObject().setImageAsync(line.path)
+      image = await new ImageObject().setImageAsync(line.src)
     }
     return image
   }
@@ -244,7 +269,7 @@ export class Core {
       soundObject.pause()
     }
     // soundObjectを管理オブジェクトに追加
-    const key = line.name || line.path.split('/').pop()
+    const key = line.name || line.src.split('/').pop()
     this.usedSounds[key] = {
       audio: soundObject,
     }
@@ -255,12 +280,10 @@ export class Core {
     let resource
     if (line.name) {
       const targetResource = this.usedSounds[line.name]
-      const soundObject = targetResource
-        ? targetResource.audio
-        : new SoundObject()
-      resource = await soundObject.setAudioAsync(line.path)
+      const soundObject = targetResource ? targetResource.audio : new SoundObject()
+      resource = await soundObject.setAudioAsync(line.src)
     } else {
-      resource = await new SoundObject().setAudioAsync(line.path)
+      resource = await new SoundObject().setAudioAsync(line.src)
     }
     return resource
   }
