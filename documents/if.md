@@ -2,7 +2,8 @@
 
 ## 概要
 
-入力した式で処理を分岐させることができる
+入力した式で処理を分岐させることができる。
+属性として、ほかのタグに記述したときは、式がtrueと評価されたときに、タグを実行する。
 
 ## 引数詳細
 
@@ -12,7 +13,7 @@ condition: 評価するJavaScript式
 then: 式がtrueの場合、実行されるscenarioオブジェクト
 else: 式がfalseの場合、実行されるscenarioオブジェクト
 
-## webTaleScript
+## webTaleScript(タグ)
 
 ```html
     <if condition="">
@@ -26,14 +27,39 @@ else: 式がfalseの場合、実行されるscenarioオブジェクト
 
 ```
 
-## scenarioオブジェクト
+## webTaleScript(属性)
+
+```html
+<!-- trueの場合、テキストが表示される -->
+    <text if="hoge==1">
+        hogeは、１だったよ！
+    </text>
+
+```
+
+## scenarioオブジェクト(タグ)
 
 ```json
 {
     type: 'if',
     condition: '',
-    then: [],
-    else:[]
+    content: {
+        type:'then',
+        content: [],
+    },
+    content: {
+        type:'else',
+        content: [],
+    }
+}
+```
+
+## scenarioオブジェクト(属性)
+
+```json
+{
+    type: 'text',
+    if: '',
 }
 ```
 
