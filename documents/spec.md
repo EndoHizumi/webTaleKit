@@ -167,13 +167,13 @@ HTMLのメッセージウィンドウへ入力された条件でテキストを�
 
 -
 
-(name:string, pattern: string, voice: string, ...text)
+say(name:string, pattern: string, voice: string, ...text)
 
 - overview: textのwrapperでキャラクターのセリフの時に使うことを想定している。キャラが表示されていないときは、表示する
 - name: リソース定義オブジェクトのcharaのnameの値、定義していない値を指定可能。
 - pattern: リソース定義オブジェクトのcharaのfacesの値、未定義のキャラの場合、無視される。
 - voice: 再生するボイスファイルを指定できる。
-- 対応するWTS:`<text name='' pattern='' voice=''>msg</text>`
+- 対応するWTS:`<say name='' pattern='' voice=''>msg</say>`
 
 ### 画像の表示
 
