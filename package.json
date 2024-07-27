@@ -4,19 +4,21 @@
   "description": "Web知識でノベルゲーを作ることを目指したやつ",
   "main": "./src/index.js",
   "scripts": {
+    "lint": "eslint . --ext .ts --ext .js",
     "test": "jest",
+    "prepublish": "npm run build",
     "build": "rm -rf ./dist/ && tsc && cp -r package.json engineConfig.json parser/ dist/ && cp -r src/utils/ dist/src && cp src/core/index.js src/core/resourceManager.js dist/src/core/ && npm pack ./dist/"
   },
   "bin": {
-    "wtc": "./parser/cli.js"
+    "wtc": "parser/cli.js"
   },
   "author": "EndoHizumi",
   "license": "MIT",
   "dependencies": {
     "html-minifier": "^4.0.0",
     "html-to-json-parser": "^2.0.1",
-    "storejs": "^2.1.0",
-    "stacktrace-js": "^2.0.2"
+    "stacktrace-js": "^2.0.2",
+    "storejs": "^2.1.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
@@ -24,6 +26,7 @@
     "esdoc": "^1.1.0",
     "esdoc-standard-plugin": "^1.0.0",
     "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-n": "^16.6.2",
