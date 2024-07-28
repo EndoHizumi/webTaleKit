@@ -12,7 +12,8 @@ VS Codeの拡張機能を用いたGUIエディタやREST API呼び出しによ�
 ## デモ
 
 Firefoxでも、Chromeでも、Edgeでも、好きなブラウザを使いたまえ・・・！
-<https://webtalekit-demo-n0mtvux8w-endohizumis-projects.vercel.app>
+<https://test-game-chi.vercel.app/>
+![alt text](image.png)
 
 ## 動作確認
 
