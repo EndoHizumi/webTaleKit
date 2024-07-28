@@ -4,19 +4,20 @@
 
 ## 概要
 
-TypeScript(JavaScript) ベースのビジュアルノベルゲームエンジンです。
-UIをHTML・CSS・JavaScriptで柔軟に作成でき、シナリオをマークアップ言語とJavaScriptで制御できます。
-自動スケーリング機能で、様々なウインドウで遊ぶことができます。
-VS Codeの拡張機能を用いたGUIエディタやREST API呼び出しによる生成AI連携の追加を提供予定です。
+TypeScript(JavaScript) ベースのビジュアルノベルゲームエンジンです。  
+UIをHTML・CSS・JavaScriptで柔軟に作成でき、シナリオをマークアップ言語とJavaScriptで制御できます。  
+自動スケーリング機能で、様々なウインドウで遊ぶことができます。  
+VS Codeの拡張機能を用いたGUIエディタやREST API呼び出しによる生成AI連携の追加を提供予定です。  
 
 ## 動作確認
 
-動作確認のデモゲームは、こちらのリポジトリのREADMEを元にセットアップすることでプレイできます。
-<https://github.com/EndoHizumi/testGame>
+
+動作確認のデモゲームは、こちらのリポジトリのREADMEを元にセットアップすることでプレイできます。  
+https://github.com/EndoHizumi/testGame
 
 ## 現在の状況
 
-webTaleKitは、現在アルファ版です。
+webTaleKitは、現在アルファ版です。  
 開発進捗は、[@endo_hizumi](https://x.com/endo_hizumi) で行っております。
 Hashtag: #webTalekit
 
