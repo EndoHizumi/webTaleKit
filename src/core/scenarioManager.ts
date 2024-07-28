@@ -47,8 +47,9 @@ export class ScenarioManager {
   next(): any {
    outputLog('call: index:','debug', this.progress.currentIndex)
    if(this.progress.currentIndex <= this.scenarioData.length) {
+     const nextScenario = this.scenarioData[this.progress.currentIndex] 
      this.progress.currentIndex += 1
-     return this.scenarioData[this.progress.currentIndex] 
+     return  nextScenario
    } else {
     return null
    }
