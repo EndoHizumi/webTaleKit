@@ -5,8 +5,13 @@ import { ResourceManager } from './resourceManager'
 import { SoundObject } from '../resource/soundObject'
 import engineConfig from '../../engineConfig.json'
 import { outputLog } from '../utils/logger'
+import { sleep } from '../utils/waitUtil'
 
 export class Core {
+  isAuto = false
+  isNext = false
+  isSkip = false
+  onNextHandler = null
   sceneFile = {}
   sceneConfig = {}
   commandList = {
@@ -31,11 +36,7 @@ export class Core {
     // ScenarioManagerの初期化（変数の初期値設定）
     this.scenarioManager = new ScenarioManager()
     // ResourceManagerの初期化（引数にconfigを渡して、リソース管理配列を作る）
-    this.resourceManager = new ResourceManager(
-      import(/* webpackIgnore: true */ '/src/resource/config.js'),
-    ) //  webpackIgnoreでバンドルを無視する
-    this.isNext = false
-    this.index = 0
+    this.resourceManager = new ResourceManager(import(/* webpackIgnore: true */ '/src/resource/config.js')) //  webpackIgnoreでバンドルを無視する
     this.displayedImages = {}
     this.usedSounds = {}
   }
@@ -49,19 +50,36 @@ export class Core {
     await this.loadScene('title')
     // 画面を表示する
     await this.loadScreen(this.sceneConfig)
-    // シナリオを進行する
-    while (1) {
-      this.index = 0
-      await this.setScenario(this.sceneFile.scenario)
+    // 入力イベントを設定する
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        this.onNextHandler()
+      } else if (e.key === 'Control') {
+        this.drawer.isSkip = true
+        this.isNext = true
+      }
+    })
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'Control') {
+        this.drawer.isSkip = true
+        this.isNext = false
+      }
+    })
+    document.addEventListener('click', (e) => {
+      this.onNextHandler()
+    })
+
+    // シナリオを実行する
+    while (this.scenarioManager.hasNext()) {
+      await this.runScenario()
     }
   }
 
   async loadScene(sceneFileName) {
     outputLog('call', 'debug', sceneFileName)
     // sceneファイルを読み込む
-    this.sceneFile = await import(
-      /* webpackChunkName: "[request]" */ `/src/js/${sceneFileName}.js`
-    )
+    this.sceneFile = await import(/* webpackChunkName: "[request]" */ `/src/js/${sceneFileName}.js`)
+    this.scenarioManager.setScenario(this.sceneFile.scenario, sceneFileName)
     this.sceneConfig = { ...this.sceneConfig, ...this.sceneFile.sceneConfig }
     outputLog('sceneFile', 'debug', this.sceneFile)
   }
@@ -78,13 +96,11 @@ export class Core {
     const styleElement = doc.head.getElementsByTagName('style')[0]
     document.head.appendChild(styleElement)
     // ゲーム進行用に必要な情報をセットする
-    this.drawer.setScreen(this.gameContainer)
+    this.drawer.setScreen(this.gameContainer, engineConfig.resolution)
     // シナリオの進行状況を保存
     this.scenarioManager.progress.currentScene = sceneConfig.name
     // 背景画像を表示する
-    const background = await new ImageObject().setImageAsync(
-      sceneConfig.background,
-    )
+    const background = await new ImageObject().setImageAsync(sceneConfig.background)
     this.displayedImages['background'] = {
       image: background,
       size: {
@@ -99,60 +115,87 @@ export class Core {
     bgm.play(true)
   }
 
-  async setScenario(scenario) {
-    const returnValues = []
-    outputLog('setScenario:scenario', 'debug', scenario)
-    // scenario配列をmapで処理して、ゲームを進行する。
-    while (this.index < scenario.length) {
-      outputLog('this.index', 'debug', this.index)
-      let line = scenario[this.index]
-      outputLog('setScenario:line', 'debug', line)
-      this.index++
-      const boundFunction = this.commandList[line.type || 'text'].bind(this)
-      // prettier-ignore
-      outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`,'debug',line)
-      line = await this.httpHandler(line)
-      returnValues.push(await boundFunction(line))
+  async runScenario() {
+    outputLog('call index:', 'debug', this.scenarioManager.getIndex())
+    let scenarioObject = this.scenarioManager.next()
+    if (!scenarioObject) {
+      return
     }
-    return returnValues
-      .filter((v) => v)
-      .reduce(
-        (acc, content) => ({
-          ...acc,
-          [content.type]: content.item,
-        }),
-        {},
-      )
+    outputLog('scenarioObject', 'debug', scenarioObject)
+    // prettier-ignore
+    const boundFunction = this.commandList[scenarioObject.type || 'text'].bind(this)
+    // prettier-ignore
+    outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`,'debug',scenarioObject)
+    scenarioObject = await this.httpHandler(scenarioObject)
+    await boundFunction(scenarioObject)
   }
 
-  async textHandler(line) {
-    outputLog('textHandler:line', 'debug', line)
+  async textHandler(scenarioObject) {
+    outputLog('textHandler:line', 'debug', scenarioObject)
     // 文章だけの場合は、contentプロパティに配列として設定する
-    if (typeof line === 'string') line = { content: [line] }
+    if (typeof scenarioObject === 'string') scenarioObject = { content: [scenarioObject] }
     // httpレスポンスがある場合は、list.contentに追加して、表示対象に加える
-    if (line.then || line.error) {
-      line.content = line.content.concat(line.then || line.error)
+    if (scenarioObject.then || scenarioObject.error) {
+      scenarioObject.content = scenarioObject.content.concat(scenarioObject.then || scenarioObject.error)
     }
-    outputLog('call', 'debug', line)
+    outputLog('call', 'debug', scenarioObject)
     // {{}}が含まれている場合は、変換処理を行う
-    line.content = line.content.map((text) =>
-      text.replace(/{{([^{}]+)}}/g, (match, p1, offset, string) => {
+    scenarioObject.content = scenarioObject.content.map((text) =>
+      text.replace(/{{([^{}]+)}}/g, (match) => {
         const expr = match.slice(2, -2)
         const returnValue = this.executeCode(`return ${expr}`)
-        return typeof returnValue == 'object'
-          ? JSON.stringify(returnValue)
-          : returnValue
+        return typeof returnValue == 'object' ? JSON.stringify(returnValue) : returnValue
       }),
     )
-    await this.drawer.drawText(line)
-    this.scenarioManager.setHistory(line)
+    // 名前が設定されている場合は、名前を表示する
+    if (scenarioObject.name) {
+      this.drawer.drawName(scenarioObject.name)
+    } else {
+      this.drawer.drawName('')
+    }
+
+    //prettier-ignore
+    this.onNextHandler = () => { this.drawer.isSkip = true }
+    // 表示する文章を1行ずつ表示する
+    for (const line of scenarioObject.content) {
+      await this.drawer.drawText(line, line.speed || 50)
+      //prettier-ignore
+      this.onNextHandler = () => { this.isNext = true }
+      if (typeof line.wait === 'number') {
+        if (line.wait > 0 || this.isAuto) {
+          const waitTime = line.wait || 1500
+          // 指定された時間だけ待機
+          await sleep(line.wait)
+        }
+      } else {
+        // 改行ごとに入力待ち
+        await this.clickWait()
+      }
+    }
+    this.drawer.isSkip = false
+    this.scenarioManager.setHistory(scenarioObject.content)
+  }
+
+  // クリック待ち処理
+  async clickWait() {
+    outputLog('call', 'debug')
+    this.drawer.setVisibility('#waitCircle', true)
+    return new Promise((resolve) => {
+      const intervalId = setInterval(() => {
+        if (this.isNext) {
+          this.drawer.setVisibility('#waitCircle', false)
+          clearInterval(intervalId)
+          this.isNext = false
+          resolve(null)
+        }
+      }, 500)
+    })
   }
 
   async sayHandler(line) {
     outputLog('call', 'debug', line)
     // say(name:string, pattern: string, voice: {playの引数},  ...text)
-    if (line.voice)
-      await this.soundHandler({ path: line.voice, play: undefined })
+    if (line.voice) await this.soundHandler({ path: line.voice, play: undefined })
     await this.textHandler({ content: line.content, name: line.name })
     this.scenarioManager.setHistory(line)
   }
@@ -160,32 +203,57 @@ export class Core {
   async choiceHandler(line) {
     outputLog('call', 'debug', line)
     this.textHandler(line.prompt)
-    const { selectId, onSelect: selectHandler } =
-      await this.drawer.drawChoices(line)
+    const { selectId, onSelect: selectHandler } = await this.drawer.drawChoices(line)
     if (selectHandler !== undefined) {
-      const pastIndex = this.index
-      this.index = 0
-      const returns = await this.setScenario(selectHandler)
-      outputLog('choiceHandler:returns', 'debug', returns)
-      this.index = returns?.jump ? returns.jump : pastIndex
+      this.scenarioManager.addScenario(selectHandler)
     }
     this.scenarioManager.setHistory({ line, ...selectId })
   }
 
   jumpHandler(line) {
-    outputLog('currentIndex:', 'debug', this.index)
-    outputLog('jump.index:', 'debug', line.index)
-    return { type: 'jump', item: line.index }
+    outputLog('call:', 'debug', line.index)
+    this.newpageHandler()
+    this.scenarioManager.setIndex(Number(line.index))
   }
 
   async showHandler(line) {
     outputLog('line', 'debug', line)
     // 表示する画像の情報を管理オブジェクトに追加
-    const key = line.name || line.path.split('/').pop()
+    const key = line.name || line.src.split('/').pop()
+    const baseLine = engineConfig.resolution.height / 2
+    const centerPoint = {
+      left: { x: engineConfig.resolution.width * 0.25, y: baseLine },
+      center: { x: engineConfig.resolution.width * 0.5, y: baseLine },
+      right: { x: engineConfig.resolution.width * 0.75, y: baseLine },
+    }
+
+    const image = await this.getImageObject(line)
+    // 画像の表示位置を設定
+    const position = { x: line.x, y: line.y }
+    // prettier-ignore
+    const size = line.width && line.height ? { width: line.width, height: line.height } : { width: image.getSize().width, height: image.getSize().height }
+
+    if (line.pos) {
+      const pos = line.pos.split(':')
+      const baseLines = {
+        top: 0,
+        middle: engineConfig.resolution.height / 2,
+        bottom: engineConfig.resolution.height,
+      }
+      // エイリアスが設定されている場合、画像の中心点を求めて、画像の表示位置を設定する
+      position.x = centerPoint[pos[0]].x - size.width / 2
+      if (pos[1] === 'middle') {
+        position.y = baseLines[pos[1]] - size.width / 2
+      } else if (pos[1]) {
+        position.y = baseLines[pos[1]]
+      } else {
+        position.y = baseLine / 2
+      }
+    }
     this.displayedImages[key] = {
-      image: await this.getImageObject(line),
-      pos: { x: line.x, y: line.y },
-      size: { width: line.width, height: line.height },
+      image,
+      pos: position,
+      size: size,
       look: line.look,
       entry: line.entry,
     }
@@ -209,12 +277,7 @@ export class Core {
     outputLog('moveToHandler:line', 'debug', line)
     const key = line.name
     outputLog('moveToHandler:displayedImages', 'debug', this.displayedImages)
-    await this.drawer.moveTo(
-      key,
-      this.displayedImages,
-      { x: line.x, y: line.y },
-      line.duration | 1,
-    )
+    await this.drawer.moveTo(key, this.displayedImages, { x: line.x, y: line.y }, line.duration | 1)
   }
 
   async getImageObject(line) {
@@ -224,9 +287,9 @@ export class Core {
     if (line.name) {
       const targetImage = this.displayedImages[line.name]
       const imageObject = targetImage ? targetImage.image : new ImageObject()
-      image = await imageObject.setImageAsync(line.path)
+      image = await imageObject.setImageAsync(line.src)
     } else {
-      image = await new ImageObject().setImageAsync(line.path)
+      image = await new ImageObject().setImageAsync(line.src)
     }
     return image
   }
@@ -244,7 +307,7 @@ export class Core {
       soundObject.pause()
     }
     // soundObjectを管理オブジェクトに追加
-    const key = line.name || line.path.split('/').pop()
+    const key = line.name || line.src.split('/').pop()
     this.usedSounds[key] = {
       audio: soundObject,
     }
@@ -255,12 +318,10 @@ export class Core {
     let resource
     if (line.name) {
       const targetResource = this.usedSounds[line.name]
-      const soundObject = targetResource
-        ? targetResource.audio
-        : new SoundObject()
-      resource = await soundObject.setAudioAsync(line.path)
+      const soundObject = targetResource ? targetResource.audio : new SoundObject()
+      resource = await soundObject.setAudioAsync(line.src)
     } else {
-      resource = await new SoundObject().setAudioAsync(line.path)
+      resource = await new SoundObject().setAudioAsync(line.src)
     }
     return resource
   }
@@ -280,30 +341,22 @@ export class Core {
     this.drawer.show(this.displayedImages)
   }
 
-  // Sceneファイルに、ビルド時に判断処理を追加して、そこに処理をお願いしたほうがいいかも？
   async ifHandler(line) {
     outputLog('call', 'debug', line)
     const isTrue = this.executeCode(`return ${line.condition}`)
     outputLog(`${isTrue}`, 'debug')
     if (isTrue) {
       outputLog('', 'debug', line.content[0].content)
-      const pastIndex = this.index
-      this.index = 0
-      await this.setScenario(line.content[0].content)
-      this.index = pastIndex
+      this.scenarioManager.addScenario(line.content[0].content)
     } else {
       outputLog('', 'debug', line.content[1].content)
-      const pastIndex = this.index
-      this.index = 0
-      await this.setScenario(line.content[1].content)
-      this.index = pastIndex
+      this.scenarioManager.addScenario(line.content[1].content)
     }
   }
 
   async routeHandler(line) {
     outputLog('call', 'debug', line)
-    // 現在のシナリオを終了させる
-    this.index = this.sceneFile.scenario.length + 1
+    this.newpageHandler()
     // sceneファイルを読み込む
     await this.loadScene(line.to)
     // 画面を表示する
@@ -325,7 +378,7 @@ export class Core {
     // prettier-ignore
     const progressText = line.content.filter((content) => content.type === 'progress')[0]
     if (progressText) {
-      await this.textHandler(progressText)
+      await this.textHandler({ content: [progressText.content][0], wait: 0 })
     }
     // get,post,put,delete属性を処理する
     const headers = line.content
@@ -348,31 +401,19 @@ export class Core {
       )
     outputLog('headers', 'debug', headers)
     outputLog('body', 'debug', body)
-    const response = await fetch(
-      line.get || line.post || line.put || line.delete,
-      {
-        method: line.get
-          ? 'GET'
-          : line.post
-            ? 'POST'
-            : line.put
-              ? 'PUT'
-              : 'DELETE',
-        headers: headers,
-        body: JSON.stringify(body),
-      },
-    )
+    const response = await fetch(line.get || line.post || line.put || line.delete, {
+      method: line.get ? 'GET' : line.post ? 'POST' : line.put ? 'PUT' : 'DELETE',
+      headers: headers,
+      body: JSON.stringify(body),
+    })
     if (response.ok) {
       const json = await response.json()
       this.sceneFile.res = json
       outputLog('res', 'debug', json)
-      line.then = line.content.filter(
-        (content) => content.type === 'then',
-      )[0].content
+      line.then = line.content.filter((content) => content.type === 'then')[0].content
     } else {
-      line.error = line.content.filter(
-        (content) => content.type === 'then',
-      )[0].content
+      this.sceneFile.res = json
+      line.error = line.content.filter((content) => content.type === 'error')[0].content
     }
     if (line.content) {
       line.content = line.content.filter(

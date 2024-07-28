@@ -1,5 +1,6 @@
 import { ImageObject } from '../resource/ImageObject'
 import { outputLog } from '../utils/logger'
+import { sleep } from '../utils/waitUtil'
 
 /*
  drawerの目的
@@ -7,12 +8,14 @@ import { outputLog } from '../utils/logger'
 */
 export class Drawer {
   private gameScreen: HTMLElement
-  private nameview!: HTMLElement
+  private nameView!: HTMLElement
   private messageText!: HTMLElement
-  private waitCircle!: HTMLElement
   private interactiveView!: HTMLElement
   private ctx!: CanvasRenderingContext2D
+  private screenHtml!: HTMLElement
   private config: any
+  isSkip: boolean = false
+  readySkip: boolean = false
 
   constructor(gameContainer: HTMLElement) {
     this.gameScreen = gameContainer
@@ -22,18 +25,18 @@ export class Drawer {
     this.adjustScale(this.gameScreen)
   }
 
-  setScreen(screenHtml: HTMLElement) {
-    this.nameview = screenHtml.querySelector('#nameView') as HTMLElement
+  setScreen(screenHtml: HTMLElement, resolution: { width: number; height: number }) {
+    this.screenHtml = screenHtml
+    this.nameView = screenHtml.querySelector('#nameView') as HTMLElement
     this.messageText = screenHtml.querySelector('#messageView') as HTMLElement
-    this.waitCircle = screenHtml.querySelector('#waitCircle') as HTMLElement
     this.interactiveView = screenHtml.querySelector(
       '#interactiveView',
     ) as HTMLElement
 
-    // canvasをDOMに追加する(800 x 600)
+    // canvasをDOMに追加する
     const canvas = document.createElement('canvas')
-    canvas.width = 1280
-    canvas.height = 720
+    canvas.width = resolution.width || 1280
+    canvas.height = resolution.height || 720
     // canvasのコンテキストを取得する
     this.gameScreen.appendChild(canvas)
     this.ctx = canvas.getContext('2d') as CanvasRenderingContext2D
@@ -44,44 +47,26 @@ export class Drawer {
     this.adjustScale(this.gameScreen)
   }
 
-  async drawText(scene: any) {
-    let isSkip = false
-    // Enterキーが押されたら全文表示
-    setTimeout(() => {
-      document.addEventListener('keydown', function eventHandler(event) {
-        if (event.key === 'Enter') {
-          isSkip = true
-          document.removeEventListener('keydown', eventHandler) // イベントリスナーを削除
-        }
-      })
-    }, 100)
-    if (scene.clear === undefined || scene.clear === true) {
-      this.messageText.innerHTML = ''
-    }
-    if (scene.name !== undefined) {
-      this.nameview.innerHTML = scene.name
-    } else {
-      this.nameview.innerHTML = ''
-    }
-    
-    for (const line of scene.content) {
-      for (const char of line) {
-        if (isSkip) {
-          this.messageText.innerHTML = ''
-          this.messageText.innerHTML += line
-          isSkip = false
+  drawName(name: string) { 
+    this.nameView.innerHTML = name
+  }
+
+  async drawText(text: string, wait: number) {
+    this.messageText.innerHTML = ''
+    for (const char of text) {
+      //prettier-ignore
+      setTimeout(() => { this.readySkip = true, wait*500 });
+      // 100ミリ秒待ってから、スキップボタンが押されたら即座に表示
+      if (!this.isSkip) {
+        this.messageText.innerHTML += char
+        await sleep(wait)
+      } else {
+        if (this.readySkip) {
+          this.messageText.innerHTML = text
+          this.readySkip = false
+          this.isSkip = false
           break
         }
-        await this.sleep(scene.speed || 50) // 50ミリ秒待機
-        this.messageText.innerHTML += char
-      }
-      if (typeof scene.wait === 'number') {
-        if (scene.wait > 0) {
-          await this.sleep(scene.wait)
-        }
-      } else {
-        // 改行ごとにクリック待ち
-        await this.clickWait()
       }
     }
   }
@@ -150,6 +135,7 @@ export class Drawer {
       })
       button.innerHTML = choice.label
       button.onclick = () => {
+        outputLog('click', 'debug', choice)
         this.interactiveView.querySelectorAll('.choice').forEach((element) => {
           element.parentNode?.removeChild(element)
         })
@@ -184,7 +170,7 @@ export class Drawer {
         y: 0,
       }
       const size: { width: number; height: number } = displayedImages[key].size
-      const reverse: boolean = displayedImages[key].reverse || false
+      const reverse: boolean = displayedImages[key].look || false
       const entry: { time: number; wait: boolean } = displayedImages[key]
         .entry || { time: 1, wait: false }
       if (entry.wait) {
@@ -246,30 +232,6 @@ export class Drawer {
       imageHeight,
     ) //CanvasRenderingContext2D.drawImage: Passed-in canvas is empty
   }
-  // クリック待ち処理
-  clickWait() {
-    this.waitCircle.style.visibility = 'visible'
-
-    return new Promise((resolve) => {
-      const clickHandler = () => {
-        this.gameScreen.removeEventListener('click', clickHandler)
-        this.waitCircle.style.visibility = 'hidden'
-        resolve(null)
-      }
-      this.gameScreen.addEventListener('click', clickHandler)
-
-      document.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-          clickHandler()
-        }
-      })
-    })
-  }
-
-  // sleep関数
-  sleep(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-  }
 
   adjustScale(targetElement: HTMLElement) {
     // ターゲット要素の元の幅と高さ
@@ -289,5 +251,12 @@ export class Drawer {
 
     // ターゲット要素にスケールを適用
     targetElement.style.transform = `scale(${scale})`
+  }
+
+  setVisibility(name: string, isVisible: boolean) {
+    const target = this.screenHtml.querySelector(name) as HTMLElement
+    if (target) {
+      target.style.visibility = isVisible ? 'visible' : 'hidden'
+    }
   }
 }
