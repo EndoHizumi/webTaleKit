@@ -5,38 +5,56 @@ const path = require('path')
 /**
  * WebTaleScript Parser CLI
  */
-// ファイル名を取得する。（拡張子を除く）
-const targetScript = process.argv.slice(2)[0]
-const fileName = path.basename(targetScript).split('.')[0]
-let outputPath = process.argv.slice(2)[1] || ''
-// 末尾にスラッシュがない場合、追加する
-if (outputPath.length > 0) {
-  if (outputPath.slice(-1) !== '/') {
-    outputPath += '/'
+
+const exec = (targetScript) => {
+  // ファイル名を取得する。（拡張子を除く）
+  const fileName = path.basename(targetScript).split('.')[0]
+  let outputPath = process.argv.slice(2)[1] || ''
+  // 末尾にスラッシュがない場合、追加する
+  if (outputPath.length > 0) {
+    if (outputPath.slice(-1) !== '/') {
+      outputPath += '/'
+    }
   }
+
+  // sceneファイルを読み込んで、JSファイルに変換する
+  fs.readFile(targetScript, 'utf8', async (err, data) => {
+    if (err) {
+      console.error(err)
+      return
+    }
+    // パーサーを呼び出す。
+    const { scenario, script } = await parse(data)
+    // jsディレクトリがない場合、作成する
+    if (!fs.existsSync(outputPath)) {
+      fs.mkdirSync(outputPath)
+    }
+    fs.writeFile(
+      `${outputPath}${fileName}.js`,
+      `${script};\nexport const scenario = ${JSON.stringify(scenario)}; `,
+      (err) => {
+        if (err) {
+          console.error(err)
+          return
+        }
+        console.log(`${outputPath}${fileName}.js`)
+      },
+    )
+  })
 }
 
-// sceneファイルを読み込んで、JSファイルに変換する
-fs.readFile(targetScript, 'utf8', async (err, data) => {
-  if (err) {
-    console.error(err)
-    return
-  }
-  // パーサーを呼び出す。
-  const { scenario, script } = await parse(data)
-  // jsディレクトリがない場合、作成する
-  if (!fs.existsSync(outputPath)) {
-    fs.mkdirSync(outputPath)
-  }
-  fs.writeFile(
-    `${outputPath}${fileName}.js`,
-    `${script};\nexport const scenario = ${JSON.stringify(scenario)}; `,
-    (err) => {
-      if (err) {
-        console.error(err)
-        return
-      }
-      console.log(`${outputPath}${fileName}.js`)
-    },
-  )
-})
+// コマンドライン引数から、ファイル一覧を取得する
+const targetScripts = process.argv.slice(2)[0]
+if (fs.statSync(targetScripts).isDirectory()) {
+  fs.readdir(targetScripts, (err, files) => {
+    if (err) {
+      console.error(err)
+      return
+    }
+    files.forEach((file) => {
+      exec(`${targetScripts}/${file}`)
+    })
+  })
+} else {
+  exec(targetScripts)
+}

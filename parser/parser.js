@@ -3,7 +3,7 @@ const { minify } = require('html-minifier')
 
 module.exports = async (data) => {
   let scenario = []
-  let logic = []
+  let script = []
 
   /**
    * 渡されたオブジェクトを展開する
@@ -21,9 +21,7 @@ module.exports = async (data) => {
       Object.assign(rest, attributes)
     }
     if (rest.content) {
-      rest.content = rest.content
-        .map(flattenAttributes)
-        .filter((content) => content.type !== 'br')
+      rest.content = rest.content.map(flattenAttributes).filter((content) => content.type !== 'br')
     }
     return rest
   }
