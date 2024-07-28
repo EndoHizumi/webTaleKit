@@ -6,8 +6,8 @@
   "scripts": {
     "lint": "eslint . --ext .ts --ext .js",
     "test": "jest",
-    "prepublish": "npm run build",
-    "build": "rm -rf ./dist/ && tsc && cp -r package.json engineConfig.json parser/ dist/ && cp -r src/utils/ dist/src && cp src/core/index.js src/core/resourceManager.js dist/src/core/ && npm pack ./dist/"
+    "build": "rimraf ./dist/ && tsc && cp -r package.json engineConfig.json parser/ dist/ && cp -r src/utils/ dist/src && cp src/core/index.js src/core/resourceManager.js dist/src/core/",
+    "prepare": "npm run build"
   },
   "bin": {
     "wtc": "parser/cli.js"
@@ -17,6 +17,7 @@
   "dependencies": {
     "html-minifier": "^4.0.0",
     "html-to-json-parser": "^2.0.1",
+    "rimraf": "^6.0.1",
     "stacktrace-js": "^2.0.2",
     "storejs": "^2.1.0"
   },

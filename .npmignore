@@ -1,0 +1,10 @@
+.esdoc.json
+.eslintrc.json
+.prettierrc
+.vscode/
+LICENSE
+documents/
+jest.config.js
+task.todo
+tsconfig.json
+/src
