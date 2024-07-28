@@ -51,7 +51,7 @@ Hashtag: #webTalekit
   - メソッドの呼び出し
   - 式の実行
   - 変数の定義・値の変更
-- 独自スクリプト（WebTaleScript)での記述・JavaScriptへの変換（トランスパイル）
+- 独自スクリプト（WebTaleScript)のJavaScriptへの変換（トランスパイル）
 
 ## アルファ版(0.1.x-0.2.x)で出来ないこと
 
