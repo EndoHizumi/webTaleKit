@@ -12,7 +12,7 @@ VS Codeの拡張機能を用いたGUIエディタやREST API呼び出しによ�
 ## 動作確認
 
 動作確認のデモゲームは、こちらのリポジトリのREADMEを元にセットアップすることでプレイできます。
-https://github.com/EndoHizumi/testGame
+<https://github.com/EndoHizumi/testGame>
 
 ## 現在の状況
 
@@ -20,23 +20,51 @@ webTaleKitは、現在アルファ版です。
 開発進捗は、[@endo_hizumi](https://x.com/endo_hizumi) で行っております。
 Hashtag: #webTalekit
 
-## アルファ版(0.1.x)機能未実装
+## アルファ版で、できること
+
+- 地の文の表示
+- キャラクターのセリフの表示・ボイスの再生
+- キャラクターの画像の表示・位置変更・アニメーション
+- その他の画像の画像の表示・位置変更・アニメーション
+- キャラクターの複数表示・位置変更・アニメーション
+- CGの表示・変更
+- 背景画像の表示・変更
+- 画像のフィルター操作
+  - モノクロ化
+  - セピア化
+  - 透明度の変更
+  - サイズの変更
+- REST API呼び出し（レスポンスの表示）
+- 定義した変数の表示
+- 表示する文章・画像の条件分岐
+- 選択肢の表示
+- セリフのジャンプ
+- Ctrlキーでの強制スキップ
+- Enterキーで全文表示
+- シナリオ（シーン）の切り替え
+- BGMの再生・停止
+- SEの再生・停止
+- HTMLで作った画面の表示
+- 解像度の設定変更
+- JavaScript連携
+  - メソッドの呼び出し
+  - 式の実行
+  - 変数の定義・値の変更
+
+## アルファ版(0.2.x-0.1.x)で出来ないこと
 
 - Desktopアプリケーションへのビルド
 - Android(iOS)向けのビルド
-- オートモード
-- スキップ
 - 画面各種のボタン
-- sayタグ
+- sayタグの以下の機能
   - キャラが表示されていないときは、表示する
 - セーブ＆ロード機能
-- showタグ / hideタグ
+- showタグ / hideタグの以下の機能
   - 子要素でフィルター指定
   - 子要素でアニメーション指定
   - スラッシュで区切ってリソース種類を指定
-- scenarioManager.setBackground
-- scenarioManager.getBackground
-- soundタグ
+- JavaScript側での背景画像の変更
+- soundタグの以下の機能
   - pause
   - setVolume
   - getVolume
@@ -45,10 +73,10 @@ Hashtag: #webTalekit
   - seエイリアス
 - quakeタグ（画面を揺らす）
 - maskタグ（画面の暗転）
-- リソース定義メソッド
-- セーブファイル管理配列
+- JavaScriptでのリソースの動的定義
+- セーブファイルの一覧の取得
 - ゲーム設定ファイルの反映
-- html・css・jsのインライン化・minify
+- 画面用HTMLのcss・jsのインライン化・minify化
 
 ## WebTaleKitチュートリアル
 
@@ -164,7 +192,7 @@ Hashtag: #webTalekit
 
 ## アイコン素材
 
-- https://www.silhouette-illust.com/
+- <https://www.silhouette-illust.com/>
 
 ## カラーコード
 
