@@ -9,16 +9,27 @@ UIをHTML・CSS・JavaScriptで柔軟に作成でき、シナリオをマーク�
 自動スケーリング機能で、様々なウインドウで遊ぶことができます。  
 VS Codeの拡張機能を用いたGUIエディタやREST API呼び出しによる生成AI連携の追加を提供予定です。  
 
+## デモ
+
+Firefoxでも、Chromeでも、Edgeでも、好きなブラウザを使いたまえ・・・！
+<https://webtalekit-demo-n0mtvux8w-endohizumis-projects.vercel.app>
+
 ## 動作確認
 
+とりあえずの動作確認は、こちらのリポジトリのREADMEを元にセットアップすることできます。  
+<https://github.com/EndoHizumi/testGame>
 
-動作確認のデモゲームは、こちらのリポジトリのREADMEを元にセットアップすることでプレイできます。  
-https://github.com/EndoHizumi/testGame
+## フィードバッグ
+
+デモをプレイした感想・WebTaleKitを使って気になったことなど、意見・感想はこちらで受け付けています！
+[https://forms.gle/uejQwvwAb99wcJht7](https://forms.gle/uejQwvwAb99wcJht7)
 
 ## 現在の状況
 
 webTaleKitは、現在アルファ版です。  
 開発進捗は、[@endo_hizumi](https://x.com/endo_hizumi) で行っております。
+実装予定の項目については、こちらの[Trello](https://trello.com/b/qYNGh7MY)からも確認できます。
+
 Hashtag: #webTalekit
 
 ## アルファ版で、できること
