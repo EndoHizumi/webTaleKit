@@ -25,7 +25,7 @@ export class Core {
     say: this.sayHandler,
     if: this.ifHandler,
     call: this.callHandler,
-    moveTo: this.moveToHandler,
+    moveto: this.moveToHandler,
     route: this.routeHandler,
   }
 

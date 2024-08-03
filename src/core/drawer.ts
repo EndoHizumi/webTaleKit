@@ -188,7 +188,7 @@ export class Drawer {
     return new Promise((resolve) => {
       const target = displayedImages[name];
       const startPos = { x: target.pos.x, y: target.pos.y };
-      const dest = { x: startPos.x + pos.x, y: startPos.y + pos.y };
+      const dest = { x: startPos.x + Number(pos.x), y: startPos.y + Number(pos.y) };
       const startTime = performance.now();
   
       const move = (currentTime:any) => {
