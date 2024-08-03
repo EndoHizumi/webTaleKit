@@ -2,6 +2,17 @@
 
 ![wabTaleKitロゴ](s-plan1-5Light-s-1.jpg)
 
+## 目次
+
+- 概要
+- デモ
+- 環境構築手順
+- 動作確認手順
+- Quick Start（デモゲームを弄ってみよう）
+- できること
+- できないこと
+- フィードバックフォームのご案内
+
 ## 概要
 
 TypeScript(JavaScript) ベースのビジュアルノベルゲームエンジンです。  
@@ -15,23 +26,99 @@ Firefoxでも、Chromeでも、Edgeでも、好きなブラウザを使いたま
 <https://test-game-chi.vercel.app/>
 ![alt text](image.png)
 
-## 動作確認
+## 環境構築手順
 
-とりあえずの動作確認は、こちらのリポジトリのREADMEを元にセットアップすることできます。  
-<https://github.com/EndoHizumi/testGame>
+1. Node.js(20以降)が必要です。(nvm等お好みの方法がある場合は、そちらでも構いません)
+   - Windowsの場合は、Node.js公式サイト (<https://nodejs.org/>) からインストールしてください。
+   - Macの場合は、`brew install node` を実行してインストールしてください。
+   - Linuxの場合は、以下のコマンドを実行して、インストールしてください。
 
-## フィードバッグ
+    ```bash
+        curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+        sudo apt-get install -y nodejs
+    ```
 
-デモをプレイした感想・WebTaleKitを使って気になったことなど、意見・感想はこちらで受け付けています！
-[https://forms.gle/uejQwvwAb99wcJht7](https://forms.gle/uejQwvwAb99wcJht7)
+2. 以下のコマンドを実行してください
+
+    ``` bash
+    npm create tale-game
+    ```
+
+プロジェクトに移動して、`npm run play`を実行して、デモゲームが起動すれば、構築は完了です。
+
+## 動作確認手順
+
+以下のコマンドを実行してください。
+
+```bash
+git clone https://github.com/EndoHizumi/testGame.git
+npm install
+npm run play
+```
+
+## Quick Start（デモゲームを弄ってみよう
+
+### 画像を差し替える
+
+- キャラを変える場合
+  - src/resource/chara/guide.png に上書きしてください。
+- 背景画像を変える
+  - src/resource/background/title_bg.png　に上書きしてください。
+- BGMを変える
+  - src/resource/bgm/title_theme.mp3　に上書きしてください。
+
+- 選択肢の画像を変える
+  - src\resource\system\systemPicture\02_button\button.png　に上書きしてください。
+- 選択肢(マウスオーバー時)の画像を変える
+  - src\resource\system\systemPicture\02_button\button2.png　に上書きしてください。
+- 選択肢(クリック時)の画像を変える
+  - src\resource\system\systemPicture\02_button\button3.png　に上書きしてください。
+
+- キャラを増やす
+  - src\resource\character 以下に表示したい画像を置きます。
+  - 登場させたい行数で、`<show src="表示したい画像のパス"></show>` を記述する
+- セリフを増やす
+  - セリフを表示させたい行数で、`<say name="キャラの名前">セリフをここに入れる</say>` を記述する
+- 地の文を増やす
+  - 地の文を表示させたい行数で、`<text>セリフをここに入れる</text>` を記述する
+
+- 選択肢を増やす
+  - 43行目のchoiceタグの中(44行-50行)で、以下のように記述すると、選択されたときに、地の文を表示する
+
+   ``` html
+    <item label='選択肢の文言'>
+        <text>セリフをここに入れる</text>
+    </item>
+   ```
+
+   実装例
+
+   ```　html
+          <choice prompt="ゲームを始めますか？">
+            <item label="はい">
+                <jump index="5" />
+            </item>
+            <item label="いいえ">
+                <jump index="16" />
+            </item>
+            <item label='ちょっと待ってくれ'>
+              <text>承知しました。</text>
+               <jump index="1" />
+            </item>
+        </choice>
+   ```
 
 ## 現在の状況
 
 webTaleKitは、現在アルファ版です。  
+
 開発進捗は、[@endo_hizumi](https://x.com/endo_hizumi) で行っております。
 実装予定の項目については、こちらの[Trello](https://trello.com/b/qYNGh7MY)からも確認できます。
 
-Hashtag: #webTalekit
+デモをプレイした感想・WebTaleKitを使って気になったことなど、意見・感想はこちらで受け付けています！
+[https://forms.gle/uejQwvwAb99wcJht7](https://forms.gle/uejQwvwAb99wcJht7)
+
+検索Hashtag: #webTalekit
 
 ## アルファ版で、できること
 
@@ -51,6 +138,10 @@ Hashtag: #webTalekit
 - 定義した変数の表示
 - 表示する文章・画像の条件分岐
 - 選択肢の表示
+- 選択肢の画像の変更
+  - 通常時
+  - マウスオーバー
+  - 選択時
 - セリフのジャンプ
 - Ctrlキーでの強制スキップ
 - Enterキーで全文表示
@@ -90,118 +181,6 @@ Hashtag: #webTalekit
 - セーブファイルの一覧の取得
 - ゲーム設定ファイルの反映
 - 画面用HTMLのcss・jsのインライン化・minify化
-
-## WebTaleKitチュートリアル
-
-このチュートリアルでは、WebTaleKitを使ってビジュアルノベルゲームを作成する方法を学びます。
-
-## 前提条件
-
-- Node.js 16以降がインストールされていること
-- HTML、CSS、JavaScriptの基本的な知識があること
-
-## プロジェクトの作成
-
-1. 新しいディレクトリを作成し、そこにWebTaleKitのディレクトリ構造を設定します。
-
-```bash
-├─src
-│ ├─scene
-│ | └─title.scene
-| ├─ screen
-│ | ├─title.html
-│ | ├─title.css
-│ | └─title.js
-│ ├─resource
-│ │ ├─audio
-│ │ ├─background
-│ │ ├─chara
-│ │ ├─key
-│ │ ├─se
-│ │ ├─config.js
-│ │ └─voice
-├─tsconfig.json
-├─webpack.config.js
-
-```
-
-## シーンの作成
-
-1. `src/scene`ディレクトリに新しいシーンファイル（例：`title.scene`）を作成します。
-
-2. シーンファイルには、`<scenario>`セクションと`<logic>`セクションがあります。
-   - `<scenario>`セクションでは、WebTaleScript（WTS）を使ってゲームの進行を制御します。
-   - `<logic>`セクションでは、JavaScriptを使ってシーンで使う処理や背景のデータ、変数の定義を記述します。
-
-3. WTSを使って、テキストの表示、キャラクターの表示、選択肢の表示などを行います。
-   例：
-
-   ```html
-   <scenario>
-     <say name="燈火">「先輩、別れてください」</say>
-     <say name="智樹">「え、ごめん。今･･･なんて」</say>
-     <choice prompt="プロローグをスキップしますか？">
-       <item label="はい">
-         <jump index="1"></jump>
-       </item>
-       <item label="いいえ"></item>
-     </choice>
-   </scenario>
-   ```
-
-   - 利用できるWTSタグ
-     - text（テキストの表示）
-     - choice（選択肢の表示）
-     - show（画像の表示）
-     - hide（画像の日表示）
-     - newpage（画面のクリア）
-     - jump（シナリオの行移動）
-     - sound（音楽の再生）
-     - say（名前付きテキストの表示・ボイス再生）
-     - if（処理分岐）
-     - call（JSメソッドの呼び出し）
-     - moveTo（画像の水平・平行移動）
-     - route（シーンの移動）
-
-4. `<logic>`セクションで、シーンの設定や変数の定義を行います。
-前のシーンの設定を引継ぐ場合は、その項目は入力を省略できます。
-
-   例：
-
-   ```html
-   <logic>
-   const sceneConfig = {
-     background: '屋上.jpg'
-   }
-   </logic>
-   ```
-
-   - 利用できる設定
-     - template（シーンのUIのHTML）
-     - name （シーンの名前）
-     - background（シーンの背景）
-     - bgm（シーンのBGM）
-
-## UIの作成
-
-1. `src/screen`ディレクトリにシーンごとのUIファイル（HTML、CSS、JavaScript）を作成します。
-
-2. HTMLファイルでUIの構造を定義し、CSSファイルでスタイルを設定します。
-
-3. JavaScriptファイルでUIの動作を制御します。
-
-## ビルドとデプロイ
-
-1. WebPackやViteを使ってプロジェクトをビルドします。
-
-2. ビルド時に、シーンファイル（`.scene`）がJavaScriptに変換され、UIファイル（HTML、CSS、JavaScript）がインライン化されます。
-
-3. ビルドされたファイルを`dist`ディレクトリに出力します。
-
-4. `dist`ディレクトリの内容をWebサーバーにデプロイすることで、ゲームを公開できます。
-
-以上がWebTaleKitを使ってビジュアルノベルゲームを作成するための基本的な流れです。
-タグの詳細については、[WebTaleKit仕様](documents/spec.md)を参照してください。
 
 ## アイコン素材
 
