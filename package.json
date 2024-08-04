@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts --ext .js",
     "test": "jest",
-    "build": "rimraf ./dist/ && tsc && cp -r package.json engineConfig.json parser/ dist/ && cp -r src/utils/ dist/src && cp src/core/index.js src/core/resourceManager.js dist/src/core/"
+    "build": "rimraf ./dist/ && tsc && cp -r package.json engineConfig.json parser/ dist/ && cp src/core/index.js  dist/src/core/"
   },
   "bin": {
     "wtc": "parser/cli.js"
@@ -23,6 +23,7 @@
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.28",
+    "@types/storejs": "^2.0.3",
     "esdoc": "^1.1.0",
     "esdoc-standard-plugin": "^1.0.0",
     "eslint": "^8.57.0",

@@ -13,7 +13,11 @@
     "moduleResolution": "node"
   },
   "include": [
+    "src/utils/logger.ts",
+    "src/utils/store.ts",
+    "src/utils/waitUtil.ts",
     "src/core/drawer.ts",
+    "src/core/resourceManager.ts",
     "src/core/scenarioManager.ts",
     "src/resource/ImageObject.ts",
     "src/resource/soundObject.ts"
