@@ -46,16 +46,6 @@ Firefoxでも、Chromeでも、Edgeでも、好きなブラウザを使いたま
 
 プロジェクトに移動して、`npm run play`を実行して、デモゲームが起動すれば、構築は完了です。
 
-## 動作確認手順
-
-以下のコマンドを実行してください。
-
-```bash
-git clone https://github.com/EndoHizumi/testGame.git
-npm install
-npm run play
-```
-
 ## Quick Start（デモゲームを弄ってみよう
 
 ### 画像を差し替える
