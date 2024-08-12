@@ -105,12 +105,12 @@ Firefoxでも、Chromeでも、Edgeでも、好きなブラウザを使いたま
 webTaleKitは、現在アルファ版です。  
 
 開発進捗は、[@endo_hizumi](https://x.com/endo_hizumi) で行っております。
+※上記アカウントは、日常的なツイートも含まれているので、WebTaleKitの情報だけ見たい場合は、検索Hashtag: [#webTaleKit](https://x.com/search?q=%23webTaleKit&src=typed_query) で検索をお願いします。
+
 実装予定の項目については、こちらの[Trello](https://trello.com/b/qYNGh7MY)からも確認できます。
 
 デモをプレイした感想・WebTaleKitを使って気になったことなど、意見・感想はこちらで受け付けています！
 [https://forms.gle/uejQwvwAb99wcJht7](https://forms.gle/uejQwvwAb99wcJht7)
-
-検索Hashtag: #webTalekit
 
 ## アルファ版で、できること
 
