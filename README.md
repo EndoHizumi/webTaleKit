@@ -24,7 +24,7 @@ VS Codeの拡張機能を用いたGUIエディタやREST API呼び出しによ�
 
 Firefoxでも、Chromeでも、Edgeでも、好きなブラウザを使いたまえ・・・！
 <https://test-game-chi.vercel.app/>
-![alt text](image.png)
+![](2024-08-12-19-20-29.png)
 
 ## 環境構築手順
 
