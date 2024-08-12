@@ -64,6 +64,8 @@ Firefoxでも、Chromeでも、Edgeでも、好きなブラウザを使いたま
 - 選択肢(クリック時)の画像を変える
   - src\resource\system\systemPicture\02_button\button3.png　に上書きしてください。
 
+### 要素を増やす
+
 - キャラを増やす
   - src\resource\character 以下に表示したい画像を置きます。
   - 登場させたい行数で、`<show src="表示したい画像のパス"></show>` を記述する
@@ -73,7 +75,7 @@ Firefoxでも、Chromeでも、Edgeでも、好きなブラウザを使いたま
   - 地の文を表示させたい行数で、`<text>セリフをここに入れる</text>` を記述する
 
 - 選択肢を増やす
-  - 43行目のchoiceタグの中(44行-50行)で、以下のように記述すると、選択されたときに、地の文を表示する
+  - src\scene\title.sceneの43行目のchoiceタグの中(44行-50行)で、以下のように記述すると、選択されたときに、地の文を表示する
 
    ``` html
     <item label='選択肢の文言'>
