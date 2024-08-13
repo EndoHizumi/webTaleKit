@@ -55,7 +55,7 @@ export class Drawer {
     this.messageText.innerHTML = ''
     for (const char of text) {
       //prettier-ignore
-      setTimeout(() => { this.readySkip = true, wait*500 });
+      setTimeout(() => { this.readySkip = true, wait });
       // 100ミリ秒待ってから、スキップボタンが押されたら即座に表示
       if (!this.isSkip) {
         this.messageText.innerHTML += char

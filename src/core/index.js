@@ -69,6 +69,7 @@ export class Core {
       this.onNextHandler()
     })
 
+    this.textHandler('タップでスタート')
     // シナリオを実行する
     while (this.scenarioManager.hasNext()) {
       await this.runScenario()
@@ -202,7 +203,7 @@ export class Core {
 
   async choiceHandler(line) {
     outputLog('call', 'debug', line)
-    this.textHandler(line.prompt)
+    if (line.prompt) this.textHandler(line.prompt) // promptがある場合は、表示する
     const { selectId, onSelect: selectHandler } = await this.drawer.drawChoices(line)
     if (selectHandler !== undefined) {
       this.scenarioManager.addScenario(selectHandler)
@@ -219,7 +220,7 @@ export class Core {
   async showHandler(line) {
     outputLog('line', 'debug', line)
     // 表示する画像の情報を管理オブジェクトに追加
-    const key = line.name || line.src.split('/').pop()
+    const key = line.type=='bg' ? 'background' : line.name || line.src.split('/').pop()
     const baseLine = engineConfig.resolution.height / 2
     const centerPoint = {
       left: { x: engineConfig.resolution.width * 0.25, y: baseLine },
@@ -430,6 +431,15 @@ export class Core {
     }
     return line
   }
+
+  setBackground(image) {
+    this.displayedImages["background"] = image
+
+   }
+ 
+   getBackground() {
+     return this.displayedImages["background"]
+   }
 
   executeCode(code) {
     try {
