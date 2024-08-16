@@ -35,8 +35,8 @@ export class Drawer {
 
     // canvasをDOMに追加する
     const canvas = document.createElement('canvas')
-    canvas.width = resolution.width || 1280
-    canvas.height = resolution.height || 720
+    canvas.width = (resolution.width || 1280) * devicePixelRatio;
+    canvas.height = (resolution.height || 720) * devicePixelRatio;
     // canvasのコンテキストを取得する
     this.gameScreen.appendChild(canvas)
     this.ctx = canvas.getContext('2d') as CanvasRenderingContext2D
