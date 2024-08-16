@@ -159,6 +159,7 @@ export class Core {
     this.onNextHandler = () => { this.drawer.isSkip = true }
     // 表示する文章を1行ずつ表示する
     for (const line of scenarioObject.content) {
+      this.drawer.clearText(); // テキスト表示領域をクリア
       await this.drawer.drawText(line, line.speed || 50)
       //prettier-ignore
       this.onNextHandler = () => { this.isNext = true }
@@ -220,7 +221,8 @@ export class Core {
   async showHandler(line) {
     outputLog('line', 'debug', line)
     // 表示する画像の情報を管理オブジェクトに追加
-    const key = line.type=='bg' ? 'background' : line.name || line.src.split('/').pop()
+    const modeList = { 'bg': 'background', 'cutin': '', 'chara': '', 'cg': 'background', 'effect': 'effect' }
+    const key = Object.keys(modeList).includes(line.mode) ? modeList[line.mode] : line.name || line.src.split('/').pop()
     const baseLine = engineConfig.resolution.height / 2
     const centerPoint = {
       left: { x: engineConfig.resolution.width * 0.25, y: baseLine },
@@ -230,9 +232,20 @@ export class Core {
 
     const image = await this.getImageObject(line)
     // 画像の表示位置を設定
-    const position = { x: line.x, y: line.y }
+    let position = { x: line.x || 0, y: line.y || 0 }
     // prettier-ignore
-    const size = line.width && line.height ? { width: line.width, height: line.height } : { width: image.getSize().width, height: image.getSize().height }
+    let size = line.width && line.height ? { width: line.width, height: line.height } : { width: image.getSize().width, height: image.getSize().height }
+
+    // line.modeが'cutin'の場合、center:middleのエイリアスを強制する
+    if (line.mode === 'cutin') {
+      line.pos = 'center:middle'
+    }
+
+    if (line.mode === 'cg') {
+      this.tempImages = { ...this.displayedImages }
+      this.displayedImages = { background: line.src }
+      size = { width: engineConfig.resolution.width, height: engineConfig.resolution.height }
+    }
 
     if (line.pos) {
       const pos = line.pos.split(':')
@@ -269,8 +282,12 @@ export class Core {
 
   hideHandler(line) {
     outputLog('call', 'debug', line)
-    const key = line.name
-    delete this.displayedImages[key]
+    if(line.mode === 'cg') {
+      this.displayedImages = { ...this.tempImages }
+      this.tempImages = {}
+    } else {
+      delete this.displayedImages[line.name]
+    }
     this.drawer.show(this.displayedImages)
   }
 
@@ -340,7 +357,7 @@ export class Core {
     outputLog('call', 'debug')
     this.displayedImages = {
       background: {
-        image: this.scenarioManager.getBackground(),
+        image: this.getBackground(),
         size: {
           width: this.gameContainer.clientWidth,
           height: this.gameContainer.clientHeight,
@@ -449,12 +466,11 @@ export class Core {
 
   setBackground(image) {
     this.displayedImages["background"] = image
+  }
 
-   }
- 
-   getBackground() {
-     return this.displayedImages["background"]
-   }
+  getBackground() {
+    return this.displayedImages["background"].image
+  }
 
   executeCode(code) {
     try {
