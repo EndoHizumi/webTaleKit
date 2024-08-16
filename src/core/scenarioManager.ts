@@ -34,7 +34,7 @@ export class ScenarioManager {
       this.scenarioData.splice(index, 0, ...scenario)
     } else {
       // 現在の位置に挿入する
-      this.scenarioData.splice(this.progress.currentIndex+1, 0, ...scenario)
+      this.scenarioData.splice(this.progress.currentIndex, 0, ...scenario)
     }
     outputLog('call','debug', this.scenarioData)
   }
