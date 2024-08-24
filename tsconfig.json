@@ -2,7 +2,7 @@
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "outDir": "./dist/src/",
+    "outDir": "./dist/",
     "sourceMap": true,
     "noImplicitAny": true,
     "module": "commonjs",
@@ -10,13 +10,11 @@
     "allowJs": true,
     "esModuleInterop": true,
     "noEmitOnError": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
   },
   "include": [
-    "src/core/drawer.ts",
-    "src/core/scenarioManager.ts",
-    "src/resource/ImageObject.ts",
-    "src/resource/soundObject.ts"
+    "src/**/*.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }

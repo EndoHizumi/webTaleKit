@@ -27,7 +27,7 @@ export class ScenarioManager {
     this.progress.currentIndex = 0
   }
 
-  addScenario (scenario: any, index: number): void {
+  addScenario (scenario: any, index?: number): void {
     outputLog('call','debug', {scenario, index})
     // index指定がある場合はその値に挿入する
     if(index) {
