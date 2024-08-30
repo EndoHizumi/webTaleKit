@@ -51,18 +51,22 @@ export class Drawer {
     this.nameView.innerHTML = name
   }
 
-  async drawText(text: string, wait: number) {
-    this.messageText.innerHTML = ''
+  async drawText(text: string, wait: number, containerElement?: HTMLElement) {
+    let element: HTMLElement = this.messageText
+    if(containerElement)  {
+      this.messageText.appendChild(containerElement);
+      element = containerElement;
+    }
     for (const char of text) {
       //prettier-ignore
       setTimeout(() => { this.readySkip = true, wait });
       // 100ミリ秒待ってから、スキップボタンが押されたら即座に表示
       if (!this.isSkip) {
-        this.messageText.innerHTML += char
+        element.innerHTML += char
         await sleep(wait)
       } else {
         if (this.readySkip) {
-          this.messageText.innerHTML = text
+          element.innerHTML += text.slice(element.textContent!.length);
           this.readySkip = false
           this.isSkip = false
           break
@@ -71,7 +75,35 @@ export class Drawer {
     }
   }
 
-  async drawChoices(choices: any) {
+  clearText() {
+    if (this.messageText) {
+      this.messageText.innerHTML = '';
+    }
+  }
+
+    createDecoratedElement(element: any): HTMLElement {
+    switch (element.type) {
+      case 'color':
+        const span = document.createElement('span');
+        span.style.color = element.value;
+        return span;
+      case 'ruby':
+        const ruby = document.createElement('ruby');
+        const rt = document.createElement('rt');
+        rt.textContent = element.text;
+        ruby.appendChild(rt);
+        return ruby;
+      case 'b':
+        return document.createElement('strong');
+      case 'i':
+        return document.createElement('i');
+      default:
+        outputLog(`Unknown decoration type: ${element.type}`, 'warn');
+        return document.createElement('span');
+    }
+  }
+
+  async drawChoices(choices: any) : Promise<{ selectId: number, onSelect: any }> {
     let isSelect = false
     let selectId = 0
     let onSelect = 0
@@ -215,7 +247,6 @@ export class Drawer {
     });
   }
   drawCanvas(img: ImageObject, pos: any, size: any, reverse: any) {
-    outputLog('drawCanvas', 'debug', {img, pos, size, reverse})
     const canvas = img.draw(reverse).getCanvas()
     // canvasから画像を取得して、this.ctxに描画
     const imageWidth = size !== undefined ? size.width : canvas.width

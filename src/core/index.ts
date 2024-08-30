@@ -76,7 +76,7 @@ export class Core {
     // ScenarioManagerの初期化（変数の初期値設定）
     this.scenarioManager = new ScenarioManager()
     // ResourceManagerの初期化（引数にconfigを渡して、リソース管理配列を作る）
-    this.resourceManager = new ResourceManager() 
+    this.resourceManager = new ResourceManager()
     this.displayedImages = {}
     this.usedSounds = {}
   }
@@ -192,30 +192,31 @@ export class Core {
     // 表示する文章を1行ずつ表示する
     for (const text of line.content) {
       // scenarioObject.content内にオブジェクトが含まれている場合は、クリア処理をスキップする
-      if (text.content.some((item: any) => typeof item === 'object' && item !== null)) {
-
-      } else {
+      if (!text.content.some((item: any) => typeof item === 'object' && item !== null)) {
         this.drawer.clearText(); // テキスト表示領域をクリア
       }
 
       if (typeof text === 'string') {
         await this.drawer.drawText(this.expandVariable(text), 50)
       } else {
+        if (text.content[0].type === 'br') {
+          //prettier-ignore
+          this.onNextHandler = () => { this.isNext = true }
+          if (typeof text.wait === 'number') {
+            if (text.wait > 0 || this.isAuto) {
+              const waitTime = text.wait || 1500
+              // 指定された時間だけ待機
+              await sleep(waitTime)
+            }
+          } else {
+            // 改行ごとに入力待ち
+            await this.clickWait()
+          }
+        }
         const container = this.drawer.createDecoratedElement(text);
         await this.drawer.drawText(this.expandVariable(text.content[0]), text.speed || 50, container)
       }
-      //prettier-ignore
-      this.onNextHandler = () => { this.isNext = true }
-      if (typeof text.wait === 'number') {
-        if (text.wait > 0 || this.isAuto) {
-          const waitTime = text.wait || 1500
-          // 指定された時間だけ待機
-          await sleep(waitTime)
-        }
-      } else {
-        // 改行ごとに入力待ち
-        await this.clickWait()
-      }
+
     }
     this.drawer.isSkip = false
     this.scenarioManager.setHistory(line.content)
