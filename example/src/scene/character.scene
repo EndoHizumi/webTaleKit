@@ -1,0 +1,25 @@
+<scenario>
+  <show path="resource/background/living_room.jpg" />
+  <say name="ナレーター">このシーンではキャラクターの表示と配置をデモンストレーションします。</say>
+  <show path="resource/character/guide.png" name="ガイド" pos={{x: 300, y: 400}} />
+  <say name="ガイド">こんにちは！私がガイドです。キャラクターは画面上に配置できるんですよ。</say>
+  <show path="resource/character/guest.png" name="ゲスト" pos={{x: 900, y: 400}} />
+  <say name="ゲスト">そうですね。複数のキャラクターを同時に表示することもできます！</say>
+  <moveTo name="ガイド" x="500" y="400" duration="2" />
+  <say name="ガイド">このように、滑らかに動くこともできます。</say>
+  <hide name="ゲスト" />
+  <say name="ガイド">必要がなくなったキャラクターは非表示にすることもできますね。</say>
+  <choice>
+    <item label="タイトルに戻る" onSelect="title">
+      <route scene="title" />
+    </item>
+  </choice>
+</scenario>
+
+<script>
+  export const sceneConfig = {
+    name: 'character',
+    background: 'resource/background/living_room.jpg',
+    template: 'main.html'
+  }
+</script>

@@ -1,0 +1,48 @@
+<scene>
+  <scenario>
+    <show path="resource/background/library.jpg" />
+    <say name="ナレーター">このシーンでは、様々なテキスト表示機能をデモンストレーションします。</say>
+
+    <text>これは単純なテキスト表示です。</text>
+
+    <text>テキスト内で{{variables}}のような変数を使用することもできます。</text>
+
+    <text speed="50">テキストは異なる速度で表示することができます。</text>
+
+    <text speed="150">または、一文字ずつゆっくりと...</text>
+
+    <say name="キャラクター">キャラクターには名前と立ち絵を設定できます。</say>
+
+    <text>ルビを振ることも可能です。<ruby text="ルビ">漢字</ruby></text>
+
+    <text>
+      <color value="red">文字の色を変えたり</color>、<b>太字にしたり</b>、<i>斜体にしたり</i>することもできます。
+    </text>
+
+    <text>改行も
+      簡単に
+      できます。</text>
+
+    <text>また、テキストの表示中に
+      <wait time="1000" />一時停止を入れることもできます。
+    </text>
+
+    <say name="ナレーター">これらの機能を組み合わせることで、豊かな表現が可能になります。</say>
+
+    <choice>
+      <item label="タイトルに戻る" onSelect="title">
+        <route scene="title" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'text',
+      background: 'resource/background/library.jpg',
+      template: 'main.html'
+    }
+
+    const variables = "HogeHoge"
+  </script>
+</scene>

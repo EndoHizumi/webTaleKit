@@ -1,0 +1,30 @@
+<scenario>
+  <show path="resource/background/laboratory.jpg" />
+  <say name="Narrator">This scene demonstrates special effects and filters.</say>
+  <show path="resource/character/scientist.png" name="Scientist" pos={{x: 640, y: 360}} />
+  <say name="Scientist">Let's experiment with some visual effects!</say>
+  <say name="Scientist">First, let's try a sepia filter.</say>
+  <show path="resource/background/laboratory.jpg" sepia="0.8" />
+  <show path="resource/character/scientist.png" name="Scientist" pos={{x: 640, y: 360}} sepia="0.8" />
+  <say name="Scientist">Now, let's switch to a monochrome effect.</say>
+  <show path="resource/background/laboratory.jpg" mono="1" />
+  <show path="resource/character/scientist.png" name="Scientist" pos={{x: 640, y: 360}} mono="1" />
+  <say name="Scientist">We can also apply blur effects.</say>
+  <show path="resource/background/laboratory.jpg" blur="5" />
+  <say name="Scientist">These effects can set different moods in your game!</say>
+  <show path="resource/background/laboratory.jpg" />
+  <show path="resource/character/scientist.png" name="Scientist" pos={{x: 640, y: 360}} />
+  <choice>
+    <item label="Return to Title" onSelect="title">
+      <route scene="title" />
+    </item>
+  </choice>
+</scenario>
+
+<script>
+  const sceneConfig = {
+    name: 'effects',
+    background: 'resource/background/laboratory.jpg',
+    template: 'main.html'
+  }
+</script>

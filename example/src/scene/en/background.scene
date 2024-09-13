@@ -1,0 +1,23 @@
+<scenario>
+  <show path="resource/background/forest.jpg" />
+  <say name="Narrator">This scene shows how backgrounds can be changed.</say>
+  <say name="Narrator">We're currently in a forest.</say>
+  <show path="resource/background/beach.jpg" />
+  <say name="Narrator">Now we've moved to a beach!</say>
+  <show path="resource/background/city.jpg" />
+  <say name="Narrator">And now we're in a city.</say>
+  <say name="Narrator">Backgrounds can be changed instantly or with transitions.</say>
+  <choice>
+    <item label="Return to Title" onSelect="title">
+      <route scene="title" />
+    </item>
+  </choice>
+</scenario>
+
+<script>
+  const sceneConfig = {
+    name: 'background',
+    background: 'resource/background/forest.jpg',
+    template: 'main.html'
+  }
+</script>

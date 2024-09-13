@@ -1,0 +1,31 @@
+<scenario>
+  <show path="resource/background/crossroad.jpg" />
+  <say name="ナレーター">このシーンでは選択肢と分岐するストーリーをデモンストレーションします。</say>
+  <say name="ナレーター">どちらの道を選びますか？</say>
+  <choice>
+    <item label="左の道を行く" onSelect="leftPath">
+      <say name="ナレーター">左の道を選びました。</say>
+      <show path="resource/background/forest.jpg" />
+      <say name="ナレーター">深い森の中に出ました。</say>
+    </item>
+    <item label="右の道を行く" onSelect="rightPath">
+      <say name="ナレーター">右の道を選びました。</say>
+      <show path="resource/background/beach.jpg" />
+      <say name="ナレーター">美しいビーチに到着しました。</say>
+    </item>
+  </choice>
+  <say name="ナレーター">このように、選択肢によって異なる結果やストーリーの分岐を作ることができます。</say>
+  <choice>
+    <item label="タイトルに戻る" onSelect="title">
+      <route scene="title" />
+    </item>
+  </choice>
+</scenario>
+
+<script>
+  export const sceneConfig = {
+    name: 'choice',
+    background: 'resource/background/crossroad.jpg',
+    template: 'main.html'
+  }
+</script>

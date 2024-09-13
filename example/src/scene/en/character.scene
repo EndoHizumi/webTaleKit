@@ -1,0 +1,25 @@
+<scenario>
+  <show path="resource/background/living_room.jpg" />
+  <say name="Narrator">This scene demonstrates character display and positioning.</say>
+  <show path="resource/character/alice.png" name="Alice" pos={{x: 300, y: 400}} />
+  <say name="Alice">Hello! I'm Alice. Characters can be positioned on the screen.</say>
+  <show path="resource/character/bob.png" name="Bob" pos={{x: 900, y: 400}} />
+  <say name="Bob">And multiple characters can appear at once!</say>
+  <moveTo name="Alice" x="500" y="400" duration="2" />
+  <say name="Alice">We can also move around smoothly.</say>
+  <hide name="Bob" />
+  <say name="Alice">And characters can be hidden when not needed.</say>
+  <choice>
+    <item label="Return to Title" onSelect="title">
+      <route scene="title" />
+    </item>
+  </choice>
+</scenario>
+
+<script>
+  const sceneConfig = {
+    name: 'character',
+    background: 'resource/background/living_room.jpg',
+    template: 'main.html'
+  }
+</script>
