@@ -212,6 +212,26 @@ export class Core {
 
   jumpHandler(line) {
     outputLog('call:', 'debug', line.index)
+    // ジャンプ先が現在の行より小さいときは、今の行とジャンプ先の行の間で、sub=falseの行を抽出して、scenarioManagerに追加する
+    if (line.index < this.scenarioManager.getIndex()) {
+      // scenarioManagerからシナリオを取得
+      const scenario = this.scenarioManager.getScenario()
+      // 結合用に、ジャンプ先までのインデックスを取得
+      const noEditScenarioList = {
+        before: scenario.slice(0, line.index),
+        after: scenario.slice(this.scenarioManager.getIndex()),
+      }
+      outputLog('noEditScenarioList', 'debug', noEditScenarioList)
+      // ジャンプ先のインデックスまでのシナリオを取得
+      const scenarioList = scenario.slice(line.index, this.scenarioManager.getIndex())
+      outputLog('scenarioList', 'debug', scenarioList)
+      // sub=falseの行だけを取得
+      const subFalseScenario = scenarioList.filter((line) => !line.sub)
+      outputLog('subFalseScenario', 'debug', subFalseScenario)
+      // scenarioManagerに追加
+      this.scenarioManager.setScenario([...noEditScenarioList.before, ...subFalseScenario, ...noEditScenarioList.after])
+      outputLog('scenarioManager', 'debug', this.scenarioManager.getScenario())
+    }
     this.newpageHandler()
     this.scenarioManager.setIndex(Number(line.index))
   }
@@ -345,13 +365,9 @@ export class Core {
     outputLog('call', 'debug', line)
     const isTrue = this.executeCode(`return ${line.condition}`)
     outputLog(`${isTrue}`, 'debug')
-    if (isTrue) {
-      outputLog('', 'debug', line.content[0].content)
-      this.scenarioManager.addScenario(line.content[0].content)
-    } else {
-      outputLog('', 'debug', line.content[1].content)
-      this.scenarioManager.addScenario(line.content[1].content)
-    }
+    const appendScenario = isTrue ? line.content[0].content : line.content[1].content
+    outputLog('', 'debug', appendScenario)
+    this.scenarioManager.addScenario(appendScenario)
   }
 
   async routeHandler(line) {

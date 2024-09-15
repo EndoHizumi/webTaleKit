@@ -1,4 +1,4 @@
-import { Core } from 'webtalekit'
+import { Core } from 'webtalekit/src/core/'
 
 const game = new Core()
 
