@@ -1,25 +1,26 @@
-<scenario>
-  <show path="resource/background/music_room.jpg" />
-  <say name="ナレーター">このシーンでは音声機能をデモンストレーションします。</say>
-  <sound path="resource/bgm/calm_music.mp3" play loop />
-  <say name="ナレーター">今、バックグラウンドミュージックが流れ始めました。これはループ再生することができます。</say>
-  <sound path="resource/se/doorbell.mp3" play />
-  <say name="ナレーター">今のは効果音です。一度だけ、あるいは繰り返し再生することができます。</say>
-  <sound path="resource/bgm/calm_music.mp3" stop />
-  <sound path="resource/bgm/exciting_music.mp3" play loop />
-  <say name="ナレーター">このように、バックグラウンドミュージックをスムーズに切り替えることもできます。</say>
-  <choice>
-    <item label="タイトルに戻る" onSelect="title">
-      <sound path="resource/bgm/exciting_music.mp3" stop />
-      <route scene="title" />
-    </item>
-  </choice>
-</scenario>
+<scene>
+  <scenario>
+    <say name="ナレーター">このシーンでは音声機能をデモンストレーションします。</say>
+    <sound src="./src/resource/bgm/calm_music.mp3" play loop />
+    <say name="ナレーター">今、バックグラウンドミュージックが流れ始めました。これはループ再生することができます。</say>
+    <sound src="./src/resource/se/doorbell.mp3" play />
+    <say name="ナレーター">今のは効果音です。一度だけ、あるいは繰り返し再生することができます。</say>
+    <sound src="./src/resource/bgm/calm_music.mp3" stop />
+    <sound src="./src/resource/bgm/exciting_music.mp3" play loop />
+    <say name="ナレーター">このように、バックグラウンドミュージックをスムーズに切り替えることもできます。</say>
+    <choice>
+      <item label="タイトルに戻る" onSelect="title">
+        <sound src="./src/resource/bgm/exciting_music.mp3" stop />
+        <route scene="title" />
+      </item>
+    </choice>
+  </scenario>
 
-<script>
-  export const sceneConfig = {
-    name: 'sound',
-    background: 'resource/background/music_room.jpg',
-    template: 'main.html'
-  }
-</script>
+  <script>
+    export const sceneConfig = {
+      name: 'sound',
+      background: './src/resource/background/music_room.jpg',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>

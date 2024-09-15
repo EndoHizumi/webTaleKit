@@ -1,26 +1,26 @@
-<scenario>
-  <show path="resource/background/library.jpg" />
-  <say name="Narrator">This scene demonstrates various text display features.</say>
-  <text msg="This is a simple text display." />
-  <text msg="You can also use {{variables}} in your text." />
-  <text msg="Text can be displayed with different speeds." speed="50" />
-  <text msg="Or even letter by letter..." speed="150" />
-  <say name="Character">Characters can have names and portraits.</say>
-  <choice>
-    <item label="Return to Title" onSelect="title">
-      <route scene="title" />
-    </item>
-  </choice>
-</scenario>
+<scene>
+  <scenario>
+    <say name="Narrator">This scene demonstrates various text display features.</say>
+    <text msg="This is a simple text display." />
+    <text msg="You can also use {{variables}} in your text." />
+    <text msg="Text can be displayed with different speeds." speed="50" />
+    <text msg="Or even letter by letter..." speed="150" />
+    <say name="Character">Characters can have names and portraits.</say>
+    <choice>
+      <item label="Return to Title" onSelect="title">
+        <route scene="title" />
+      </item>
+    </choice>
+  </scenario>
 
-<script>
-  const sceneConfig = {
-    name: 'text',
-    background: 'resource/background/library.jpg',
-    template: 'main.html'
-  }
+  <script>
+    const sceneConfig = {
+      name: 'text',
+      background: './src/resource/background/library.png',
+      template: './src/screen/title.html'
+    }
 
-  const variables = {
-    variables: "dynamic content"
-  }
-</script>
+    const variables = "dynamic content"
+
+  </script>
+</scene>

@@ -1,6 +1,5 @@
 <scene>
   <scenario>
-    <show path="resource/background/library.jpg" />
     <say name="ナレーター">このシーンでは、様々なテキスト表示機能をデモンストレーションします。</say>
 
     <text>これは単純なテキスト表示です。</text>
@@ -39,8 +38,8 @@
   <script>
     export const sceneConfig = {
       name: 'text',
-      background: 'resource/background/library.jpg',
-      template: 'main.html'
+      background: './src/resource/background/library.jpg',
+      template: './src/screen/title.html'
     }
 
     const variables = "HogeHoge"

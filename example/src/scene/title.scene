@@ -1,0 +1,42 @@
+<scene>
+  <scenario>
+    <text>WebTaleKitデモゲームへようこそ！</text>
+    <text>以下の機能デモから、体験したいものを選んでください。</text>
+
+    <choice prompt="どの機能を体験しますか？">
+      <item label="テキスト表示デモ" onSelect="text">
+        <route to="text" />
+      </item>
+      <item label="キャラクター表示デモ" onSelect="character">
+        <route to="character" />
+      </item>
+      <item label="背景変更デモ" onSelect="background">
+        <route to="background" />
+      </item>
+      <item label="音声機能デモ" onSelect="sound">
+        <route to="sound" />
+      </item>
+      <item label="選択肢デモ" onSelect="choice">
+        <route to="choice" />
+      </item>
+      <item label="アニメーションデモ" onSelect="animation">
+        <route to="animation" />
+      </item>
+      <item label="特殊効果デモ" onSelect="effects">
+        <route to="effects" />
+      </item>
+      <item label="特殊効果デモ" onSelect="effects">
+        <route to="effects" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'title',
+      background: './src/resource/background/title_bg.png',
+      bgm: './src/resource/bgm/title_theme.mp3',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>
