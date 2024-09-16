@@ -1,0 +1,32 @@
+<scene>
+  <scenario>
+    <say name="Narrator">This scene demonstrates choices and branching narratives.</say>
+    <say name="Narrator">Which path will you choose?</say>
+    <choice>
+      <item label="Take the left path" onSelect="leftPath">
+        <say name="Narrator">You chose the left path.</say>
+        <show src="./src/resource/background/forest.png" />
+        <say name="Narrator">You find yourself in a dense forest.</say>
+      </item>
+      <item label="Take the right path" onSelect="rightPath">
+        <say name="Narrator">You chose the right path.</say>
+        <show src="./src/resource/background/beach.png" />
+        <say name="Narrator">You arrive at a beautiful beach.</say>
+      </item>
+    </choice>
+    <say name="Narrator">Choices can lead to different outcomes and story branches.</say>
+    <choice>
+      <item label="Return to Title" onSelect="title">
+        <route scene="title" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    const sceneConfig = {
+      name: 'choice',
+      background: './src/resource/background/crossroad.jpg',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>

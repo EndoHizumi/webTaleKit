@@ -1,0 +1,97 @@
+<scene>
+  <scenario>
+    <say name="ナレーター">このシーンでは選択肢と分岐するストーリーをデモンストレーションします。</say>
+    <say name="ナレーター">まず、シンプルな二択から始めましょう。</say>
+    <choice prompt="どちらの道を選びますか？">
+      <item label="左の道" onSelect="leftPath">
+        <say name="ナレーター">左の道を選びました。森に続く道のようです。</say>
+        <show src="./src/resource/background/forest.jpg" />
+      </item>
+      <item label="右の道" onSelect="rightPath">
+        <say name="ナレーター">右の道を選びました。海に続く道のようです。</say>
+        <show src="./src/resource/background/beach.jpg" />
+      </item>
+    </choice>
+    <say name="ナレーター">次に、3つ以上の選択肢を試してみましょう。</say>
+    <choice prompt="どの乗り物で旅をしますか？">
+      <item label="車" onSelect="car">
+        <say name="ナレーター">車を選びました。快適なドライブ旅行が始まります。</say>
+      </item>
+      <item label="電車" onSelect="train">
+        <say name="ナレーター">電車を選びました。窓の外の景色を楽しみながらの旅です。</say>
+      </item>
+      <item label="飛行機" onSelect="plane">
+        <say name="ナレーター">飛行機を選びました。空の上から地上を見下ろす旅が始まります。</say>
+      </item>
+      <item label="船" onSelect="ship">
+        <say name="ナレーター">船を選びました。波の音を聞きながらのクルーズ旅行です。</say>
+      </item>
+    </choice>
+    <say name="ナレーター">最後に、選択肢の結果に基づいて条件分岐するテストを行います。</say>
+    <choice prompt="あなたの好きな色は？">
+      <item label="赤" onSelect="red">
+        <say name="ナレーター">赤を選びました。情熱的な色ですね。</say>
+        <call func="setFavoriteColor('red')" />
+      </item>
+      <item label="青" onSelect="blue">
+        <say name="ナレーター">青を選びました。落ち着いた色ですね。</say>
+        <call func="setFavoriteColor('blue')" />
+      </item>
+      <item label="緑" onSelect="green">
+        <say name="ナレーター">緑を選びました。自然を感じる色ですね。</say>
+        <call func="setFavoriteColor('green')" />
+      </item>
+    </choice>
+    <if condition="getFavoriteColor() === 'red'">
+      <then>
+        <say name="ナレーター">赤が好きなあなたは、活動的な性格かもしれませんね。</say>
+      </then>
+      <else>
+        <if condition="getFavoriteColor() === 'blue'">
+          <then>
+            <say name="ナレーター">青が好きなあなたは、冷静な性格かもしれませんね。</say>
+          </then>
+          <else>
+            <say name="ナレーター">緑が好きなあなたは、穏やかな性格かもしれませんね。</say>
+          </else>
+        </if>
+      </else>
+    </if>
+    <say name="ナレーター">このように、選択肢によって異なる結果やストーリーの分岐を作ることができます。</say>
+    <choice prompt="">
+      <item label="タイトルに戻る" onSelect="end">
+        <route to="title" />
+      </item>
+      <item label="１つ目の質問に戻る" onSelect="replay">
+        <say name="ナレーター">デモをもう一度実行します。</say>
+        <jump index="1" />
+      </item>
+      <item label="２つ目の質問に戻る" onSelect="replay">
+        <say name="ナレーター">デモをもう一度実行します。</say>
+        <jump index="4" />
+      </item>
+      <item label="３つ目の質問に戻る" onSelect="replay">
+        <say name="ナレーター">デモをもう一度実行します。</say>
+        <jump index="6" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'choice_demo',
+      background: './src/resource/background/crossroad.jpg',
+      template: './src/screen/title.html'
+    }
+
+    let favoriteColor = '';
+
+    export function setFavoriteColor(color) {
+      favoriteColor = color;
+    }
+
+    export function getFavoriteColor() {
+      return favoriteColor;
+    }
+  </script>
+</scene>
