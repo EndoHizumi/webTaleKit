@@ -150,9 +150,9 @@ export class Core {
     //prettier-ignore
     this.onNextHandler = () => { this.drawer.isSkip = true }
     // 表示する文章を1行ずつ表示する
-    for (const text of line.content) {
+    for (const text of scenarioObject.content) {
       // scenarioObject.content内にオブジェクトが含まれている場合は、クリア処理をスキップする
-      if (!text.content.some((item) => typeof item === 'object' && item !== null)) {
+      if (!scenarioObject.content.some((item) => typeof item === 'object' && item !== null)) {
         this.drawer.clearText() // テキスト表示領域をクリア
       }
 
