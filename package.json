@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts --ext .js",
     "test": "jest",
-    "build": "rimraf ./dist/ && tsc && cp -r package.json engineConfig.json parser/ dist/ && cp -r src/utils/ dist/src && cp src/core/index.js src/core/resourceManager.js dist/src/core/"
+    "build": "rimraf ./dist/ && tsc && cp -r package.json engineConfig.json README.md parser/ dist/ && cp -r src/utils/ dist/src && cp src/core/index.js dist/src/core/"
   },
   "bin": {
     "wtc": "parser/cli.js"

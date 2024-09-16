@@ -1,0 +1,39 @@
+<scene>
+  <scenario>
+    <sound src="./src/resource/bgm/title_theme.mp3" play loop />
+    <say name="Narrator">Welcome to the WebTaleKit Demo Game!</say>
+    <say name="Narrator">Please select a feature to explore:</say>
+    <choice>
+      <item label="Text Display" onSelect="text">
+        <route scene="text" />
+      </item>
+      <item label="Character Display" onSelect="character">
+        <route scene="character" />
+      </item>
+      <item label="Background Changes" onSelect="background">
+        <route scene="background" />
+      </item>
+      <item label="Sound Effects" onSelect="sound">
+        <route scene="sound" />
+      </item>
+      <item label="Choices and Branching" onSelect="choice">
+        <route scene="choice" />
+      </item>
+      <item label="Animations" onSelect="animation">
+        <route scene="animation" />
+      </item>
+      <item label="Special Effects" onSelect="effects">
+        <route scene="effects" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    const sceneConfig = {
+      name: 'title',
+      background: './src/resource/background/title_bg.png',
+      bgm: './src/resource/bgm/title_theme.mp3',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>
