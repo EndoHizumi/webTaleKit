@@ -20,6 +20,9 @@ module.exports = async (data) => {
     if (attributes) {
       Object.assign(rest, attributes)
     }
+    if (rest.content) {
+      rest.content = rest.content.map(flattenAttributes)
+    }
     return rest
   }
 
