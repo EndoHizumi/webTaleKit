@@ -139,14 +139,7 @@ export class Core {
       scenarioObject.content = scenarioObject.content.concat(scenarioObject.then || scenarioObject.error)
     }
     outputLog('call', 'debug', scenarioObject)
-    // {{}}が含まれている場合は、変換処理を行う
-    scenarioObject.content = scenarioObject.content.map((text) =>
-      text.replace(/{{([^{}]+)}}/g, (match) => {
-        const expr = match.slice(2, -2)
-        const returnValue = this.executeCode(`return ${expr}`)
-        return typeof returnValue == 'object' ? JSON.stringify(returnValue) : returnValue
-      }),
-    )
+
     // 名前が設定されている場合は、名前を表示する
     if (scenarioObject.name) {
       this.drawer.drawName(scenarioObject.name)
@@ -157,23 +150,44 @@ export class Core {
     //prettier-ignore
     this.onNextHandler = () => { this.drawer.isSkip = true }
     // 表示する文章を1行ずつ表示する
-    for (const line of scenarioObject.content) {
-      await this.drawer.drawText(line, line.speed || 50)
-      //prettier-ignore
-      this.onNextHandler = () => { this.isNext = true }
-      if (typeof line.wait === 'number') {
-        if (line.wait > 0 || this.isAuto) {
-          const waitTime = line.wait || 1500
-          // 指定された時間だけ待機
-          await sleep(line.wait)
-        }
+    for (const text of line.content) {
+      // scenarioObject.content内にオブジェクトが含まれている場合は、クリア処理をスキップする
+      if (!text.content.some((item) => typeof item === 'object' && item !== null)) {
+        this.drawer.clearText() // テキスト表示領域をクリア
+      }
+
+      if (typeof text === 'string') {
+        await this.drawer.drawText(this.expandVariable(text), 50)
       } else {
-        // 改行ごとに入力待ち
-        await this.clickWait()
+        if (text.content[0].type === 'br') {
+          //prettier-ignore
+          this.onNextHandler = () => { this.isNext = true }
+          if (typeof text.wait === 'number') {
+            if (text.wait > 0 || this.isAuto) {
+              const waitTime = text.wait || 1500
+              // 指定された時間だけ待機
+              await sleep(waitTime)
+            }
+          } else {
+            // 改行ごとに入力待ち
+            await this.clickWait()
+          }
+        }
+        const container = this.drawer.createDecoratedElement(text)
+        await this.drawer.drawText(this.expandVariable(text.content[0]), text.speed || 50, container)
       }
     }
     this.drawer.isSkip = false
     this.scenarioManager.setHistory(scenarioObject.content)
+  }
+
+  expandVariable(text) {
+    outputLog('call', 'debug', text)
+    return text.replace(/{{([^{}]+)}}/g, (match) => {
+      const expr = match.slice(2, -2)
+      const returnValue = this.executeCode(`return ${expr}`)
+      return typeof returnValue == 'object' ? JSON.stringify(returnValue) : returnValue
+    })
   }
 
   // クリック待ち処理
