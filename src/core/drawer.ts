@@ -50,6 +50,7 @@ export class Drawer {
   }
 
   async drawText(text: string, wait: number, containerElement?: HTMLElement) {
+    outputLog('drawText', 'debug', { text, wait, containerElement })
     let element: HTMLElement = this.messageText
     // テキストを表示するコンテナ要素を指定した場合は、その要素に追加する
     if (containerElement) {
@@ -58,7 +59,7 @@ export class Drawer {
     }
     for (const char of text) {
       //prettier-ignore
-      setTimeout(() => { this.readySkip = true, wait*500 });
+      setTimeout(() => { this.readySkip = true, wait });
       // 100ミリ秒待ってから、スキップボタンが押されたら即座に表示
       if (!this.isSkip) {
         element.innerHTML += char
@@ -71,8 +72,14 @@ export class Drawer {
           break
         }
       }
+      await sleep(wait)
     }
   }
+
+  async drawLineBreak() {
+    // メッセージテキストに改行を追加する
+    this.messageText.innerHTML += '<br>'
+  } 
 
   clearText() {
     if (this.messageText) {

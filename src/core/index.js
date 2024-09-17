@@ -27,6 +27,7 @@ export class Core {
     call: this.callHandler,
     moveto: this.moveToHandler,
     route: this.routeHandler,
+    wait: this.waitHandler,
   }
 
   constructor() {
@@ -149,34 +150,24 @@ export class Core {
 
     //prettier-ignore
     this.onNextHandler = () => { this.drawer.isSkip = true }
+    this.drawer.clearText() // テキスト表示領域をクリア
     // 表示する文章を1行ずつ表示する
     for (const text of scenarioObject.content) {
-      // scenarioObject.content内にオブジェクトが含まれている場合は、クリア処理をスキップする
-      if (!scenarioObject.content.some((item) => typeof item === 'object' && item !== null)) {
-        this.drawer.clearText() // テキスト表示領域をクリア
-      }
-
+      outputLog('textSpeed', 'debug', text)
       if (typeof text === 'string') {
-        await this.drawer.drawText(this.expandVariable(text), 50)
+        await this.drawer.drawText(this.expandVariable(text), scenarioObject.speed || 25)
       } else {
-        if (text.content[0].type === 'br') {
-          //prettier-ignore
-          this.onNextHandler = () => { this.isNext = true }
-          if (typeof text.wait === 'number') {
-            if (text.wait > 0 || this.isAuto) {
-              const waitTime = text.wait || 1500
-              // 指定された時間だけ待機
-              await sleep(waitTime)
-            }
-          } else {
-            // 改行ごとに入力待ち
-            await this.clickWait()
-          }
+        if (text.type === 'br' || text.type === 'wait') {
+          outputLog('text', 'debug', text)
+          if (text.type === 'br') this.drawer.drawLineBreak()
+          await this.waitHandler({ wait: text.time })
+        } else {
+          const container = this.drawer.createDecoratedElement(text)
+          await this.drawer.drawText(this.expandVariable(text.content[0]), text.speed || 25, container)
         }
-        const container = this.drawer.createDecoratedElement(text)
-        await this.drawer.drawText(this.expandVariable(text.content[0]), text.speed || 50, container)
       }
     }
+    await this.waitHandler({ wait: scenarioObject.time })
     this.drawer.isSkip = false
     this.scenarioManager.setHistory(scenarioObject.content)
   }
@@ -188,6 +179,31 @@ export class Core {
       const returnValue = this.executeCode(`return ${expr}`)
       return typeof returnValue == 'object' ? JSON.stringify(returnValue) : returnValue
     })
+  }
+
+  async waitHandler(line) {
+    // line.timeがある場合、line.waitに代入する
+    if (line.time) line.wait = line.time
+    outputLog('call', 'debug', line)
+    //prettier-ignore
+    this.onNextHandler = () => { this.isNext = true }
+    outputLog('wait type', 'debug', typeof line.wait)
+
+    // line.waitが数値に変換可能な文字列の場合、数値に変換
+    if (typeof line.wait === 'string' && !isNaN(Number(line.wait))) {
+      line.wait = Number(line.wait)
+    }
+    if (typeof line.wait === 'number') {
+      outputLog('wait number', 'debug', line.wait)
+      if (line.wait > 0 || this.isAuto) {
+        const waitTime = line.wait || 1500
+        // 指定された時間だけ待機
+        await sleep(waitTime)
+      }
+    } else {
+      // 改行ごとに入力待ち
+      await this.clickWait()
+    }
   }
 
   // クリック待ち処理

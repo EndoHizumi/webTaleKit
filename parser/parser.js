@@ -38,12 +38,8 @@ module.exports = async (data) => {
     minifyJS: true,
     minifyCSS: true,
   })
-  // 改行コードを<br>に変換
-  const br = '<br>'
-  const brRegExp = new RegExp('\\n', 'g')
-  const htmlWithBr = html.replace(brRegExp, br)
   // HTMLをJSONに変換
-  const parseJson = await HTMLToJSON(htmlWithBr)
+  const parseJson = await HTMLToJSON(html)
   parseJson.content.forEach((element) => {
     if (element.type === 'scenario') {
       scenario = flattenAttributes(element.content)
