@@ -220,7 +220,7 @@ export class Core {
   async showHandler(line) {
     outputLog('line', 'debug', line)
     // 表示する画像の情報を管理オブジェクトに追加
-    const modeList = { 'bg': 'background', 'cutin': '', 'chara': '', 'cg': 'background', 'effect': 'effect' }
+    const modeList = { bg: 'background', cutin: '', chara: '', cg: 'background', effect: 'effect' }
     const key = Object.keys(modeList).includes(line.mode) ? modeList[line.mode] : line.name || line.src.split('/').pop()
     const baseLine = engineConfig.resolution.height / 2
     const centerPoint = {
@@ -281,7 +281,7 @@ export class Core {
 
   hideHandler(line) {
     outputLog('call', 'debug', line)
-    if(line.mode === 'cg') {
+    if (line.mode === 'cg') {
       this.displayedImages = { ...this.tempImages }
       this.tempImages = {}
     } else {
@@ -449,11 +449,11 @@ export class Core {
   }
 
   setBackground(image) {
-    this.displayedImages["background"] = image
+    this.displayedImages['background'] = image
   }
 
   getBackground() {
-    return this.displayedImages["background"].image
+    return this.displayedImages['background'].image
   }
 
   executeCode(code) {

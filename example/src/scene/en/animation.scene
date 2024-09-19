@@ -1,0 +1,28 @@
+<scene>
+  <scenario>
+    <say name="Narrator">This scene showcases various animations.</say>
+    <show src="./src/resource/chara/dancer.png" name="Dancer" pos="center:middle" />
+    <say name="Dancer">Watch me move across the stage!</say>
+    <moveTo name="Dancer" x="1000" y="360" duration="3" />
+    <moveTo name="Dancer" x="280" y="360" duration="3" />
+    <moveTo name="Dancer" x="640" y="360" duration="2" />
+    <say name="Dancer">I can also fade in and out.</say>
+    <hide name="Dancer" />
+    <show src="./src/resource/chara/dancer.png" name="Dancer" pos="center:middle" opacity="0" />
+    <show src="./src/resource/chara/dancer.png" name="Dancer" pos="center:middle" opacity="1" duration="3" />
+    <say name="Dancer">Animations can make your story more dynamic!</say>
+    <choice>
+      <item label="Return to Title" onSelect="title">
+        <route scene="title" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    const sceneConfig = {
+      name: 'animation',
+      background: './src/resource/background/stage.png',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>

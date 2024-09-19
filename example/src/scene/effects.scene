@@ -1,0 +1,38 @@
+<scene>
+  <scenario>
+    <say name="ナレーター">このシーンでは特殊効果やフィルターをデモンストレーションします。</say>
+    <show src="./src/resource/chara/scientist.png" name="科学者" pos="center:bottom" />
+    <say name="科学者">視覚効果の実験をしてみましょう！</say>
+    <say name="科学者">まずはセピア調のフィルターを試してみます。</say>
+    <show src="./src/resource/background/laboratory.jpg" sepia="0.8" />
+    <say name="科学者">次は私で試してみます。</say>
+    <show src="./src/resource/background/laboratory.jpg" />
+    <show src="./src/resource/chara/scientist.png" name="科学者" pos="center:bottom" sepia="0.8" />
+    <say name="科学者">次にモノクロ効果に切り替えてみましょう。</say>
+    <show src="./src/resource/background/laboratory.jpg" mono="1" />
+    <say name="科学者">こちらも、私で試してみます。</say>
+    <show src="./src/resource/background/laboratory.jpg" />
+    <show src="./src/resource/chara/scientist.png" name="科学者" pos="center:bottom" mono="1" />
+    <say name="科学者">ぼかし効果も適用できます。</say>
+    <show src="./src/resource/background/laboratory.jpg" blur="5" />
+    <say name="科学者">では、私で試してみます。</say>
+    <show src="./src/resource/background/laboratory.jpg" />
+    <show src="./src/resource/chara/scientist.png" name="科学者" pos="center:bottom" blur="5" />
+    <say name="科学者">これらの効果を使えば、ゲームに様々な雰囲気を演出できますね！</say>
+    <show src="./src/resource/background/laboratory.jpg" />
+    <show src="./src/resource/chara/scientist.png" name="科学者" pos="center:bottom" />
+    <choice>
+      <item label="タイトルに戻る" onSelect="title">
+        <route scene="title" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'effects',
+      background: './src/resource/background/laboratory.jpg',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>
