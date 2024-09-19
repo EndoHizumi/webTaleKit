@@ -1,9 +1,9 @@
 <scene>
   <scenario>
     <say name="ナレーター">このシーンではキャラクターの表示と配置をデモンストレーションします。</say>
-    <show src="./src/resource/chara/guide.png" name="ガイド" pos="left:bottom" />
+    <show src="./src/resource/character/guide.png" name="ガイド" pos="left:bottom" />
     <say name="ガイド">こんにちは、私がガイドです。キャラクターは画面上に配置できるんですよ。</say>
-    <show src="./src/resource/chara/guest.png" name="ゲスト" pos="right:bottom" />
+    <show src="./src/resource/character/guest.png" name="ゲスト" pos="right:bottom" />
     <say name="ゲスト">そうですね。複数のキャラクターを同時に表示することもできます！</say>
     <moveTo name="ガイド" x="500" y="400" duration="2" />
     <say name="ガイド">このように、滑らかに動くこともできます。</say>
