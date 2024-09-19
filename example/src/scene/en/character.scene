@@ -1,9 +1,9 @@
 <scene>
   <scenario>
     <say name="Narrator">This scene demonstrates character display and positioning.</say>
-    <show src="./src/resource/character/guide.png" name="Guide" pos="left:bottom" />
+    <show src="./src/resource/chara/guide.png" name="Guide" pos="left:bottom" />
     <say name="Guide">Hello! I'm Guide. Characters can be positioned on the screen.</say>
-    <show src="./src/resource/character/guest.png" name="Guest" pos="right:bottom" />
+    <show src="./src/resource/chara/guest.png" name="Guest" pos="right:bottom" />
     <say name="Guest">And multiple characters can appear at once!</say>
     <moveTo name="Guide" x="500" y="400" duration="2" />
     <say name="Guide">We can also move around smoothly.</say>
