@@ -11,7 +11,7 @@
     <choice>
       <item label="タイトルに戻る" onSelect="title">
         <sound src="./src/resource/bgm/exciting_music.mp3" stop />
-        <route scene="title" />
+        <route to="title" />
       </item>
     </choice>
   </scenario>

@@ -30,7 +30,7 @@
 
     <choice>
       <item label="タイトルに戻る" onSelect="title">
-        <route scene="title" />
+        <route to="title" />
       </item>
     </choice>
   </scenario>

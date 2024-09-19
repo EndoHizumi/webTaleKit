@@ -23,7 +23,7 @@
     <show src="./src/resource/character/scientist.png" name="科学者" pos="center:bottom" />
     <choice>
       <item label="タイトルに戻る" onSelect="title">
-        <route scene="title" />
+        <route to="title" />
       </item>
     </choice>
   </scenario>
