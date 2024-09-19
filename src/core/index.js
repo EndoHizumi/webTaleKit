@@ -202,7 +202,7 @@ export class Core {
 
   async choiceHandler(line) {
     outputLog('call', 'debug', line)
-    this.textHandler(line.prompt)
+    if (line.prompt) this.textHandler(line.prompt)
     const { selectId, onSelect: selectHandler } = await this.drawer.drawChoices(line)
     if (selectHandler !== undefined) {
       this.scenarioManager.addScenario(selectHandler)
