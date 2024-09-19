@@ -1,0 +1,26 @@
+<scene>
+  <scenario>
+    <say name="Narrator">This scene shows how backgrounds can be changed.</say>
+    <say name="Narrator">We're currently in a forest.</say>
+    <show src="./src/resource/background/beach.jpg" />
+    <say name="Narrator">Now we've moved to a beach!</say>
+    <show src="./src/resource/background/city.jpg" />
+    <say name="Narrator">And now we're in a city.</say>
+    <say name="Narrator">Backgrounds can be changed instantly or with transitions.</say>
+    <show src="./src/resource/background/sunset.jpg" transition="fade" duration="2000" />
+    <say name="Narrator">We can also change the background gradually with a fade effect like this. As you can see, the
+      twilight sky has spread across the scene.</say>
+    <choice>
+      <item label="Return to Title" onSelect="title">
+        <route scene="title" />
+      </item>
+    </choice>
+  </scenario>
+  <script>
+    const sceneConfig = {
+      name: 'background',
+      background: './src/resource/background/forest.jpg',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>
