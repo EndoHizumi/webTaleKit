@@ -1,0 +1,26 @@
+<scene>
+  <scenario>
+    <say name="ナレーター">このシーンでは音声機能をデモンストレーションします。</say>
+    <sound mode="bgm" src="./src/resource/bgm/calm_music.wav" play loop />
+    <say name="ナレーター">今、バックグラウンドミュージックが流れ始めました。これはループ再生することができます。</say>
+    <sound mode="bgm" src="./src/resource/se/doorbell.mp3" play />
+    <say name="ナレーター">今のは効果音です。一度だけ、あるいは繰り返し再生することができます。</say>
+    <sound name="calm_music.mp3" stop />
+    <sound src="./src/resource/bgm/nc366476_Virtual_Voyage.mp3" play loop />
+    <say name="ナレーター">このように、バックグラウンドミュージックをスムーズに切り替えることもできます。</say>
+    <choice>
+      <item label="タイトルに戻る" onSelect="title">
+        <sound name="nc366476_Virtual_Voyage.mp3" stop />
+        <route to="title" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'sound',
+      background: './src/resource/background/music_room.jpg',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>
