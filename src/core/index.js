@@ -41,13 +41,13 @@ export class Core {
     this.usedSounds = {}
   }
 
-  async start() {
-    outputLog('call', 'debug')
+  async start(initScene) {
+    outputLog('call', 'debug', initScene)
     // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
     // titleタグの内容を書き換える
     document.title = engineConfig.title
     // sceneファイルを読み込む
-    await this.loadScene('title')
+    await this.loadScene(initScene || 'title')
     // 画面を表示する
     await this.loadScreen(this.sceneConfig)
     // 入力イベントを設定する
