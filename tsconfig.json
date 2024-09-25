@@ -16,7 +16,8 @@
     "src/core/drawer.ts",
     "src/core/scenarioManager.ts",
     "src/resource/ImageObject.ts",
-    "src/resource/soundObject.ts"
+    "src/resource/soundObject.ts",
+    "src/core/resourceManager.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }
