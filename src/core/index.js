@@ -279,7 +279,7 @@ export class Core {
 
     if (line.transition === 'fade') {
       // フェードイン効果で表示
-      await this.drawer.fadeIn(line.duration || 500, await this.getImageObject(line))
+      await this.drawer.fadeIn(line.duration || 2000, await this.getImageObject(line))
       this.drawer.show(this.displayedImages)
     } else {
       // 通常の表示処理

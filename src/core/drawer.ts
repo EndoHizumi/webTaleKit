@@ -56,7 +56,7 @@ export class Drawer {
     this.fadeCanvas.style.top = '0'
     this.fadeCanvas.style.left = '0'
     this.fadeCanvas.style.pointerEvents = 'none' // クリックイベントを通過させる
-    this.gameScreen.appendChild(this.fadeCanvas)
+    this.gameScreen.insertBefore(this.fadeCanvas, document.getElementById('messageWindow'))
     this.fadeCtx = this.fadeCanvas.getContext('2d')!;
     // フェード用キャンバスのサイズを設定
     this.fadeCanvas.width = resolution.width;
