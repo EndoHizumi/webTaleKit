@@ -14,6 +14,8 @@ export class Drawer {
   private ctx!: CanvasRenderingContext2D
   private screenHtml!: HTMLElement
   private config: any
+  private fadeCanvas!: HTMLCanvasElement;
+  private fadeCtx!: CanvasRenderingContext2D;
   isSkip: boolean = false
   readySkip: boolean = false
 
@@ -23,6 +25,7 @@ export class Drawer {
     window.addEventListener('resize', () => this.adjustScale(this.gameScreen))
     // 初期ロード時にもスケールを調整
     this.adjustScale(this.gameScreen)
+
   }
 
   setScreen(screenHtml: HTMLElement, resolution: { width: number; height: number }) {
@@ -45,6 +48,19 @@ export class Drawer {
     this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
     // 初期ロード時にもスケールを調整
     this.adjustScale(this.gameScreen)
+    
+    // フェード用キャンバスをDOMに追加する
+    this.fadeCanvas = document.createElement('canvas')
+    this.fadeCanvas.className = 'fadeCanvas'
+    this.fadeCanvas.style.position = 'absolute'
+    this.fadeCanvas.style.top = '0'
+    this.fadeCanvas.style.left = '0'
+    this.fadeCanvas.style.pointerEvents = 'none' // クリックイベントを通過させる
+    this.gameScreen.appendChild(this.fadeCanvas)
+    this.fadeCtx = this.fadeCanvas.getContext('2d')!;
+    // フェード用キャンバスのサイズを設定
+    this.fadeCanvas.width = resolution.width;
+    this.fadeCanvas.height = resolution.height;
   }
 
   drawName(name: string) { 
@@ -68,6 +84,13 @@ export class Drawer {
           break
         }
       }
+    }
+  }
+
+
+  clearText() {
+    if (this.messageText) {
+      this.messageText.innerHTML = ''
     }
   }
 
@@ -157,8 +180,46 @@ export class Drawer {
     })
   }
 
-  clear() {
-    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+  async fadeIn(duration: number = 1000, img?: ImageObject): Promise<void> {
+    outputLog('Fade in', 'debug', { duration });
+    return this.fade(0, 1, duration, img);
+  }
+
+  async fadeOut(duration: number = 1000, img?: ImageObject): Promise<void> {
+    outputLog('Fade out', 'debug', { duration });
+    return this.fade(1, 0, duration, img);
+  }
+
+  private fade(start: number, end: number, duration: number, img?: ImageObject): Promise<void> {
+    return new Promise<void>((resolve) => {
+      const startTime = performance.now();
+
+      const animate = (currentTime: number) => {
+        const elapsedTime = currentTime - startTime;
+        const progress = Math.min(elapsedTime / duration, 1);
+        const currentAlpha = start + (end - start) * progress;
+
+        this.fadeCtx.clearRect(0, 0, this.fadeCanvas.width, this.fadeCanvas.height);
+        this.fadeCtx.globalAlpha = currentAlpha;
+        if(img){
+          this.drawCanvas(img, { x: 0, y: 0 }, { width: this.fadeCanvas.width, height: this.fadeCanvas.height }, false, this.fadeCtx);
+        } else {
+          this.fadeCtx.fillRect(0, 0, this.fadeCanvas.width, this.fadeCanvas.height);
+        }
+        
+        outputLog('Fade animation', 'debug', { progress, alpha: currentAlpha });
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          outputLog('Fade animation complete', 'debug');
+          this.fadeCtx.globalAlpha = 0
+          this.clear(this.fadeCtx);
+          resolve();
+        }
+      };
+
+      requestAnimationFrame(animate);
+    });
   }
 
   show(displayedImages: any) {
@@ -173,6 +234,7 @@ export class Drawer {
       const reverse: boolean = displayedImages[key].look || false
       const entry: { time: number; wait: boolean } = displayedImages[key]
         .entry || { time: 1, wait: false }
+
       if (entry.wait) {
         // 表示開始までの遅延処理
         setTimeout(() => {
@@ -214,13 +276,23 @@ export class Drawer {
       window.requestAnimationFrame(move);
     });
   }
-  drawCanvas(img: ImageObject, pos: any, size: any, reverse: any) {
+
+
+  clear(ctx?: CanvasRenderingContext2D) {
+    if (ctx === undefined) {
+      ctx = this.ctx
+    }
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+  }
+
+  drawCanvas(img: ImageObject, pos: any, size: any, reverse: any, ctx?: CanvasRenderingContext2D) {
     outputLog('drawCanvas', 'debug', {img, pos, size, reverse})
+    if (ctx === undefined) {
+      ctx = this.ctx
+    }
     const canvas = img.draw(reverse).getCanvas()
     // canvasから画像を取得して、this.ctxに描画
-    const imageWidth = size !== undefined ? size.width : canvas.width
-    const imageHeight = size !== undefined ? size.height : canvas.height
-    this.ctx.drawImage(
+    ctx.drawImage(
       canvas,
       0,
       0,
@@ -228,8 +300,8 @@ export class Drawer {
       canvas.height,
       pos.x,
       pos.y,
-      imageWidth,
-      imageHeight,
+      canvas.width,
+      canvas.height,
     ) //CanvasRenderingContext2D.drawImage: Passed-in canvas is empty
   }
 

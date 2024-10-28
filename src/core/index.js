@@ -158,7 +158,7 @@ export class Core {
     this.onNextHandler = () => { this.drawer.isSkip = true }
     // 表示する文章を1行ずつ表示する
     for (const line of scenarioObject.content) {
-      this.drawer.clearText(); // テキスト表示領域をクリア
+      this.drawer.clearText() // テキスト表示領域をクリア
       await this.drawer.drawText(line, line.speed || 50)
       //prettier-ignore
       this.onNextHandler = () => { this.isNext = true }
@@ -270,22 +270,35 @@ export class Core {
       look: line.look,
       entry: line.entry,
     }
+
     outputLog('displayedImages', 'debug', this.displayedImages[key])
     if (line.sepia) this.displayedImages[key].image.setSepia(line.sepia)
     if (line.mono) this.displayedImages[key].image.setMonochrome(line.mono)
     if (line.blur) this.displayedImages[key].image.setBlur(line.blur)
     if (line.opacity) this.displayedImages[key].image.setOpacity(line.opacity)
-    this.drawer.show(this.displayedImages)
+
+    if (line.transition === 'fade') {
+      // フェードイン効果で表示
+      await this.drawer.fadeIn(line.duration || 500, await this.getImageObject(line))
+      this.drawer.show(this.displayedImages)
+    } else {
+      // 通常の表示処理
+      this.drawer.show(this.displayedImages)
+    }
     outputLog('this.displayedImages', 'debug', this.displayedImages)
   }
 
-  hideHandler(line) {
+  async hideHandler(line) {
     outputLog('call', 'debug', line)
     if (line.mode === 'cg') {
       this.displayedImages = { ...this.tempImages }
       this.tempImages = {}
     } else {
       delete this.displayedImages[line.name]
+    }
+    if (line.transition === 'fade') {
+      // フェードアウト効果で非表示
+      await this.drawer.fadeOut(line.duration || 1000, this.getImageObject(line))
     }
     this.drawer.show(this.displayedImages)
   }
@@ -299,13 +312,15 @@ export class Core {
 
   async getImageObject(line) {
     outputLog('call', 'debug', line)
+    const name = line.name || line.src.split('/').pop()
     let image
     // 既にインスタンスがある場合は、それを使う
-    if (line.name) {
-      const targetImage = this.displayedImages[line.name]
+    if (Object.hasOwn(this.displayedImages, name)) {
+      const targetImage = this.displayedImages[name]
       const imageObject = targetImage ? targetImage.image : new ImageObject()
       image = await imageObject.setImageAsync(line.src)
     } else {
+      outputLog('new ImageObject', 'debug')
       image = await new ImageObject().setImageAsync(line.src)
     }
     return image
@@ -332,9 +347,10 @@ export class Core {
 
   async getSoundObject(line) {
     outputLog('call', 'debug', line)
+    const name = line.name || line.src.split('/').pop()
     let resource
-    if (line.name) {
-      const targetResource = this.usedSounds[line.name]
+    if (Object.hasOwn(this.usedSounds, name)) {
+      const targetResource = this.usedSounds[name]
       const soundObject = targetResource ? targetResource.audio : new SoundObject()
       resource = await soundObject.setAudioAsync(line.src)
     } else {
