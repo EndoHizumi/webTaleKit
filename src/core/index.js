@@ -279,7 +279,12 @@ export class Core {
 
     if (line.transition === 'fade') {
       // フェードイン効果で表示
-      await this.drawer.fadeIn(line.duration || 2000, await this.getImageObject(line))
+      await this.drawer.fadeIn(line.duration || 2000, await this.getImageObject(line), {
+        pos: position,
+        size,
+        look: line.look,
+        entry: line.entry,
+      })
       this.drawer.show(this.displayedImages)
     } else {
       // 通常の表示処理
@@ -290,17 +295,22 @@ export class Core {
 
   async hideHandler(line) {
     outputLog('call', 'debug', line)
+    const targetImage = this.displayedImages[line.name]
     if (line.mode === 'cg') {
       this.displayedImages = { ...this.tempImages }
       this.tempImages = {}
     } else {
       delete this.displayedImages[line.name]
     }
+    this.drawer.show(this.displayedImages)
     if (line.transition === 'fade') {
       // フェードアウト効果で非表示
-      await this.drawer.fadeOut(line.duration || 1000, this.getImageObject(line))
+      await this.drawer.fadeOut(line.duration || 1000, targetImage.image, {
+        pos: targetImage.pos,
+        size: targetImage.size,
+        look: targetImage.look,
+      })
     }
-    this.drawer.show(this.displayedImages)
   }
 
   async moveToHandler(line) {
