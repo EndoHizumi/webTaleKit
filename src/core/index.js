@@ -257,7 +257,8 @@ export class Core {
   async showHandler(line) {
     outputLog('line', 'debug', line)
     // 表示する画像の情報を管理オブジェクトに追加
-    const key = line.name || line.src.split('/').pop()
+    const modeList = { bg: 'background', cutin: '', chara: '', cg: 'background', effect: 'effect' }
+    const key = Object.keys(modeList).includes(line.mode) ? modeList[line.mode] : line.name || line.src.split('/').pop()
     const baseLine = engineConfig.resolution.height / 2
     const centerPoint = {
       left: { x: engineConfig.resolution.width * 0.25, y: baseLine },
@@ -267,9 +268,20 @@ export class Core {
 
     const image = await this.getImageObject(line)
     // 画像の表示位置を設定
-    const position = { x: line.x, y: line.y }
+    let position = { x: line.x || 0, y: line.y || 0 }
     // prettier-ignore
-    const size = line.width && line.height ? { width: line.width, height: line.height } : { width: image.getSize().width, height: image.getSize().height }
+    let size = line.width && line.height ? { width: line.width, height: line.height } : { width: image.getSize().width, height: image.getSize().height }
+
+    // line.modeが'cutin'の場合、center:middleのエイリアスを強制する
+    if (line.mode === 'cutin') {
+      line.pos = 'center:middle'
+    }
+
+    if (line.mode === 'cg') {
+      this.tempImages = { ...this.displayedImages }
+      this.displayedImages = { background: line.src }
+      size = { width: engineConfig.resolution.width, height: engineConfig.resolution.height }
+    }
 
     if (line.pos) {
       const pos = line.pos.split(':')
@@ -295,20 +307,47 @@ export class Core {
       look: line.look,
       entry: line.entry,
     }
+
     outputLog('displayedImages', 'debug', this.displayedImages[key])
     if (line.sepia) this.displayedImages[key].image.setSepia(line.sepia)
     if (line.mono) this.displayedImages[key].image.setMonochrome(line.mono)
     if (line.blur) this.displayedImages[key].image.setBlur(line.blur)
     if (line.opacity) this.displayedImages[key].image.setOpacity(line.opacity)
-    this.drawer.show(this.displayedImages)
+
+    if (line.transition === 'fade') {
+      // フェードイン効果で表示
+      await this.drawer.fadeIn(line.duration || 2000, await this.getImageObject(line), {
+        pos: position,
+        size,
+        look: line.look,
+        entry: line.entry,
+      })
+      this.drawer.show(this.displayedImages)
+    } else {
+      // 通常の表示処理
+      this.drawer.show(this.displayedImages)
+    }
     outputLog('this.displayedImages', 'debug', this.displayedImages)
   }
 
-  hideHandler(line) {
+  async hideHandler(line) {
     outputLog('call', 'debug', line)
-    const key = line.name
-    delete this.displayedImages[key]
+    const targetImage = this.displayedImages[line.name]
+    if (line.mode === 'cg') {
+      this.displayedImages = { ...this.tempImages }
+      this.tempImages = {}
+    } else {
+      delete this.displayedImages[line.name]
+    }
     this.drawer.show(this.displayedImages)
+    if (line.transition === 'fade') {
+      // フェードアウト効果で非表示
+      await this.drawer.fadeOut(line.duration || 1000, targetImage.image, {
+        pos: targetImage.pos,
+        size: targetImage.size,
+        look: targetImage.look,
+      })
+    }
   }
 
   async moveToHandler(line) {
@@ -320,13 +359,15 @@ export class Core {
 
   async getImageObject(line) {
     outputLog('call', 'debug', line)
+    const name = line.name || line.src.split('/').pop()
     let image
     // 既にインスタンスがある場合は、それを使う
-    if (line.name) {
-      const targetImage = this.displayedImages[line.name]
+    if (Object.hasOwn(this.displayedImages, name)) {
+      const targetImage = this.displayedImages[name]
       const imageObject = targetImage ? targetImage.image : new ImageObject()
       image = await imageObject.setImageAsync(line.src)
     } else {
+      outputLog('new ImageObject', 'debug')
       image = await new ImageObject().setImageAsync(line.src)
     }
     return image
@@ -353,9 +394,10 @@ export class Core {
 
   async getSoundObject(line) {
     outputLog('call', 'debug', line)
+    const name = line.name || line.src.split('/').pop()
     let resource
-    if (line.name) {
-      const targetResource = this.usedSounds[line.name]
+    if (Object.hasOwn(this.usedSounds, name)) {
+      const targetResource = this.usedSounds[name]
       const soundObject = targetResource ? targetResource.audio : new SoundObject()
       resource = await soundObject.setAudioAsync(line.src)
     } else {
@@ -368,7 +410,7 @@ export class Core {
     outputLog('call', 'debug')
     this.displayedImages = {
       background: {
-        image: this.scenarioManager.getBackground(),
+        image: this.getBackground(),
         size: {
           width: this.gameContainer.clientWidth,
           height: this.gameContainer.clientHeight,
@@ -467,6 +509,14 @@ export class Core {
       )
     }
     return line
+  }
+
+  setBackground(image) {
+    this.displayedImages['background'] = image
+  }
+
+  getBackground() {
+    return this.displayedImages['background'].image
   }
 
   executeCode(code) {
