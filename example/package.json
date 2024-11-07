@@ -11,7 +11,8 @@
   },
   "dependencies": {
     "html-webpack-plugin": "^5.6.0",
-    "storejs": "^2.1.0"
+    "storejs": "^2.1.0",
+    "webtalekit": "^0.2.6"
   },
   "devDependencies": {
     "filemanager-webpack-plugin": "^8.0.0",

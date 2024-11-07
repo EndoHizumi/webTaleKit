@@ -15,6 +15,7 @@
   "include": [
     "src/core/drawer.ts",
     "src/core/scenarioManager.ts",
+    "src/core/resourceManager.ts",
     "src/resource/ImageObject.ts",
     "src/resource/soundObject.ts",
     "src/core/resourceManager.ts"
