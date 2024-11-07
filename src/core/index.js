@@ -93,6 +93,12 @@ export class Core {
     var parser = new DOMParser()
     var doc = parser.parseFromString(htmlString, 'text/html')
     this.gameContainer.innerHTML = doc.getElementById('main').innerHTML
+    // 既に読み込んだスタイルシートがあったら削除する
+    const styleTags = document.head.getElementsByTagName('style')
+    for (const styleTag of styleTags) {
+      document.head.removeChild(styleTag)
+    }
+
     // Styleタグを取り出して、headタグに追加する
     const styleElement = doc.head.getElementsByTagName('style')[0]
     document.head.appendChild(styleElement)
@@ -160,7 +166,9 @@ export class Core {
         if (text.type === 'br' || text.type === 'wait') {
           outputLog('text', 'debug', text)
           if (text.type === 'br') this.drawer.drawLineBreak()
-          await this.waitHandler({ wait: text.time })
+          if (!text.nw) {
+            await this.waitHandler({ wait: text.time })
+          }
         } else {
           const container = this.drawer.createDecoratedElement(text)
           await this.drawer.drawText(this.expandVariable(text.content[0]), text.speed || 25, container)
