@@ -27,6 +27,7 @@ export class Core {
     call: this.callHandler,
     moveto: this.moveToHandler,
     route: this.routeHandler,
+    wait: this.waitHandler,
   }
 
   constructor() {
@@ -92,6 +93,12 @@ export class Core {
     var parser = new DOMParser()
     var doc = parser.parseFromString(htmlString, 'text/html')
     this.gameContainer.innerHTML = doc.getElementById('main').innerHTML
+    // 既に読み込んだスタイルシートがあったら削除する
+    const styleTags = document.head.getElementsByTagName('style')
+    for (const styleTag of styleTags) {
+      document.head.removeChild(styleTag)
+    }
+
     // Styleタグを取り出して、headタグに追加する
     const styleElement = doc.head.getElementsByTagName('style')[0]
     document.head.appendChild(styleElement)
@@ -139,14 +146,7 @@ export class Core {
       scenarioObject.content = scenarioObject.content.concat(scenarioObject.then || scenarioObject.error)
     }
     outputLog('call', 'debug', scenarioObject)
-    // {{}}が含まれている場合は、変換処理を行う
-    scenarioObject.content = scenarioObject.content.map((text) =>
-      text.replace(/{{([^{}]+)}}/g, (match) => {
-        const expr = match.slice(2, -2)
-        const returnValue = this.executeCode(`return ${expr}`)
-        return typeof returnValue == 'object' ? JSON.stringify(returnValue) : returnValue
-      }),
-    )
+
     // 名前が設定されている場合は、名前を表示する
     if (scenarioObject.name) {
       this.drawer.drawName(scenarioObject.name)
@@ -156,24 +156,62 @@ export class Core {
 
     //prettier-ignore
     this.onNextHandler = () => { this.drawer.isSkip = true }
+    this.drawer.clearText() // テキスト表示領域をクリア
     // 表示する文章を1行ずつ表示する
-    for (const line of scenarioObject.content) {
-      await this.drawer.drawText(line, line.speed || 50)
-      //prettier-ignore
-      this.onNextHandler = () => { this.isNext = true }
-      if (typeof line.wait === 'number') {
-        if (line.wait > 0 || this.isAuto) {
-          const waitTime = line.wait || 1500
-          // 指定された時間だけ待機
-          await sleep(line.wait)
-        }
+    for (const text of scenarioObject.content) {
+      outputLog('textSpeed', 'debug', text)
+      if (typeof text === 'string') {
+        await this.drawer.drawText(this.expandVariable(text), scenarioObject.speed || 25)
       } else {
-        // 改行ごとに入力待ち
-        await this.clickWait()
+        if (text.type === 'br' || text.type === 'wait') {
+          outputLog('text', 'debug', text)
+          if (text.type === 'br') this.drawer.drawLineBreak()
+          if (!text.nw) {
+            await this.waitHandler({ wait: text.time })
+          }
+        } else {
+          const container = this.drawer.createDecoratedElement(text)
+          await this.drawer.drawText(this.expandVariable(text.content[0]), text.speed || 25, container)
+        }
       }
     }
+    await this.waitHandler({ wait: scenarioObject.time })
     this.drawer.isSkip = false
     this.scenarioManager.setHistory(scenarioObject.content)
+  }
+
+  expandVariable(text) {
+    outputLog('call', 'debug', text)
+    return text.replace(/{{([^{}]+)}}/g, (match) => {
+      const expr = match.slice(2, -2)
+      const returnValue = this.executeCode(`return ${expr}`)
+      return typeof returnValue == 'object' ? JSON.stringify(returnValue) : returnValue
+    })
+  }
+
+  async waitHandler(line) {
+    // line.timeがある場合、line.waitに代入する
+    if (line.time) line.wait = line.time
+    outputLog('call', 'debug', line)
+    //prettier-ignore
+    this.onNextHandler = () => { this.isNext = true }
+    outputLog('wait type', 'debug', typeof line.wait)
+
+    // line.waitが数値に変換可能な文字列の場合、数値に変換
+    if (typeof line.wait === 'string' && !isNaN(Number(line.wait))) {
+      line.wait = Number(line.wait)
+    }
+    if (typeof line.wait === 'number') {
+      outputLog('wait number', 'debug', line.wait)
+      if (line.wait > 0 || this.isAuto) {
+        const waitTime = line.wait || 1500
+        // 指定された時間だけ待機
+        await sleep(waitTime)
+      }
+    } else {
+      // 改行ごとに入力待ち
+      await this.clickWait()
+    }
   }
 
   // クリック待ち処理
