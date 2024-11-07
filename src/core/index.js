@@ -8,6 +8,7 @@ import { outputLog } from '../utils/logger'
 import { sleep } from '../utils/waitUtil'
 
 export class Core {
+  bgm = null
   isAuto = false
   isNext = false
   isSkip = false
@@ -70,6 +71,9 @@ export class Core {
       this.onNextHandler()
     })
 
+    await this.textHandler('タップでスタート')
+    // BGMを再生する
+    this.bgm.play(true)
     // シナリオを実行する
     while (this.scenarioManager.hasNext()) {
       await this.runScenario()
@@ -116,10 +120,7 @@ export class Core {
       },
     }
     this.drawer.show(this.displayedImages)
-    this.scenarioManager.setBackground(background)
-    // BGMを再生する
-    const bgm = await new SoundObject().setAudioAsync(sceneConfig.bgm)
-    bgm.play(true)
+    this.bgm = await new SoundObject().setAudioAsync(sceneConfig.bgm)
   }
 
   async runScenario() {
@@ -375,16 +376,25 @@ export class Core {
 
   async soundHandler(line) {
     outputLog('call', 'debug', line)
+    let soundObject = null
+    if(line.mode === 'bgm') {
+      if (this.bgm.isPlaying) {
+        this.bgm.stop()
+      }
+      soundObject = await this.getSoundObject(line)
+      this.bgm = soundObject
+    } else {
     // soundObjectを作成
-    const soundObject = await this.getSoundObject(line)
+    soundObject = await this.getSoundObject(line)
     // playプロパティが存在する場合は、再生する
-    if ('play' in line) {
-      'loop' in line ? soundObject.play(true) : soundObject.play()
-    } else if ('stop' in line) {
-      soundObject.stop()
-    } else if ('pause' in line) {
-      soundObject.pause()
-    }
+  }
+  if ('play' in line) {
+    'loop' in line ? soundObject.play(true) : soundObject.play()
+  } else if ('stop' in line) {
+    soundObject.stop()
+  } else if ('pause' in line) {
+    soundObject.pause()
+  }
     // soundObjectを管理オブジェクトに追加
     const key = line.name || line.src.split('/').pop()
     this.usedSounds[key] = {
@@ -436,11 +446,17 @@ export class Core {
 
   async routeHandler(line) {
     outputLog('call', 'debug', line)
+    if (this.bgm.isPlaying) {
+      this.bgm.stop()
+      this.bgm = null
+    }
     this.newpageHandler()
     // sceneファイルを読み込む
     await this.loadScene(line.to)
     // 画面を表示する
     await this.loadScreen(this.sceneConfig)
+     // BGMを再生する
+     this.bgm.play(true)
   }
 
   // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？

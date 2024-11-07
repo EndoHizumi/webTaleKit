@@ -2,7 +2,8 @@ export class SoundObject {
   // 表示済みの画像を管理するクラス
   private audio: any = null
   private ctx: AudioContext = new AudioContext()
-  public source: AudioBufferSourceNode = this.ctx.createBufferSource()
+  public source: AudioBufferSourceNode | null = this.ctx.createBufferSource()
+  private isPlaying: boolean = false
 
   constructor() {
     this.ctx = new AudioContext()
@@ -41,31 +42,46 @@ export class SoundObject {
     }
     const arrayBuffer = await (await fetch(src)).arrayBuffer()
     this.audio = await this.ctx.decodeAudioData(arrayBuffer)
-    this.source = await this.ctx.createBufferSource()
-    this.source.buffer = this.audio
-    this.source.connect(this.ctx.destination)
     return this
   }
 
   // music control
   play(loop: boolean): void {
-    // 無音の短い音声を作成
-    const silentBuffer = this.ctx.createBuffer(1, 1, 22050);
-    const silentSource = this.ctx.createBufferSource();
-    silentSource.buffer = silentBuffer;
-    silentSource.connect(this.ctx.destination);
-    // 無音の音声を再生
-    silentSource.start(0);
+    if (this.isPlaying) {
+      this.stop()
+    }
 
-    // 本当の音声を再生
+    if (!this.audio) {
+      console.error('No audio loaded')
+      return
+    }
+    this.source = this.ctx.createBufferSource()
+    this.source.buffer = this.audio
+    this.source.connect(this.ctx.destination)
     this.source.loop = loop;
     this.source.start(0)
+
+    this.isPlaying = true
+
+    this.source.onended = () => {
+      if (!this.source?.loop) {
+        this.isPlaying = false
+      }
+    }
   }
 
   stop(): void {
-    this.source.stop()
+    if (this.source && this.isPlaying) {
+      this.source.stop()
+      this.source.disconnect()
+      this.source = null
+      this.isPlaying = false
+    }
   }
 
+  get playing(): boolean {
+    return this.isPlaying
+  }
   // other effect 
   // volume control
 }
