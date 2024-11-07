@@ -235,7 +235,7 @@ export class Core {
     outputLog('call', 'debug', line)
     // say(name:string, pattern: string, voice: {playの引数},  ...text)
     if (line.voice) await this.soundHandler({ path: line.voice, play: undefined })
-    await this.textHandler({ content: line.content, name: line.name })
+    await this.textHandler({ content: line.content, name: line.name, speed: line.speed || 25 })
     this.scenarioManager.setHistory(line)
   }
 
@@ -307,9 +307,9 @@ export class Core {
     if (line.pos) {
       const pos = line.pos.split(':')
       const baseLines = {
-        top: 0,
+        top: 0 + size.height,
         middle: engineConfig.resolution.height / 2,
-        bottom: engineConfig.resolution.height,
+        bottom: engineConfig.resolution.height - size.height,
       }
       // エイリアスが設定されている場合、画像の中心点を求めて、画像の表示位置を設定する
       position.x = centerPoint[pos[0]].x - size.width / 2
@@ -397,24 +397,24 @@ export class Core {
   async soundHandler(line) {
     outputLog('call', 'debug', line)
     let soundObject = null
-    if(line.mode === 'bgm') {
+    if (line.mode === 'bgm') {
       if (this.bgm.isPlaying) {
         this.bgm.stop()
       }
       soundObject = await this.getSoundObject(line)
       this.bgm = soundObject
     } else {
-    // soundObjectを作成
-    soundObject = await this.getSoundObject(line)
-    // playプロパティが存在する場合は、再生する
-  }
-  if ('play' in line) {
-    'loop' in line ? soundObject.play(true) : soundObject.play()
-  } else if ('stop' in line) {
-    soundObject.stop()
-  } else if ('pause' in line) {
-    soundObject.pause()
-  }
+      // soundObjectを作成
+      soundObject = await this.getSoundObject(line)
+      // playプロパティが存在する場合は、再生する
+    }
+    if ('play' in line) {
+      'loop' in line ? soundObject.play(true) : soundObject.play()
+    } else if ('stop' in line) {
+      soundObject.stop()
+    } else if ('pause' in line) {
+      soundObject.pause()
+    }
     // soundObjectを管理オブジェクトに追加
     const key = line.name || line.src.split('/').pop()
     this.usedSounds[key] = {
@@ -471,8 +471,8 @@ export class Core {
     await this.loadScene(line.to)
     // 画面を表示する
     await this.loadScreen(this.sceneConfig)
-     // BGMを再生する
-     this.bgm.play(true)
+    // BGMを再生する
+    this.bgm.play(true)
   }
 
   // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？
