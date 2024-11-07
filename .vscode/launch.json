@@ -17,16 +17,15 @@
       "request": "launch",
       "name": "Launch Chrome",
       "url": "http://localhost:8080",
-      "webRoot": "${workspaceFolder}"
+      "webRoot": "${workspaceFolder}",
+      "sourceMaps": true
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Debug Node.js with Args",
       "program": "${workspaceFolder}/cli.js",
-      "args": [
-        "C:/Users/endoh/Dropbox/Development/testGame/src/scene/sample.scene"
-      ],
+      "args": ["C:/Users/endoh/Dropbox/Development/testGame/src/scene/sample.scene"],
       "console": "integratedTerminal"
     }
   ]

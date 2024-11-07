@@ -1,4 +1,4 @@
 node_modules/
 dist/
 runtime/
-src/js/
+src/js/*

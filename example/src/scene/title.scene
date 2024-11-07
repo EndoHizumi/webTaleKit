@@ -25,9 +25,6 @@
       <item label="特殊効果デモ" onSelect="effects">
         <route to="effects" />
       </item>
-      <item label="特殊効果デモ" onSelect="effects">
-        <route to="effects" />
-      </item>
     </choice>
   </scenario>
 

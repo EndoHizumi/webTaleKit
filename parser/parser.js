@@ -21,7 +21,7 @@ module.exports = async (data) => {
       Object.assign(rest, attributes)
     }
     if (rest.content) {
-      rest.content = rest.content.map(flattenAttributes).filter((content) => content.type !== 'br')
+      rest.content = rest.content.map(flattenAttributes)
     }
     return rest
   }
@@ -38,6 +38,7 @@ module.exports = async (data) => {
     minifyJS: true,
     minifyCSS: true,
   })
+  // HTMLをJSONに変換
   const parseJson = await HTMLToJSON(html)
   parseJson.content.forEach((element) => {
     if (element.type === 'scenario') {

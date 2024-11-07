@@ -9,7 +9,6 @@
     "dev": "rimraf dist && npx wtc ./src/scene/ ./src/js/ && npx webpack serve --mode development",
     "build": "rimraf dist && npx wtc ./src/scene/ ./src/js/ && webpack --mode production"
   },
-
   "dependencies": {
     "html-webpack-plugin": "^5.6.0",
     "storejs": "^2.1.0",
@@ -21,7 +20,7 @@
     "ts-loader": "^9.5.1",
     "typescript": "^5.5.2",
     "webpack": "^5.75.0",
-    "webpack-cli": "^5.0.1",
+    "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.11.1"
   }
 }

@@ -8,6 +8,7 @@ import { outputLog } from '../utils/logger'
 import { sleep } from '../utils/waitUtil'
 
 export class Core {
+  bgm = null
   isAuto = false
   isNext = false
   isSkip = false
@@ -27,6 +28,7 @@ export class Core {
     call: this.callHandler,
     moveto: this.moveToHandler,
     route: this.routeHandler,
+    wait: this.waitHandler,
   }
 
   constructor() {
@@ -41,13 +43,13 @@ export class Core {
     this.usedSounds = {}
   }
 
-  async start() {
-    outputLog('call', 'debug')
+  async start(initScene) {
+    outputLog('call', 'debug', initScene)
     // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
     // titleタグの内容を書き換える
     document.title = engineConfig.title
     // sceneファイルを読み込む
-    await this.loadScene('title')
+    await this.loadScene(initScene || 'title')
     // 画面を表示する
     await this.loadScreen(this.sceneConfig)
     // 入力イベントを設定する
@@ -69,6 +71,9 @@ export class Core {
       this.onNextHandler()
     })
 
+    await this.textHandler('タップでスタート')
+    // BGMを再生する
+    this.bgm.play(true)
     // シナリオを実行する
     while (this.scenarioManager.hasNext()) {
       await this.runScenario()
@@ -92,6 +97,12 @@ export class Core {
     var parser = new DOMParser()
     var doc = parser.parseFromString(htmlString, 'text/html')
     this.gameContainer.innerHTML = doc.getElementById('main').innerHTML
+    // 既に読み込んだスタイルシートがあったら削除する
+    const styleTags = document.head.getElementsByTagName('style')
+    for (const styleTag of styleTags) {
+      document.head.removeChild(styleTag)
+    }
+
     // Styleタグを取り出して、headタグに追加する
     const styleElement = doc.head.getElementsByTagName('style')[0]
     document.head.appendChild(styleElement)
@@ -109,10 +120,7 @@ export class Core {
       },
     }
     this.drawer.show(this.displayedImages)
-    this.scenarioManager.setBackground(background)
-    // BGMを再生する
-    const bgm = await new SoundObject().setAudioAsync(sceneConfig.bgm)
-    bgm.play(true)
+    this.bgm = await new SoundObject().setAudioAsync(sceneConfig.bgm)
   }
 
   async runScenario() {
@@ -139,14 +147,7 @@ export class Core {
       scenarioObject.content = scenarioObject.content.concat(scenarioObject.then || scenarioObject.error)
     }
     outputLog('call', 'debug', scenarioObject)
-    // {{}}が含まれている場合は、変換処理を行う
-    scenarioObject.content = scenarioObject.content.map((text) =>
-      text.replace(/{{([^{}]+)}}/g, (match) => {
-        const expr = match.slice(2, -2)
-        const returnValue = this.executeCode(`return ${expr}`)
-        return typeof returnValue == 'object' ? JSON.stringify(returnValue) : returnValue
-      }),
-    )
+
     // 名前が設定されている場合は、名前を表示する
     if (scenarioObject.name) {
       this.drawer.drawName(scenarioObject.name)
@@ -156,24 +157,62 @@ export class Core {
 
     //prettier-ignore
     this.onNextHandler = () => { this.drawer.isSkip = true }
+    this.drawer.clearText() // テキスト表示領域をクリア
     // 表示する文章を1行ずつ表示する
-    for (const line of scenarioObject.content) {
-      await this.drawer.drawText(line, line.speed || 50)
-      //prettier-ignore
-      this.onNextHandler = () => { this.isNext = true }
-      if (typeof line.wait === 'number') {
-        if (line.wait > 0 || this.isAuto) {
-          const waitTime = line.wait || 1500
-          // 指定された時間だけ待機
-          await sleep(line.wait)
-        }
+    for (const text of scenarioObject.content) {
+      outputLog('textSpeed', 'debug', text)
+      if (typeof text === 'string') {
+        await this.drawer.drawText(this.expandVariable(text), scenarioObject.speed || 25)
       } else {
-        // 改行ごとに入力待ち
-        await this.clickWait()
+        if (text.type === 'br' || text.type === 'wait') {
+          outputLog('text', 'debug', text)
+          if (text.type === 'br') this.drawer.drawLineBreak()
+          if (!text.nw) {
+            await this.waitHandler({ wait: text.time })
+          }
+        } else {
+          const container = this.drawer.createDecoratedElement(text)
+          await this.drawer.drawText(this.expandVariable(text.content[0]), text.speed || 25, container)
+        }
       }
     }
+    await this.waitHandler({ wait: scenarioObject.time })
     this.drawer.isSkip = false
     this.scenarioManager.setHistory(scenarioObject.content)
+  }
+
+  expandVariable(text) {
+    outputLog('call', 'debug', text)
+    return text.replace(/{{([^{}]+)}}/g, (match) => {
+      const expr = match.slice(2, -2)
+      const returnValue = this.executeCode(`return ${expr}`)
+      return typeof returnValue == 'object' ? JSON.stringify(returnValue) : returnValue
+    })
+  }
+
+  async waitHandler(line) {
+    // line.timeがある場合、line.waitに代入する
+    if (line.time) line.wait = line.time
+    outputLog('call', 'debug', line)
+    //prettier-ignore
+    this.onNextHandler = () => { this.isNext = true }
+    outputLog('wait type', 'debug', typeof line.wait)
+
+    // line.waitが数値に変換可能な文字列の場合、数値に変換
+    if (typeof line.wait === 'string' && !isNaN(Number(line.wait))) {
+      line.wait = Number(line.wait)
+    }
+    if (typeof line.wait === 'number') {
+      outputLog('wait number', 'debug', line.wait)
+      if (line.wait > 0 || this.isAuto) {
+        const waitTime = line.wait || 1500
+        // 指定された時間だけ待機
+        await sleep(waitTime)
+      }
+    } else {
+      // 改行ごとに入力待ち
+      await this.clickWait()
+    }
   }
 
   // クリック待ち処理
@@ -196,13 +235,13 @@ export class Core {
     outputLog('call', 'debug', line)
     // say(name:string, pattern: string, voice: {playの引数},  ...text)
     if (line.voice) await this.soundHandler({ path: line.voice, play: undefined })
-    await this.textHandler({ content: line.content, name: line.name })
+    await this.textHandler({ content: line.content, name: line.name, speed: line.speed || 25 })
     this.scenarioManager.setHistory(line)
   }
 
   async choiceHandler(line) {
     outputLog('call', 'debug', line)
-    this.textHandler(line.prompt)
+    if (line.prompt) this.textHandler(line.prompt)
     const { selectId, onSelect: selectHandler } = await this.drawer.drawChoices(line)
     if (selectHandler !== undefined) {
       this.scenarioManager.addScenario(selectHandler)
@@ -239,7 +278,8 @@ export class Core {
   async showHandler(line) {
     outputLog('line', 'debug', line)
     // 表示する画像の情報を管理オブジェクトに追加
-    const key = line.name || line.src.split('/').pop()
+    const modeList = { bg: 'background', cutin: '', chara: '', cg: 'background', effect: 'effect' }
+    const key = Object.keys(modeList).includes(line.mode) ? modeList[line.mode] : line.name || line.src.split('/').pop()
     const baseLine = engineConfig.resolution.height / 2
     const centerPoint = {
       left: { x: engineConfig.resolution.width * 0.25, y: baseLine },
@@ -249,16 +289,27 @@ export class Core {
 
     const image = await this.getImageObject(line)
     // 画像の表示位置を設定
-    const position = { x: line.x, y: line.y }
+    let position = { x: line.x || 0, y: line.y || 0 }
     // prettier-ignore
-    const size = line.width && line.height ? { width: line.width, height: line.height } : { width: image.getSize().width, height: image.getSize().height }
+    let size = line.width && line.height ? { width: line.width, height: line.height } : { width: image.getSize().width, height: image.getSize().height }
+
+    // line.modeが'cutin'の場合、center:middleのエイリアスを強制する
+    if (line.mode === 'cutin') {
+      line.pos = 'center:middle'
+    }
+
+    if (line.mode === 'cg') {
+      this.tempImages = { ...this.displayedImages }
+      this.displayedImages = { background: line.src }
+      size = { width: engineConfig.resolution.width, height: engineConfig.resolution.height }
+    }
 
     if (line.pos) {
       const pos = line.pos.split(':')
       const baseLines = {
-        top: 0,
+        top: 0 + size.height,
         middle: engineConfig.resolution.height / 2,
-        bottom: engineConfig.resolution.height,
+        bottom: engineConfig.resolution.height - size.height,
       }
       // エイリアスが設定されている場合、画像の中心点を求めて、画像の表示位置を設定する
       position.x = centerPoint[pos[0]].x - size.width / 2
@@ -277,20 +328,47 @@ export class Core {
       look: line.look,
       entry: line.entry,
     }
+
     outputLog('displayedImages', 'debug', this.displayedImages[key])
     if (line.sepia) this.displayedImages[key].image.setSepia(line.sepia)
     if (line.mono) this.displayedImages[key].image.setMonochrome(line.mono)
     if (line.blur) this.displayedImages[key].image.setBlur(line.blur)
     if (line.opacity) this.displayedImages[key].image.setOpacity(line.opacity)
-    this.drawer.show(this.displayedImages)
+
+    if (line.transition === 'fade') {
+      // フェードイン効果で表示
+      await this.drawer.fadeIn(line.duration || 2000, await this.getImageObject(line), {
+        pos: position,
+        size,
+        look: line.look,
+        entry: line.entry,
+      })
+      this.drawer.show(this.displayedImages)
+    } else {
+      // 通常の表示処理
+      this.drawer.show(this.displayedImages)
+    }
     outputLog('this.displayedImages', 'debug', this.displayedImages)
   }
 
-  hideHandler(line) {
+  async hideHandler(line) {
     outputLog('call', 'debug', line)
-    const key = line.name
-    delete this.displayedImages[key]
+    const targetImage = this.displayedImages[line.name]
+    if (line.mode === 'cg') {
+      this.displayedImages = { ...this.tempImages }
+      this.tempImages = {}
+    } else {
+      delete this.displayedImages[line.name]
+    }
     this.drawer.show(this.displayedImages)
+    if (line.transition === 'fade') {
+      // フェードアウト効果で非表示
+      await this.drawer.fadeOut(line.duration || 1000, targetImage.image, {
+        pos: targetImage.pos,
+        size: targetImage.size,
+        look: targetImage.look,
+      })
+    }
   }
 
   async moveToHandler(line) {
@@ -302,13 +380,15 @@ export class Core {
 
   async getImageObject(line) {
     outputLog('call', 'debug', line)
+    const name = line.name || line.src.split('/').pop()
     let image
     // 既にインスタンスがある場合は、それを使う
-    if (line.name) {
-      const targetImage = this.displayedImages[line.name]
+    if (Object.hasOwn(this.displayedImages, name)) {
+      const targetImage = this.displayedImages[name]
       const imageObject = targetImage ? targetImage.image : new ImageObject()
       image = await imageObject.setImageAsync(line.src)
     } else {
+      outputLog('new ImageObject', 'debug')
       image = await new ImageObject().setImageAsync(line.src)
     }
     return image
@@ -316,9 +396,18 @@ export class Core {
 
   async soundHandler(line) {
     outputLog('call', 'debug', line)
-    // soundObjectを作成
-    const soundObject = await this.getSoundObject(line)
-    // playプロパティが存在する場合は、再生する
+    let soundObject = null
+    if (line.mode === 'bgm') {
+      if (this.bgm.isPlaying) {
+        this.bgm.stop()
+      }
+      soundObject = await this.getSoundObject(line)
+      this.bgm = soundObject
+    } else {
+      // soundObjectを作成
+      soundObject = await this.getSoundObject(line)
+      // playプロパティが存在する場合は、再生する
+    }
     if ('play' in line) {
       'loop' in line ? soundObject.play(true) : soundObject.play()
     } else if ('stop' in line) {
@@ -335,9 +424,10 @@ export class Core {
 
   async getSoundObject(line) {
     outputLog('call', 'debug', line)
+    const name = line.name || line.src.split('/').pop()
     let resource
-    if (line.name) {
-      const targetResource = this.usedSounds[line.name]
+    if (Object.hasOwn(this.usedSounds, name)) {
+      const targetResource = this.usedSounds[name]
       const soundObject = targetResource ? targetResource.audio : new SoundObject()
       resource = await soundObject.setAudioAsync(line.src)
     } else {
@@ -350,7 +440,7 @@ export class Core {
     outputLog('call', 'debug')
     this.displayedImages = {
       background: {
-        image: this.scenarioManager.getBackground(),
+        image: this.getBackground(),
         size: {
           width: this.gameContainer.clientWidth,
           height: this.gameContainer.clientHeight,
@@ -372,11 +462,17 @@ export class Core {
 
   async routeHandler(line) {
     outputLog('call', 'debug', line)
+    if (this.bgm.isPlaying) {
+      this.bgm.stop()
+      this.bgm = null
+    }
     this.newpageHandler()
     // sceneファイルを読み込む
     await this.loadScene(line.to)
     // 画面を表示する
     await this.loadScreen(this.sceneConfig)
+    // BGMを再生する
+    this.bgm.play(true)
   }
 
   // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？
@@ -445,6 +541,14 @@ export class Core {
       )
     }
     return line
+  }
+
+  setBackground(image) {
+    this.displayedImages['background'] = image
+  }
+
+  getBackground() {
+    return this.displayedImages['background'].image
   }
 
   executeCode(code) {
