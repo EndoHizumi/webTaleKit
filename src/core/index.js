@@ -53,7 +53,7 @@ export class Core {
     // 画面を表示する
     await this.loadScreen(this.sceneConfig)
     // 入力イベントを設定する
-    document.addEventListener('keydown', (e) => {
+    document.querySelector('#gameContainer').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         this.onNextHandler()
       } else if (e.key === 'Control') {
@@ -61,13 +61,13 @@ export class Core {
         this.isNext = true
       }
     })
-    document.addEventListener('keyup', (e) => {
+    document.querySelector('#gameContainer').addEventListener('keyup', (e) => {
       if (e.key === 'Control') {
         this.drawer.isSkip = true
         this.isNext = false
       }
     })
-    document.addEventListener('click', (e) => {
+    document.querySelector('#gameContainer').addEventListener('click', (e) => {
       this.onNextHandler()
     })
 
@@ -130,10 +130,9 @@ export class Core {
       return
     }
     outputLog('scenarioObject', 'debug', scenarioObject)
-    // prettier-ignore
+    // シナリオオブジェクトのtypeプロパティに応じて、対応する関数を実行する
     const boundFunction = this.commandList[scenarioObject.type || 'text'].bind(this)
-    // prettier-ignore
-    outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`,'debug',scenarioObject)
+    outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`, 'debug', scenarioObject)
     scenarioObject = await this.httpHandler(scenarioObject)
     await boundFunction(scenarioObject)
   }
@@ -183,6 +182,7 @@ export class Core {
 
   expandVariable(text) {
     outputLog('call', 'debug', text)
+    if (typeof text !== 'string') return text
     return text.replace(/{{([^{}]+)}}/g, (match) => {
       const expr = match.slice(2, -2)
       const returnValue = this.executeCode(`return ${expr}`)
@@ -241,12 +241,18 @@ export class Core {
 
   async choiceHandler(line) {
     outputLog('call', 'debug', line)
+    document.querySelector('#interactiveView').style.visibility = 'visible'
     if (line.prompt) this.textHandler(line.prompt)
+    // ムスタッシュ構文があるときは、変数の展開
+    line.content.forEach((choice) => {
+      choice.label = this.expandVariable(choice.label)
+    })
     const { selectId, onSelect: selectHandler } = await this.drawer.drawChoices(line)
     if (selectHandler !== undefined) {
       this.scenarioManager.addScenario(selectHandler)
     }
     this.scenarioManager.setHistory({ line, ...selectId })
+    document.querySelector('#interactiveView').style.visibility = 'hidden'
   }
 
   jumpHandler(line) {
@@ -277,6 +283,10 @@ export class Core {
 
   async showHandler(line) {
     outputLog('line', 'debug', line)
+    // ムスタッシュ構文があるときは、変数の展開
+    Object.keys(line).forEach((item) => {
+      line[item] = this.expandVariable(line[item])
+    })
     // 表示する画像の情報を管理オブジェクトに追加
     const modeList = { bg: 'background', cutin: '', chara: '', cg: 'background', effect: 'effect' }
     const key = Object.keys(modeList).includes(line.mode) ? modeList[line.mode] : line.name || line.src.split('/').pop()
@@ -286,6 +296,7 @@ export class Core {
       center: { x: engineConfig.resolution.width * 0.5, y: baseLine },
       right: { x: engineConfig.resolution.width * 0.75, y: baseLine },
     }
+    line.src = this.expandVariable(line.src) || line.name
 
     const image = await this.getImageObject(line)
     // 画像の表示位置を設定
@@ -478,7 +489,7 @@ export class Core {
   // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？
   callHandler(line) {
     outputLog('call', 'debug', line)
-    this.executeCode(line.func)
+    this.executeCode(line.method)
   }
 
   async httpHandler(line) {
@@ -552,6 +563,7 @@ export class Core {
   }
 
   executeCode(code) {
+    outputLog('call', 'debug', code)
     try {
       const context = { ...this.sceneFile }
       const func = new Function(...Object.keys(context), code)
