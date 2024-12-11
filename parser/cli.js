@@ -24,20 +24,23 @@ const exec = (targetScript) => {
       return
     }
     // パーサーを呼び出す。
-    const { scenario, script } = await parse(data)
+    const { scenario, script, lang } = await parse(data)
     // jsディレクトリがない場合、作成する
     if (!fs.existsSync(outputPath)) {
       fs.mkdirSync(outputPath)
     }
+    // JSファイルを出力する(lang=tsの場合は、tsファイルを出力する)
     fs.writeFile(
-      `${outputPath}${fileName}.js`,
+      `${outputPath}${fileName}.${lang == 'ts' ? 'ts' : 'js'}`,
       `${script};\nexport const scenario = ${JSON.stringify(scenario)}; `,
       (err) => {
         if (err) {
           console.error(err)
           return
         }
-        console.log(`${outputPath}${fileName}.js`)
+        console.log(`Input: ${targetScript}`)
+        console.log(`lang: ${lang}`)
+        console.log(`Output: ${outputPath}${fileName}.${lang == 'ts' ? 'ts' : 'js'}`)
       },
     )
   })

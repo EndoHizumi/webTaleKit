@@ -4,6 +4,7 @@ const { minify } = require('html-minifier')
 module.exports = async (data) => {
   let scenario = []
   let script = []
+  let lang = 'js'
 
   /**
    * 渡されたオブジェクトを展開する
@@ -43,8 +44,10 @@ module.exports = async (data) => {
     if (element.type === 'scenario') {
       scenario = flattenAttributes(element.content)
     } else {
+      console.log(element)
       script = element.content
+      lang = element.attributes.lang
     }
   })
-  return { scenario, script }
+  return { scenario, script, lang }
 }
