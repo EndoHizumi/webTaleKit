@@ -2,7 +2,7 @@
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "outDir": "./dist/src/",
+    "outDir": "./dist/",
     "sourceMap": true,
     "noImplicitAny": true,
     "module": "commonjs",
@@ -13,7 +13,11 @@
     "moduleResolution": "node"
   },
   "include": [
+    "src/utils/logger.ts",
+    "src/utils/store.ts",
+    "src/utils/waitUtil.ts",
     "src/core/drawer.ts",
+    "src/core/resourceManager.ts",
     "src/core/scenarioManager.ts",
     "src/core/resourceManager.ts",
     "src/resource/ImageObject.ts",

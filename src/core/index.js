@@ -53,7 +53,7 @@ export class Core {
     // 画面を表示する
     await this.loadScreen(this.sceneConfig)
     // 入力イベントを設定する
-    document.addEventListener('keydown', (e) => {
+    document.querySelector('#gameContainer').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         this.onNextHandler()
       } else if (e.key === 'Control') {
@@ -61,13 +61,13 @@ export class Core {
         this.isNext = true
       }
     })
-    document.addEventListener('keyup', (e) => {
+    document.querySelector('#gameContainer').addEventListener('keyup', (e) => {
       if (e.key === 'Control') {
         this.drawer.isSkip = true
         this.isNext = false
       }
     })
-    document.addEventListener('click', (e) => {
+    document.querySelector('#gameContainer').addEventListener('click', (e) => {
       this.onNextHandler()
     })
 
@@ -84,6 +84,11 @@ export class Core {
     outputLog('call', 'debug', sceneFileName)
     // sceneファイルを読み込む
     this.sceneFile = await import(/* webpackChunkName: "[request]" */ `/src/js/${sceneFileName}.js`)
+    // sceneファイルの初期化処理を実行
+    if (this.sceneFile.init) {
+      this.sceneFile.init(this.getAPIForScript())
+    }
+    // シナリオの進行状況を初期化
     this.scenarioManager.setScenario(this.sceneFile.scenario, sceneFileName)
     this.sceneConfig = { ...this.sceneConfig, ...this.sceneFile.sceneConfig }
     outputLog('sceneFile', 'debug', this.sceneFile)
@@ -130,10 +135,9 @@ export class Core {
       return
     }
     outputLog('scenarioObject', 'debug', scenarioObject)
-    // prettier-ignore
+    // シナリオオブジェクトのtypeプロパティに応じて、対応する関数を実行する
     const boundFunction = this.commandList[scenarioObject.type || 'text'].bind(this)
-    // prettier-ignore
-    outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`,'debug',scenarioObject)
+    outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`, 'debug', scenarioObject)
     scenarioObject = await this.httpHandler(scenarioObject)
     await boundFunction(scenarioObject)
   }
@@ -183,6 +187,7 @@ export class Core {
 
   expandVariable(text) {
     outputLog('call', 'debug', text)
+    if (typeof text !== 'string') return text
     return text.replace(/{{([^{}]+)}}/g, (match) => {
       const expr = match.slice(2, -2)
       const returnValue = this.executeCode(`return ${expr}`)
@@ -241,12 +246,18 @@ export class Core {
 
   async choiceHandler(line) {
     outputLog('call', 'debug', line)
+    document.querySelector('#interactiveView').style.visibility = 'visible'
     if (line.prompt) this.textHandler(line.prompt)
+    // ムスタッシュ構文があるときは、変数の展開
+    line.content.forEach((choice) => {
+      choice.label = this.expandVariable(choice.label)
+    })
     const { selectId, onSelect: selectHandler } = await this.drawer.drawChoices(line)
     if (selectHandler !== undefined) {
       this.scenarioManager.addScenario(selectHandler)
     }
     this.scenarioManager.setHistory({ line, ...selectId })
+    document.querySelector('#interactiveView').style.visibility = 'hidden'
   }
 
   jumpHandler(line) {
@@ -277,6 +288,10 @@ export class Core {
 
   async showHandler(line) {
     outputLog('line', 'debug', line)
+    // ムスタッシュ構文があるときは、変数の展開
+    Object.keys(line).forEach((item) => {
+      line[item] = this.expandVariable(line[item])
+    })
     // 表示する画像の情報を管理オブジェクトに追加
     const modeList = { bg: 'background', cutin: '', chara: '', cg: 'background', effect: 'effect' }
     const key = Object.keys(modeList).includes(line.mode) ? modeList[line.mode] : line.name || line.src.split('/').pop()
@@ -286,6 +301,7 @@ export class Core {
       center: { x: engineConfig.resolution.width * 0.5, y: baseLine },
       right: { x: engineConfig.resolution.width * 0.75, y: baseLine },
     }
+    line.src = this.expandVariable(line.src) || line.name
 
     const image = await this.getImageObject(line)
     // 画像の表示位置を設定
@@ -467,6 +483,10 @@ export class Core {
       this.bgm = null
     }
     this.newpageHandler()
+    if (this.sceneFile.cleanUp) {
+      // 終了処理を実行する
+      this.sceneFile.cleanUp()
+    }
     // sceneファイルを読み込む
     await this.loadScene(line.to)
     // 画面を表示する
@@ -478,7 +498,7 @@ export class Core {
   // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？
   callHandler(line) {
     outputLog('call', 'debug', line)
-    this.executeCode(line.func)
+    this.executeCode(line.method)
   }
 
   async httpHandler(line) {
@@ -552,12 +572,84 @@ export class Core {
   }
 
   executeCode(code) {
+    outputLog('call', 'debug', code)
     try {
       const context = { ...this.sceneFile }
       const func = new Function(...Object.keys(context), code)
       return func.apply(null, Object.values(context))
     } catch (error) {
       console.error('Error executing code:', error)
+    }
+  }
+
+  // Scriptから安全にアクセスできるメソッドを定義
+  getAPIForScript() {
+    return {
+      drawer: {
+        drawName: this.drawer.drawName.bind(this.drawer),
+        drawText: this.drawer.drawText.bind(this.drawer),
+        drawChoices: this.drawer.drawChoices.bind(this.drawer),
+        clearText: this.drawer.clearText.bind(this.drawer),
+        show: this.drawer.show.bind(this.drawer),
+        moveTo: this.drawer.moveTo.bind(this.drawer),
+        fadeIn: this.drawer.fadeIn.bind(this.drawer),
+        fadeOut: this.drawer.fadeOut.bind(this.drawer),
+        rotateCanvas: this.drawer.rotateCanvas.bind(this.drawer),
+      },
+      sound: {
+        play: this.soundHandler.bind(this),
+        stop: (name) => this.soundHandler({ name, stop: true }),
+        pause: (name) => this.soundHandler({ name, pause: true }),
+      },
+      scenario: {
+        jump: this.jumpHandler.bind(this),
+        addScene: this.scenarioManager.addScenario.bind(this.scenarioManager),
+        getProgress: () => this.scenarioManager.progress,
+        setProgress: (progress) => (this.scenarioManager.progress = progress),
+        getIndex: () => this.scenarioManager.getIndex(),
+        setIndex: (index) => this.scenarioManager.setIndex(index),
+        hasNext: () => this.scenarioManager.hasNext(),
+        next: () => this.scenarioManager.next(),
+        getHistory: () => this.scenarioManager.getHistory(),
+        setHistory: (history) => this.scenarioManager.setHistory(history),
+        setScenario: (scenario) => this.scenarioManager.setScenario(scenario),
+        getScenario: () => this.scenarioManager.getScenario(),
+        getSceneName: () => this.scenarioManager.progress.currentScene,
+        setScreenName: (name) => (this.sceneConfig.name = name),
+      },
+      images: {
+        get: this.getImageObject.bind(this),
+        getAll: () => this.displayedImages,
+        set: (name, image) => (this.displayedImages[name] = image),
+        delete: (name) => delete this.displayedImages[name],
+      },
+      sounds: {
+        get: (name) => this.usedSounds[name],
+        getAll: () => this.usedSounds,
+        set: (name, sound) => (this.usedSounds[name] = sound),
+        delete: (name) => delete this.usedSounds[name],
+        load: this.getSoundObject.bind(this),
+      },
+      background: {
+        set: this.setBackground.bind(this),
+        get: this.getBackground.bind(this),
+      },
+      wait: this.waitHandler.bind(this),
+      clickWait: this.clickWait.bind(this),
+      core: {
+        text: this.textHandler.bind(this),
+        choice: this.choiceHandler.bind(this),
+        show: this.showHandler.bind(this),
+        newpage: this.newpageHandler.bind(this),
+        hide: this.hideHandler.bind(this),
+        jump: this.jumpHandler.bind(this),
+        sound: this.soundHandler.bind(this),
+        say: this.sayHandler.bind(this),
+        if: this.ifHandler.bind(this),
+        moveto: this.moveToHandler.bind(this),
+        route: this.routeHandler.bind(this),
+        wait: this.waitHandler.bind(this),
+      },
     }
   }
 }
