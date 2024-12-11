@@ -46,7 +46,7 @@ module.exports = async (data) => {
     } else {
       console.log(element)
       script = element.content
-      lang = element.attributes.lang
+      lang = element.attributes.type
     }
   })
   return { scenario, script, lang }

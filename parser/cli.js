@@ -31,16 +31,14 @@ const exec = (targetScript) => {
     }
     // JSファイルを出力する(lang=tsの場合は、tsファイルを出力する)
     fs.writeFile(
-      `${outputPath}${fileName}.${lang == 'ts' ? 'ts' : 'js'}`,
+      `${outputPath}${fileName}.${lang == 'text/typescript' ? 'ts' : 'js'}`,
       `${script};\nexport const scenario = ${JSON.stringify(scenario)}; `,
       (err) => {
         if (err) {
           console.error(err)
           return
         }
-        console.log(`Input: ${targetScript}`)
-        console.log(`lang: ${lang}`)
-        console.log(`Output: ${outputPath}${fileName}.${lang == 'ts' ? 'ts' : 'js'}`)
+        console.log(`Output: ${outputPath}${fileName}.${lang == 'text/typescript' ? 'ts' : 'js'}`)
       },
     )
   })
