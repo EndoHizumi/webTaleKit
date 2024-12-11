@@ -84,6 +84,11 @@ export class Core {
     outputLog('call', 'debug', sceneFileName)
     // sceneファイルを読み込む
     this.sceneFile = await import(/* webpackChunkName: "[request]" */ `/src/js/${sceneFileName}.js`)
+    // sceneファイルの初期化処理を実行
+    if (this.sceneFile.init) {
+      this.sceneFile.init(this.getAPIForScript())
+    }
+    // シナリオの進行状況を初期化
     this.scenarioManager.setScenario(this.sceneFile.scenario, sceneFileName)
     this.sceneConfig = { ...this.sceneConfig, ...this.sceneFile.sceneConfig }
     outputLog('sceneFile', 'debug', this.sceneFile)
@@ -478,6 +483,10 @@ export class Core {
       this.bgm = null
     }
     this.newpageHandler()
+    if (this.sceneFile.cleanUp) {
+      // 終了処理を実行する
+      this.sceneFile.cleanUp()
+    }
     // sceneファイルを読み込む
     await this.loadScene(line.to)
     // 画面を表示する
@@ -570,6 +579,77 @@ export class Core {
       return func.apply(null, Object.values(context))
     } catch (error) {
       console.error('Error executing code:', error)
+    }
+  }
+
+  // Scriptから安全にアクセスできるメソッドを定義
+  getAPIForScript() {
+    return {
+      drawer: {
+        drawName: this.drawer.drawName.bind(this.drawer),
+        drawText: this.drawer.drawText.bind(this.drawer),
+        drawChoices: this.drawer.drawChoices.bind(this.drawer),
+        clearText: this.drawer.clearText.bind(this.drawer),
+        show: this.drawer.show.bind(this.drawer),
+        moveTo: this.drawer.moveTo.bind(this.drawer),
+        fadeIn: this.drawer.fadeIn.bind(this.drawer),
+        fadeOut: this.drawer.fadeOut.bind(this.drawer),
+        rotateCanvas: this.drawer.rotateCanvas.bind(this.drawer),
+      },
+      sound: {
+        play: this.soundHandler.bind(this),
+        stop: (name) => this.soundHandler({ name, stop: true }),
+        pause: (name) => this.soundHandler({ name, pause: true }),
+      },
+      scenario: {
+        jump: this.jumpHandler.bind(this),
+        addScene: this.scenarioManager.addScenario.bind(this.scenarioManager),
+        getProgress: () => this.scenarioManager.progress,
+        setProgress: (progress) => (this.scenarioManager.progress = progress),
+        getIndex: () => this.scenarioManager.getIndex(),
+        setIndex: (index) => this.scenarioManager.setIndex(index),
+        hasNext: () => this.scenarioManager.hasNext(),
+        next: () => this.scenarioManager.next(),
+        getHistory: () => this.scenarioManager.getHistory(),
+        setHistory: (history) => this.scenarioManager.setHistory(history),
+        setScenario: (scenario) => this.scenarioManager.setScenario(scenario),
+        getScenario: () => this.scenarioManager.getScenario(),
+        getSceneName: () => this.scenarioManager.progress.currentScene,
+        setScreenName: (name) => (this.sceneConfig.name = name),
+      },
+      images: {
+        get: this.getImageObject.bind(this),
+        getAll: () => this.displayedImages,
+        set: (name, image) => (this.displayedImages[name] = image),
+        delete: (name) => delete this.displayedImages[name],
+      },
+      sounds: {
+        get: (name) => this.usedSounds[name],
+        getAll: () => this.usedSounds,
+        set: (name, sound) => (this.usedSounds[name] = sound),
+        delete: (name) => delete this.usedSounds[name],
+        load: this.getSoundObject.bind(this),
+      },
+      background: {
+        set: this.setBackground.bind(this),
+        get: this.getBackground.bind(this),
+      },
+      wait: this.waitHandler.bind(this),
+      clickWait: this.clickWait.bind(this),
+      core: {
+        text: this.textHandler.bind(this),
+        choice: this.choiceHandler.bind(this),
+        show: this.showHandler.bind(this),
+        newpage: this.newpageHandler.bind(this),
+        hide: this.hideHandler.bind(this),
+        jump: this.jumpHandler.bind(this),
+        sound: this.soundHandler.bind(this),
+        say: this.sayHandler.bind(this),
+        if: this.ifHandler.bind(this),
+        moveto: this.moveToHandler.bind(this),
+        route: this.routeHandler.bind(this),
+        wait: this.waitHandler.bind(this),
+      },
     }
   }
 }
