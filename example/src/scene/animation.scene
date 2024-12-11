@@ -1,0 +1,28 @@
+<scene>
+  <scenario>
+    <say name="ナレーター">このシーンでは様々なアニメーションをお見せします。</say>
+    <show src="./src/resource/chara/dancer.png" name="ダンサー" pos="center:middle" />
+    <say name="ダンサー">ステージ上を動き回るのをご覧ください！</say>
+    <moveTo name="ダンサー" x="100" y="360" duration="3" />
+    <moveTo name="ダンサー" x="-280" y="-360" duration="3" />
+    <moveTo name="ダンサー" x="100" y="0" duration="2" />
+    <say name="ダンサー">フェードイン、フェードアウトもできますよ。</say>
+    <hide name="ダンサー" />
+    <show src="./src/resource/chara/dancer.png" name="ダンサー" pos="center:middle" opacity="0" />
+    <show src="./src/resource/chara/dancer.png" name="ダンサー" pos="center:middle" opacity="1" duration="3" />
+    <say name="ダンサー">アニメーションを使えば、ストーリーをより動的に演出できます！</say>
+    <choice>
+      <item label="タイトルに戻る" onSelect="title">
+        <route scene="title" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'animation',
+      background: './src/resource/background/stage.jpg',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>

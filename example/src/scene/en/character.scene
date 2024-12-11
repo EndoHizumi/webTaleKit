@@ -1,0 +1,26 @@
+<scene>
+  <scenario>
+    <say name="Narrator">This scene demonstrates character display and positioning.</say>
+    <show src="./src/resource/chara/guide.png" name="Guide" pos="left:bottom" />
+    <say name="Guide">Hello! I'm Guide. Characters can be positioned on the screen.</say>
+    <show src="./src/resource/chara/guest.png" name="Guest" pos="right:bottom" transition="fade" />
+    <say name="Guest">And multiple characters can appear at once!</say>
+    <moveTo name="Guide" x="500" y="400" duration="2" />
+    <say name="Guide">We can also move around smoothly.</say>
+    <hide name="Guest" transition="fade" />
+    <say name="Guide">And characters can be hidden when not needed.</say>
+    <choice>
+      <item label="Return to Title" onSelect="title">
+        <route scene="title" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'character',
+      background: './src/resource/background/living_room.png',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>

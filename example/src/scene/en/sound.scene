@@ -1,0 +1,26 @@
+<scene>
+  <scenario>
+    <say name="Narrator">This scene demonstrates sound features.</say>
+    <sound src="./src/resource/bgm/calm_music.wav" play loop />
+    <say name="Narrator">Background music is now playing. It can loop continuously.</say>
+    <sound src="./src/resource/se/doorbell.mp3" play />
+    <say name="Narrator">That was a sound effect. They can be played once or repeatedly.</say>
+    <sound name="calm_music.wav" stop />
+    <sound src="./src/resource/bgm/nc366476_Virtual_Voyage.mp3" play loop />
+    <say name="Narrator">We can also switch background music smoothly.</say>
+    <choice>
+      <item label="Return to Title" onSelect="title">
+        <sound src="nc366476_Virtual_Voyage.mp3" stop />
+        <route scene="title" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'sound',
+      background: './src/resource/background/music_room.png',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>

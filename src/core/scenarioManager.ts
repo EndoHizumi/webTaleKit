@@ -29,13 +29,15 @@ export class ScenarioManager {
   }
 
   addScenario (scenario: any, index: number): void {
+    // 区別にsub=trueを追加
+    const _scenario =  scenario.map((item: any) => ({ ...item, sub: true }))
     outputLog('call','debug', {scenario, index})
     // index指定がある場合はその値に挿入する
     if(index) {
-      this.scenarioData.splice(index, 0, ...scenario)
+      this.scenarioData.splice(index, 0, ..._scenario)
     } else {
       // 現在の位置に挿入する
-      this.scenarioData.splice(this.progress.currentIndex+1, 0, ...scenario)
+      this.scenarioData.splice(this.progress.currentIndex, 0, ..._scenario)
     }
     outputLog('call','debug', this.scenarioData)
   }

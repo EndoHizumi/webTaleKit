@@ -1,0 +1,37 @@
+<scene>
+  <scenario>
+    <say name="Narrator">In this scene, we will demonstrate special effects and filters.</say>
+    <show src="./src/resource/chara/scientist.png" name="Scientist" pos="center:bottom" />
+    <say name="Scientist">Let's experiment with some visual effects!</say>
+    <say name="Scientist">First, let's try a sepia filter.</say>
+    <show src="./src/resource/background/laboratory.jpg" sepia="0.8" />
+    <say name="Scientist">Now, let's try it on me.</say>
+    <show src="./src/resource/background/laboratory.jpg" />
+    <show src="./src/resource/chara/scientist.png" name="Scientist" pos="center:bottom" sepia="0.8" />
+    <say name="Scientist">Next, let's switch to a monochrome effect.</say>
+    <show src="./src/resource/background/laboratory.jpg" mono="1" />
+    <say name="Scientist">Let's try this on me as well.</say>
+    <show src="./src/resource/background/laboratory.jpg" />
+    <show src="./src/resource/chara/scientist.png" name="Scientist" pos="center:bottom" mono="1" />
+    <say name="Scientist">We can also apply a blur effect.</say>
+    <show src="./src/resource/background/laboratory.jpg" blur="5" />
+    <say name="Scientist">Now, let's try it on me.</say>
+    <show src="./src/resource/background/laboratory.jpg" />
+    <show src="./src/resource/chara/scientist.png" name="Scientist" pos="center:bottom" blur="5" />
+    <say name="Scientist">By using these effects, we can create various atmospheres in our game!</say>
+    <show src="./src/resource/background/laboratory.jpg" />
+    <show src="./src/resource/chara/scientist.png" name="Scientist" pos="center:bottom" />
+    <choice>
+      <item label="Return to Title" onSelect="title">
+        <route scene="title" />
+      </item>
+    </choice>
+  </scenario>
+  <script>
+    export const sceneConfig = {
+      name: 'effects',
+      background: './src/resource/background/laboratory.jpg',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>

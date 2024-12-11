@@ -1,0 +1,29 @@
+<scene>
+  <scenario>
+    <say name="ナレーター">このシーンでは、背景の変更方法をお見せします。</say>
+    <say name="ナレーター">現在、私たちは森の中にいます。静かで緑豊かな環境ですね。</say>
+    <show mode="bg" src="./src/resource/background/beach.jpg" />
+    <say name="ナレーター">そして今、場面が変わって海辺に来ました！波の音が聞こえてきそうです。</say>
+    <show mode="bg" src="./src/resource/background/city.jpg" />
+    <say name="ナレーター">さらに場面が変わり、今度は都会の街中です。高層ビルが立ち並んでいますね。</say>
+    <say name="ナレーター">このように、背景は瞬時に切り替えることができます。</say>
+    <show mode="bg" src="./src/resource/background/beach.jpg" />
+    <say name="ナレーター">また、ゆっくりとフェードさせて背景を変更することもできます。</say>
+    <show mode="bg" src="./src/resource/background/sunset.jpg" transition="fade" duration="2000" />
+    <say name="ナレーター">夕暮れの空が広がっていきましたね。</say>
+    <say name="ナレーター">背景の変更は、ゲームの雰囲気や場面の転換を表現するのに非常に効果的です。</say>
+    <choice>
+      <item label="タイトルに戻る" onSelect="title">
+        <route to="title" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'background',
+      background: './src/resource/background/forest.jpg',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>
