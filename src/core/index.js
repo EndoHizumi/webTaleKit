@@ -32,6 +32,7 @@ export class Core {
   }
 
   constructor() {
+    // gameContainerの初期化（HTMLのgameContainerを取得する）
     this.gameContainer = document.getElementById('gameContainer')
     // Drawerの初期化（canvasタグのサイズを設定する)
     this.drawer = new Drawer(this.gameContainer)
@@ -41,6 +42,12 @@ export class Core {
     this.resourceManager = new ResourceManager(import(/* webpackIgnore: true */ '/src/resource/config.js')) //  webpackIgnoreでバンドルを無視する
     this.displayedImages = {}
     this.usedSounds = {}
+  }
+
+  setConfig(config) {
+    outputLog('call', 'debug', config)
+    // ゲームの設定情報をセットする
+    engineConfig = config
   }
 
   async start(initScene) {
@@ -594,7 +601,6 @@ export class Core {
         moveTo: this.drawer.moveTo.bind(this.drawer),
         fadeIn: this.drawer.fadeIn.bind(this.drawer),
         fadeOut: this.drawer.fadeOut.bind(this.drawer),
-        rotateCanvas: this.drawer.rotateCanvas.bind(this.drawer),
       },
       sound: {
         play: this.soundHandler.bind(this),
