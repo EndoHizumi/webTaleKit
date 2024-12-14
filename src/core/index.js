@@ -594,7 +594,6 @@ export class Core {
         moveTo: this.drawer.moveTo.bind(this.drawer),
         fadeIn: this.drawer.fadeIn.bind(this.drawer),
         fadeOut: this.drawer.fadeOut.bind(this.drawer),
-        rotateCanvas: this.drawer.rotateCanvas.bind(this.drawer),
       },
       sound: {
         play: this.soundHandler.bind(this),

@@ -45,9 +45,8 @@ module.exports = async (data) => {
     if (element.type === 'scenario') {
       scenario = flattenAttributes(element.content)
     } else {
-      console.log(element)
       script = element.content
-      lang = element.attributes.type
+      lang = element.attributes?.type
     }
   })
   return { scenario, script, lang }
