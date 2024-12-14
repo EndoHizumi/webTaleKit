@@ -1,0 +1,10 @@
+{
+  "title": "EXAMPLE GAME",
+  "description": "webTaleKit Example Game",
+  "resolution": {
+    "width": 1280,
+    "height": 720
+  },
+  "fullScreen": "false",
+  "url": ""
+}
