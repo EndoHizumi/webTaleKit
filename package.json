@@ -1,6 +1,6 @@
 {
   "name": "webtalekit",
-  "version": "0.2.9",
+  "version": "0.2.10",
   "description": "Web知識でノベルゲーを作ることを目指したやつ",
   "main": "./src/index.js",
   "scripts": {
