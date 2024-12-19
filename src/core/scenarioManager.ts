@@ -4,7 +4,6 @@ export class ScenarioManager {
   private backlist: any
   private saveDataList: any
   private progress: any
-  private ctx: any
   private background: ImageObject = new ImageObject()
   private scenarioData: any
 

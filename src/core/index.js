@@ -13,6 +13,7 @@ export class Core {
   isNext = false
   isSkip = false
   onNextHandler = null
+  engineConfig = {}
   sceneFile = {}
   sceneConfig = {}
   commandList = {
@@ -42,19 +43,20 @@ export class Core {
     this.resourceManager = new ResourceManager(import(/* webpackIgnore: true */ '/src/resource/config.js')) //  webpackIgnoreでバンドルを無視する
     this.displayedImages = {}
     this.usedSounds = {}
+    this.engineConfig = engineConfig
   }
 
   setConfig(config) {
     outputLog('call', 'debug', config)
     // ゲームの設定情報をセットする
-    engineConfig = config
+    this.engineConfig = config
   }
 
   async start(initScene) {
     outputLog('call', 'debug', initScene)
     // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
     // titleタグの内容を書き換える
-    document.title = engineConfig.title
+    document.title = this.engineConfig.title
     // sceneファイルを読み込む
     await this.loadScene(initScene || 'title')
     // 画面を表示する
@@ -119,7 +121,7 @@ export class Core {
     const styleElement = doc.head.getElementsByTagName('style')[0]
     document.head.appendChild(styleElement)
     // ゲーム進行用に必要な情報をセットする
-    this.drawer.setScreen(this.gameContainer, engineConfig.resolution)
+    this.drawer.setScreen(this.gameContainer, this.engineConfig.resolution)
     // シナリオの進行状況を保存
     this.scenarioManager.progress.currentScene = sceneConfig.name
     // 背景画像を表示する
@@ -302,11 +304,11 @@ export class Core {
     // 表示する画像の情報を管理オブジェクトに追加
     const modeList = { bg: 'background', cutin: '', chara: '', cg: 'background', effect: 'effect' }
     const key = Object.keys(modeList).includes(line.mode) ? modeList[line.mode] : line.name || line.src.split('/').pop()
-    const baseLine = engineConfig.resolution.height / 2
+    const baseLine = this.engineConfig.resolution.height / 2
     const centerPoint = {
-      left: { x: engineConfig.resolution.width * 0.25, y: baseLine },
-      center: { x: engineConfig.resolution.width * 0.5, y: baseLine },
-      right: { x: engineConfig.resolution.width * 0.75, y: baseLine },
+      left: { x: this.engineConfig.resolution.width * 0.25, y: baseLine },
+      center: { x: this.engineConfig.resolution.width * 0.5, y: baseLine },
+      right: { x: this.engineConfig.resolution.width * 0.75, y: baseLine },
     }
     line.src = this.expandVariable(line.src) || line.name
 
@@ -324,15 +326,15 @@ export class Core {
     if (line.mode === 'cg') {
       this.tempImages = { ...this.displayedImages }
       this.displayedImages = { background: line.src }
-      size = { width: engineConfig.resolution.width, height: engineConfig.resolution.height }
+      size = { width: this.engineConfig.resolution.width, height: this.engineConfig.resolution.height }
     }
 
     if (line.pos) {
       const pos = line.pos.split(':')
       const baseLines = {
         top: 0 + size.height,
-        middle: engineConfig.resolution.height / 2,
-        bottom: engineConfig.resolution.height - size.height,
+        middle: this.engineConfig.resolution.height / 2,
+        bottom: this.engineConfig.resolution.height - size.height,
       }
       // エイリアスが設定されている場合、画像の中心点を求めて、画像の表示位置を設定する
       position.x = centerPoint[pos[0]].x - size.width / 2
