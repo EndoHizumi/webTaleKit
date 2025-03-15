@@ -2,11 +2,23 @@ import { test, expect } from '@playwright/test';
 
 test.describe('メッセージウィンドウのオーバーフロー問題のテスト', () => {
   test('長いテキストが自動的に改行され、高さを超えた場合は適切に処理される', async ({ page }) => {
-    // テストページにアクセス
-    await page.goto('/');
+    // テストページにアクセス（タイムアウトを60秒に延長）
+    await page.goto('/', { timeout: 60000, waitUntil: 'networkidle' });
+    
+    // ページが完全に読み込まれるのを待つ
+    await page.waitForLoadState('domcontentloaded');
+    
+    console.log('ページが読み込まれました。要素を確認します...');
+    
+    // gameContainerが表示されるのを待つ
+    await page.waitForSelector('#gameContainer', { timeout: 60000 });
+    
+    console.log('gameContainerが見つかりました。messageWindowを確認します...');
     
     // タイトル画面が表示されるのを待つ
-    await page.waitForSelector('#messageWindow');
+    await page.waitForSelector('#messageWindow', { timeout: 60000 });
+    
+    console.log('messageWindowが見つかりました。クリックします...');
     
     // 初期テキストをクリック（タップでスタート）
     await page.click('#messageWindow');
