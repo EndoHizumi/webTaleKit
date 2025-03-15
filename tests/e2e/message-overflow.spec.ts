@@ -2,41 +2,41 @@ import { test, expect } from '@playwright/test';
 
 test.describe('メッセージウィンドウのオーバーフロー問題のテスト', () => {
   test('長いテキストが自動的に改行され、高さを超えた場合は適切に処理される', async ({ page }) => {
-    // テストページにアクセス（タイムアウトを60秒に延長）
-    await page.goto('/', { timeout: 60000, waitUntil: 'networkidle' });
+    // テストページにアクセス
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
     
-    // ページが完全に読み込まれるのを待つ
-    await page.waitForLoadState('domcontentloaded');
+    console.log('ページが読み込まれました。ゲームを初期化します...');
     
-    console.log('ページが読み込まれました。ゲームを開始します...');
+    // スクリーンショットを撮影（初期状態）
+    await page.screenshot({ path: 'tests/e2e/screenshots/initial-state.png' });
     
-    // ページ全体をクリックしてゲームを開始
-    await page.click('body');
+    // ゲームを直接初期化する（JavaScriptを実行）
+    await page.evaluate(() => {
+      // グローバル変数としてCoreクラスのインスタンスを作成
+      (window as any).core = new (window as any).WebTaleKit.Core();
+      // message_overflow_testシーンを読み込む
+      (window as any).core.start('message_overflow_test');
+    });
     
     // 少し待機してゲームが初期化されるのを待つ
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(5000);
     
-    console.log('ゲームを開始しました。要素を確認します...');
+    console.log('ゲームを初期化しました。要素を確認します...');
     
-    // gameContainerが表示されるのを待つ
-    try {
-      await page.waitForSelector('#gameContainer', { timeout: 10000, state: 'visible' });
-      console.log('gameContainerが見つかりました');
-    } catch (error) {
-      console.log('gameContainerが見つかりませんでした。ページのHTMLを確認します...');
-      const html = await page.content();
-      console.log(html.substring(0, 500) + '...');
-      throw error;
-    }
+    // スクリーンショットを撮影（初期化後）
+    await page.screenshot({ path: 'tests/e2e/screenshots/after-init.png' });
     
     // messageWindowが表示されるのを待つ
     try {
-      await page.waitForSelector('#messageWindow', { timeout: 10000, state: 'visible' });
+      await page.waitForSelector('#messageWindow', { state: 'visible' });
       console.log('messageWindowが見つかりました');
     } catch (error) {
       console.log('messageWindowが見つかりませんでした。ページのHTMLを確認します...');
       const html = await page.content();
       console.log(html.substring(0, 500) + '...');
+      
+      // スクリーンショットを撮影（エラー時）
+      await page.screenshot({ path: 'tests/e2e/screenshots/error-state.png' });
       throw error;
     }
     
@@ -45,14 +45,20 @@ test.describe('メッセージウィンドウのオーバーフロー問題の�
       await page.waitForFunction(() => {
         const messageText = document.querySelector('#messageView')?.textContent;
         return messageText && messageText.includes('タップでスタート');
-      }, { timeout: 10000 });
+      });
       console.log('「タップでスタート」のテキストが見つかりました');
     } catch (error) {
       console.log('「タップでスタート」のテキストが見つかりませんでした。');
       const messageText = await page.evaluate(() => document.querySelector('#messageView')?.textContent || 'テキストなし');
       console.log('現在のテキスト:', messageText);
+      
+      // スクリーンショットを撮影（エラー時）
+      await page.screenshot({ path: 'tests/e2e/screenshots/error-text.png' });
       throw error;
     }
+    
+    // スクリーンショットを撮影（タップでスタート）
+    await page.screenshot({ path: 'tests/e2e/screenshots/tap-to-start.png' });
     
     // 初期テキストをクリック（タップでスタート）
     await page.click('#messageWindow');

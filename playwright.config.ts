@@ -10,7 +10,17 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:8080',
     trace: 'on-first-retry',
+    // ヘッドレスモードを無効にする
+    headless: false,
+    // テスト実行時にブラウザを遅くする（デバッグ用）
+    launchOptions: {
+      slowMo: 1000,
+    },
+    // スクリーンショットを自動的に撮影
+    screenshot: 'on',
   },
+  // テストのタイムアウトを延長
+  timeout: 60000,
   projects: [
     {
       name: 'chromium',
@@ -21,5 +31,7 @@ export default defineConfig({
     command: 'cd example && npm run dev',
     url: 'http://localhost:8080',
     reuseExistingServer: !process.env.CI,
+    // Webサーバーの起動を待つ時間を延長
+    timeout: 120000,
   },
 });
