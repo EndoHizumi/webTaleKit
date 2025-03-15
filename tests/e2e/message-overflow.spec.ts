@@ -8,17 +8,51 @@ test.describe('メッセージウィンドウのオーバーフロー問題の�
     // ページが完全に読み込まれるのを待つ
     await page.waitForLoadState('domcontentloaded');
     
-    console.log('ページが読み込まれました。要素を確認します...');
+    console.log('ページが読み込まれました。ゲームを開始します...');
+    
+    // ページ全体をクリックしてゲームを開始
+    await page.click('body');
+    
+    // 少し待機してゲームが初期化されるのを待つ
+    await page.waitForTimeout(2000);
+    
+    console.log('ゲームを開始しました。要素を確認します...');
     
     // gameContainerが表示されるのを待つ
-    await page.waitForSelector('#gameContainer', { timeout: 60000 });
+    try {
+      await page.waitForSelector('#gameContainer', { timeout: 10000, state: 'visible' });
+      console.log('gameContainerが見つかりました');
+    } catch (error) {
+      console.log('gameContainerが見つかりませんでした。ページのHTMLを確認します...');
+      const html = await page.content();
+      console.log(html.substring(0, 500) + '...');
+      throw error;
+    }
     
-    console.log('gameContainerが見つかりました。messageWindowを確認します...');
+    // messageWindowが表示されるのを待つ
+    try {
+      await page.waitForSelector('#messageWindow', { timeout: 10000, state: 'visible' });
+      console.log('messageWindowが見つかりました');
+    } catch (error) {
+      console.log('messageWindowが見つかりませんでした。ページのHTMLを確認します...');
+      const html = await page.content();
+      console.log(html.substring(0, 500) + '...');
+      throw error;
+    }
     
-    // タイトル画面が表示されるのを待つ
-    await page.waitForSelector('#messageWindow', { timeout: 60000 });
-    
-    console.log('messageWindowが見つかりました。クリックします...');
+    // 「タップでスタート」のテキストが表示されるのを待つ
+    try {
+      await page.waitForFunction(() => {
+        const messageText = document.querySelector('#messageView')?.textContent;
+        return messageText && messageText.includes('タップでスタート');
+      }, { timeout: 10000 });
+      console.log('「タップでスタート」のテキストが見つかりました');
+    } catch (error) {
+      console.log('「タップでスタート」のテキストが見つかりませんでした。');
+      const messageText = await page.evaluate(() => document.querySelector('#messageView')?.textContent || 'テキストなし');
+      console.log('現在のテキスト:', messageText);
+      throw error;
+    }
     
     // 初期テキストをクリック（タップでスタート）
     await page.click('#messageWindow');
