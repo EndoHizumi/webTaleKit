@@ -10,13 +10,20 @@ test.describe('メッセージウィンドウのオーバーフロー問題の�
     // スクリーンショットを撮影（初期状態）
     await page.screenshot({ path: 'tests/e2e/screenshots/initial-state.png' });
     
-    // ゲームを直接初期化する（JavaScriptを実行）
-    await page.evaluate(() => {
-      // グローバル変数としてCoreクラスのインスタンスを作成
-      (window as any).core = new (window as any).WebTaleKit.Core();
-      // message_overflow_testシーンを読み込む
-      (window as any).core.start('message_overflow_test');
+    // ページ内のJavaScriptオブジェクトを確認
+    const jsObjects = await page.evaluate(() => {
+      return {
+        hasGame: typeof (window as any).game !== 'undefined',
+        hasCore: typeof (window as any).core !== 'undefined',
+        hasWebTaleKit: typeof (window as any).WebTaleKit !== 'undefined',
+        windowKeys: Object.keys(window).filter(key => !key.startsWith('_')).slice(0, 20)
+      };
     });
+    
+    console.log('ページ内のJavaScriptオブジェクト:', jsObjects);
+    
+    // ゲームの初期化は行わず、既存のゲームインスタンスを使用する
+    // 初期テキスト「タップでスタート」が表示されるのを待つだけ
     
     // 少し待機してゲームが初期化されるのを待つ
     await page.waitForTimeout(5000);
@@ -63,15 +70,14 @@ test.describe('メッセージウィンドウのオーバーフロー問題の�
     // 初期テキストをクリック（タップでスタート）
     await page.click('#messageWindow');
     
-    // テスト用のシーンに移動
-    await page.evaluate(() => {
-      // グローバルオブジェクトからCoreインスタンスを取得
-      const core = (window as any).core;
-      // message_overflow_testシーンをロード
-      core.loadScene('message_overflow_test').then(() => {
-        core.loadScreen(core.sceneConfig);
-      });
-    });
+    // URLパラメータを使用してテスト用のシーンに移動
+    await page.goto('/?scene=message_overflow_test', { waitUntil: 'domcontentloaded' });
+    
+    // 少し待機してシーンが読み込まれるのを待つ
+    await page.waitForTimeout(3000);
+    
+    // スクリーンショットを撮影（シーン切り替え後）
+    await page.screenshot({ path: 'tests/e2e/screenshots/scene-loaded.png' });
     
     // 短いテキストが表示されるのを待つ
     await page.waitForFunction(() => {
