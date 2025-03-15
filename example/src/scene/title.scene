@@ -25,6 +25,9 @@
       <item label="特殊効果デモ" onSelect="effects">
         <route to="effects" />
       </item>
+      <item label="エラーハンドリングテスト" onSelect="test_error">
+        <route to="test_error" />
+      </item>
     </choice>
   </scenario>
 
