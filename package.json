@@ -6,6 +6,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts --ext .js",
     "test": "jest",
+    "test:e2e": "playwright test",
     "build": "rimraf ./dist/ && tsc && cp -r package.json README.md engineConfig.json parser/ dist/ && cp src/core/index.js  dist/src/core/"
   },
   "bin": {
@@ -21,6 +22,7 @@
     "storejs": "^2.1.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.51.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.11.28",
     "@types/storejs": "^2.0.3",
