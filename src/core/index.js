@@ -143,10 +143,22 @@ export class Core {
     }
     outputLog('scenarioObject', 'debug', scenarioObject)
     // シナリオオブジェクトのtypeプロパティに応じて、対応する関数を実行する
-    const boundFunction = this.commandList[scenarioObject.type || 'text'].bind(this)
-    outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`, 'debug', scenarioObject)
-    scenarioObject = await this.httpHandler(scenarioObject)
-    await boundFunction(scenarioObject)
+    const commandType = scenarioObject.type || 'text';
+    const commandFunction = this.commandList[commandType];
+    
+    // コマンドが存在しない場合のエラーハンドリング
+    if (!commandFunction) {
+      const errorMessage = `Error: Command type "${commandType}" is not defined`;
+      outputLog(errorMessage, 'error', scenarioObject);
+      console.error(errorMessage);
+      // エラーを表示して処理を終了
+      return;
+    }
+    
+    const boundFunction = commandFunction.bind(this);
+    outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`, 'debug', scenarioObject);
+    scenarioObject = await this.httpHandler(scenarioObject);
+    await boundFunction(scenarioObject);
   }
 
   async textHandler(scenarioObject) {

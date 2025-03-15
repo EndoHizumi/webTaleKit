@@ -1,0 +1,21 @@
+<scene>
+  <scenario>
+    <text>これはエラーハンドリングのテストです</text>
+    <text>次に未定義のコマンドタイプを実行します</text>
+    
+    <!-- 未定義のコマンドタイプ -->
+    <undefined_command>これは存在しないコマンドです</undefined_command>
+    
+    <!-- この行は上記のエラーにより実行されないはず -->
+    <text>このテキストは表示されないはずです</text>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'test_error',
+      background: './src/resource/background/title_bg.png',
+      bgm: './src/resource/bgm/title_theme.mp3',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>
