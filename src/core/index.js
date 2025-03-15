@@ -8,30 +8,31 @@ import { outputLog } from '../utils/logger'
 import { sleep } from '../utils/waitUtil'
 
 export class Core {
-  bgm = null
-  isAuto = false
-  isNext = false
-  isSkip = false
-  onNextHandler = null
-  sceneFile = {}
-  sceneConfig = {}
-  commandList = {
-    text: this.textHandler,
-    choice: this.choiceHandler,
-    show: this.showHandler,
-    newpage: this.newpageHandler,
-    hide: this.hideHandler,
-    jump: this.jumpHandler,
-    sound: this.soundHandler,
-    say: this.sayHandler,
-    if: this.ifHandler,
-    call: this.callHandler,
-    moveto: this.moveToHandler,
-    route: this.routeHandler,
-    wait: this.waitHandler,
-  }
-
   constructor() {
+    // プロパティの初期化
+    this.bgm = null
+    this.isAuto = false
+    this.isNext = false
+    this.isSkip = false
+    this.onNextHandler = null
+    this.sceneFile = {}
+    this.sceneConfig = {}
+    this.commandList = {
+      text: this.textHandler,
+      choice: this.choiceHandler,
+      show: this.showHandler,
+      newpage: this.newpageHandler,
+      hide: this.hideHandler,
+      jump: this.jumpHandler,
+      sound: this.soundHandler,
+      say: this.sayHandler,
+      if: this.ifHandler,
+      call: this.callHandler,
+      moveto: this.moveToHandler,
+      route: this.routeHandler,
+      wait: this.waitHandler,
+    }
+    
     // gameContainerの初期化（HTMLのgameContainerを取得する）
     this.gameContainer = document.getElementById('gameContainer')
     // Drawerの初期化（canvasタグのサイズを設定する)
@@ -169,11 +170,36 @@ export class Core {
     //prettier-ignore
     this.onNextHandler = () => { this.drawer.isSkip = true }
     this.drawer.clearText() // テキスト表示領域をクリア
+    
+    // メッセージウィンドウの要素を取得
+    const messageWindow = document.getElementById('messageWindow')
+    const messageView = document.getElementById('messageView')
+    
     // 表示する文章を1行ずつ表示する
     for (const text of scenarioObject.content) {
       outputLog('textSpeed', 'debug', text)
+      
+      // メッセージウィンドウが一定の高さを超えた場合、クリックを待って次のページに進む
+      if (messageView.scrollHeight > messageWindow.clientHeight * 0.8) {
+        // 「続く」のような表示を追加
+        const continueElement = document.createElement('div')
+        continueElement.style.textAlign = 'right'
+        continueElement.style.marginRight = '20px'
+        continueElement.style.marginTop = '10px'
+        continueElement.innerHTML = '▼'
+        messageView.appendChild(continueElement)
+        
+        // クリック待ち
+        await this.clickWait()
+        
+        // 次のページのためにテキストをクリア
+        this.drawer.clearText()
+      }
+      
       if (typeof text === 'string') {
-        await this.drawer.drawText(this.expandVariable(text), scenarioObject.speed || 25)
+        // 改行コードを適切に処理
+        const processedText = this.expandVariable(text).replace(/\\n/g, '\n')
+        await this.drawer.drawText(processedText, scenarioObject.speed || 25)
       } else {
         if (text.type === 'br' || text.type === 'wait') {
           outputLog('text', 'debug', text)
@@ -183,7 +209,9 @@ export class Core {
           }
         } else {
           const container = this.drawer.createDecoratedElement(text)
-          await this.drawer.drawText(this.expandVariable(text.content[0]), text.speed || 25, container)
+          // 改行コードを適切に処理
+          const processedContent = this.expandVariable(text.content[0]).replace(/\\n/g, '\n')
+          await this.drawer.drawText(processedContent, text.speed || 25, container)
         }
       }
     }

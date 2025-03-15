@@ -72,16 +72,78 @@ export class Drawer {
       this.messageText.appendChild(containerElement)
       element = containerElement
     }
+
+    // メッセージウィンドウの幅と高さを取得
+    const messageWindow = document.getElementById('messageWindow') as HTMLElement
+    const messageWindowWidth = messageWindow.clientWidth - 60 // パディングを考慮
+    const messageWindowHeight = messageWindow.clientHeight - 60 // パディングを考慮
+
+    // 現在の行の文字数をカウント
+    let currentLineLength = element.innerHTML.length > 0 ?
+      element.innerHTML.split('<br>').pop()?.length || 0 : 0;
+    
+    // 1文字あたりの平均幅（ピクセル）を推定
+    const charWidth = 16; // 平均的な日本語フォントの幅
+    
+    // 1行に表示できる最大文字数を計算
+    const maxCharsPerLine = Math.floor(messageWindowWidth / charWidth);
+    
     for (const char of text) {
       //prettier-ignore
       setTimeout(() => { this.readySkip = true, wait });
+      
+      // 改行文字の処理
+      if (char === '\n') {
+        element.innerHTML += '<br>'
+        currentLineLength = 0
+        continue
+      }
+      
+      // 行の長さが最大文字数を超える場合、自動改行
+      if (currentLineLength >= maxCharsPerLine) {
+        element.innerHTML += '<br>'
+        currentLineLength = 0
+      }
+      
+      // メッセージウィンドウの高さを超える場合の処理
+      if (element.scrollHeight > messageWindowHeight) {
+        // 自動スクロールを行う
+        messageWindow.scrollTop = messageWindow.scrollHeight
+      }
+      
       // 100ミリ秒待ってから、スキップボタンが押されたら即座に表示
       if (!this.isSkip) {
         element.innerHTML += char
+        currentLineLength++
         await sleep(wait)
       } else {
         if (this.readySkip) {
-          element.innerHTML += text.slice(element.textContent!.length)
+          // スキップ時は残りのテキストを一度に表示
+          const remainingText = text.slice(element.textContent!.length)
+          
+          // 残りのテキストを適切な長さで改行しながら表示
+          let processedText = ''
+          let tempLineLength = currentLineLength
+          
+          for (const remainingChar of remainingText) {
+            if (remainingChar === '\n') {
+              processedText += '<br>'
+              tempLineLength = 0
+            } else {
+              if (tempLineLength >= maxCharsPerLine) {
+                processedText += '<br>'
+                tempLineLength = 0
+              }
+              processedText += remainingChar
+              tempLineLength++
+            }
+          }
+          
+          element.innerHTML += processedText
+          
+          // スクロール位置を調整
+          messageWindow.scrollTop = messageWindow.scrollHeight
+          
           this.readySkip = false
           this.isSkip = false
           break
@@ -89,6 +151,9 @@ export class Drawer {
       }
       await sleep(wait)
     }
+    
+    // 表示完了後、スクロール位置を最下部に調整
+    messageWindow.scrollTop = messageWindow.scrollHeight
   }
 
   async drawLineBreak() {
