@@ -48,6 +48,7 @@
 
         #nameView {
             user-select: none;
+            -webkit-user-select: none;
             position: absolute;
             top: -10px;
             left: 0;
@@ -65,10 +66,16 @@
             padding-left: 30px;
             padding-top: 30px;
             text-shadow: #000;
+            width: calc(100% - 60px); /* パディングを考慮した幅 */
+            max-height: calc(100% - 60px); /* パディングを考慮した高さ */
+            overflow-wrap: break-word; /* 長い単語の折り返し */
+            word-break: break-all; /* 必要に応じて単語の途中でも折り返し */
+            margin: 0;
         }
 
         #messageWindow {
             user-select: none;
+            -webkit-user-select: none;
             position: absolute;
             bottom: 30px;
             left: 0;

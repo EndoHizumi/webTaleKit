@@ -16,6 +16,8 @@ export class Drawer {
   private config: any
   private fadeCanvas!: HTMLCanvasElement
   private fadeCtx!: CanvasRenderingContext2D
+  private messageWindow!: HTMLElement
+  private waitingForClick: boolean = false
   isSkip: boolean = false
   readySkip: boolean = false
 
@@ -32,6 +34,7 @@ export class Drawer {
     this.nameView = screenHtml.querySelector('#nameView') as HTMLElement
     this.messageText = screenHtml.querySelector('#messageView') as HTMLElement
     this.interactiveView = screenHtml.querySelector('#interactiveView') as HTMLElement
+    this.messageWindow = screenHtml.querySelector('#messageWindow') as HTMLElement
 
     // canvasをDOMに追加する
     const canvas = document.createElement('canvas')
@@ -66,18 +69,59 @@ export class Drawer {
 
   async drawText(text: string, wait: number, containerElement?: HTMLElement) {
     outputLog('drawText', 'debug', { text, wait, containerElement })
+    
+    // クリック待ち状態の場合は、クリックされるまで待機
+    if (this.waitingForClick) {
+      await this.waitForClick()
+      this.clearText()
+      this.waitingForClick = false
+    }
+    
     let element: HTMLElement = this.messageText
     // テキストを表示するコンテナ要素を指定した場合は、その要素に追加する
     if (containerElement) {
       this.messageText.appendChild(containerElement)
       element = containerElement
     }
+    
+    // メッセージウィンドウの高さを取得
+    const messageWindowHeight = this.messageWindow.clientHeight - 20; // パディングを考慮
+    
     for (const char of text) {
       //prettier-ignore
       setTimeout(() => { this.readySkip = true, wait });
       // 100ミリ秒待ってから、スキップボタンが押されたら即座に表示
       if (!this.isSkip) {
         element.innerHTML += char
+        
+        // テキストがメッセージウィンドウの高さを超えたかチェック
+        if (element.scrollHeight > messageWindowHeight) {
+          outputLog('Text overflow detected', 'debug', {
+            textHeight: element.scrollHeight,
+            windowHeight: messageWindowHeight
+          })
+          
+          // waitCircleを表示してクリック待ち状態にする
+          const waitCircle = this.screenHtml.querySelector('#waitCircle') as HTMLElement
+          if (waitCircle) {
+            waitCircle.style.visibility = 'visible'
+          }
+          
+          this.waitingForClick = true
+          await this.waitForClick()
+          
+          // クリックされたらテキストをクリアして続きを表示
+          this.clearText()
+          element.innerHTML = char
+          
+          // waitCircleを非表示にする
+          if (waitCircle) {
+            waitCircle.style.visibility = 'hidden'
+          }
+          
+          this.waitingForClick = false
+        }
+        
         await sleep(wait)
       } else {
         if (this.readySkip) {
@@ -89,6 +133,17 @@ export class Drawer {
       }
       await sleep(wait)
     }
+  }
+  
+  // クリックされるまで待機するメソッド
+  private waitForClick(): Promise<void> {
+    return new Promise<void>((resolve) => {
+      const clickHandler = () => {
+        document.removeEventListener('click', clickHandler)
+        resolve()
+      }
+      document.addEventListener('click', clickHandler)
+    })
   }
 
   async drawLineBreak() {
