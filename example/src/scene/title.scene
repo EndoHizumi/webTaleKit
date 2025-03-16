@@ -25,6 +25,9 @@
       <item label="特殊効果デモ" onSelect="effects">
         <route to="effects" />
       </item>
+      <item label="ifグローバル属性テスト" onSelect="if_test">
+        <route to="if_test" />
+      </item>
       <item label="エラーハンドリングテスト" onSelect="test_error">
         <route to="test_error" />
       </item>

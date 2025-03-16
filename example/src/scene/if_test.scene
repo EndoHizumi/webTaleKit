@@ -1,0 +1,37 @@
+<scene>
+  <scenario>
+    <text>ifグローバル属性のテストです。</text>
+    <text>変数hogeの値を設定します。</text>
+    
+    <call method="hoge = 1" />
+    
+    <text>現在のhogeの値: {{hoge}}</text>
+    
+    <text if="hoge==1">この文章はhoge==1の場合に表示されます。</text>
+    <text if="hoge==2">この文章はhoge==2の場合に表示されます。</text>
+    
+    <text>hogeの値を2に変更します。</text>
+    
+    <call method="hoge = 2" />
+    
+    <text>現在のhogeの値: {{hoge}}</text>
+    
+    <text if="hoge==1">この文章はhoge==1の場合に表示されます。</text>
+    <text if="hoge==2">この文章はhoge==2の場合に表示されます。</text>
+    
+    <text>ifグローバル属性のテストが完了しました。</text>
+    
+    <route to="title" />
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'if_test',
+      background: './src/resource/background/title_bg.png',
+      bgm: './src/resource/bgm/title_theme.mp3',
+      template: './src/screen/title.html'
+    }
+    
+    export let hoge = 0
+  </script>
+</scene>
