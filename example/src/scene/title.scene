@@ -28,6 +28,9 @@
       <item label="エラーハンドリングテスト" onSelect="test_error">
         <route to="test_error" />
       </item>
+      <item label="長いテキストテスト" onSelect="long_text_test">
+        <route to="long_text_test" />
+      </item>
     </choice>
   </scenario>
 
