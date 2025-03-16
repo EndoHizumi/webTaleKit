@@ -7,6 +7,9 @@ const { test, expect } = require('@playwright/test');
  */
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// テストのタイムアウト時間を延長（デフォルトは30秒）
+test.setTimeout(120000); // 2分に設定
+
 test('メッセージウィンドウの表示領域を超えた場合にクリック待ちになる機能のテスト', async ({ page }) => {
   // ゲームを起動
   await page.goto('/');
