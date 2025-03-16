@@ -8,30 +8,29 @@ import { outputLog } from '../utils/logger'
 import { sleep } from '../utils/waitUtil'
 
 export class Core {
-  bgm = null
-  isAuto = false
-  isNext = false
-  isSkip = false
-  onNextHandler = null
-  sceneFile = {}
-  sceneConfig = {}
-  commandList = {
-    text: this.textHandler,
-    choice: this.choiceHandler,
-    show: this.showHandler,
-    newpage: this.newpageHandler,
-    hide: this.hideHandler,
-    jump: this.jumpHandler,
-    sound: this.soundHandler,
-    say: this.sayHandler,
-    if: this.ifHandler,
-    call: this.callHandler,
-    moveto: this.moveToHandler,
-    route: this.routeHandler,
-    wait: this.waitHandler,
-  }
-
   constructor() {
+    this.bgm = null
+    this.isAuto = false
+    this.isNext = false
+    this.isSkip = false
+    this.onNextHandler = null
+    this.sceneFile = {}
+    this.sceneConfig = {}
+    this.commandList = {
+      text: this.textHandler,
+      choice: this.choiceHandler,
+      show: this.showHandler,
+      newpage: this.newpageHandler,
+      hide: this.hideHandler,
+      jump: this.jumpHandler,
+      sound: this.soundHandler,
+      say: this.sayHandler,
+      if: this.ifHandler,
+      call: this.callHandler,
+      moveto: this.moveToHandler,
+      route: this.routeHandler,
+      wait: this.waitHandler,
+    }
     // gameContainerの初期化（HTMLのgameContainerを取得する）
     this.gameContainer = document.getElementById('gameContainer')
     // Drawerの初期化（canvasタグのサイズを設定する)
@@ -143,22 +142,35 @@ export class Core {
     }
     outputLog('scenarioObject', 'debug', scenarioObject)
     // シナリオオブジェクトのtypeプロパティに応じて、対応する関数を実行する
-    const commandType = scenarioObject.type || 'text';
-    const commandFunction = this.commandList[commandType];
+    const commandType = scenarioObject.type || 'text'
+    const commandFunction = this.commandList[commandType]
     
     // コマンドが存在しない場合のエラーハンドリング
     if (!commandFunction) {
-      const errorMessage = `Error: Command type "${commandType}" is not defined`;
-      outputLog(errorMessage, 'error', scenarioObject);
-      console.error(errorMessage);
+      const errorMessage = `Error: Command type "${commandType}" is not defined`
+      outputLog(errorMessage, 'error', scenarioObject)
+      console.error(errorMessage)
       // エラーを表示して処理を終了
-      return;
+      return
     }
     
-    const boundFunction = commandFunction.bind(this);
-    outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`, 'debug', scenarioObject);
-    scenarioObject = await this.httpHandler(scenarioObject);
-    await boundFunction(scenarioObject);
+    const boundFunction = commandFunction.bind(this)
+    outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`, 'debug', scenarioObject)
+    // グローバル要素は、ここで処理する
+    scenarioObject = await this.httpHandler(scenarioObject)
+    
+    // ifグローバル属性の処理
+    if (scenarioObject.if !== undefined) {
+      const condition = this.executeCode(`return ${scenarioObject.if}`)
+      outputLog(`if condition: ${scenarioObject.if} => ${condition}`, 'debug')
+      // 条件がfalseの場合、このタグの処理をスキップ
+      if (!condition) {
+        outputLog('Skipping tag due to false if condition', 'debug')
+        return
+      }
+    }
+    
+    await boundFunction(scenarioObject)
   }
 
   async textHandler(scenarioObject) {
