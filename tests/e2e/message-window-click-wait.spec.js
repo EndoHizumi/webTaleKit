@@ -8,7 +8,13 @@ test('メッセージウィンドウの表示領域を超えた場合にクリ�
   // ページが完全に読み込まれるまで待機
   await page.waitForSelector('#messageView', { state: 'visible' });
   
-  // 初期テキストが表示されるまで待機
+  // 初期の「タップでスタート」が表示されるまで待機
+  await expect(page.locator('#messageView')).toContainText('タップでスタート');
+  
+  // タップでスタートをクリック
+  await page.click('#messageWindow');
+  
+  // メインコンテンツが表示されるまで待機
   await expect(page.locator('#messageView')).toContainText('WebTaleKitデモゲームへようこそ！');
   
   // 「長いテキストテスト」を選択
