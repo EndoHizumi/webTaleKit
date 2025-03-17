@@ -150,9 +150,7 @@ export class Core {
     if (!commandFunction) {
       const errorMessage = `Error: Command type "${commandType}" is not defined`;
       outputLog(errorMessage, 'error', scenarioObject);
-      console.error(errorMessage);
-      // エラーを表示して処理を終了
-      return;
+      throw new Error(errorMessage);
     }
     
     const boundFunction = commandFunction.bind(this);
