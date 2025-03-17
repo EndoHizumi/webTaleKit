@@ -180,11 +180,9 @@ export class Core {
 
     // コマンドが存在しない場合のエラーハンドリング
     if (!commandFunction) {
-      const errorMessage = `Error: Command type "${commandType}" is not defined`
-      outputLog(errorMessage, 'error', scenarioObject)
-      console.error(errorMessage)
-      // エラーを表示して処理を終了
-      return
+      const errorMessage = `Error: Command type "${commandType}" is not defined`;
+      outputLog(errorMessage, 'error', scenarioObject);
+      throw new Error(errorMessage);
     }
 
     const boundFunction = commandFunction.bind(this)
