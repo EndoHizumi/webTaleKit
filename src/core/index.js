@@ -8,30 +8,31 @@ import { outputLog } from '../utils/logger'
 import { sleep } from '../utils/waitUtil'
 
 export class Core {
-  bgm = null
-  isAuto = false
-  isNext = false
-  isSkip = false
-  onNextHandler = null
-  sceneFile = {}
-  sceneConfig = {}
-  commandList = {
-    text: this.textHandler,
-    choice: this.choiceHandler,
-    show: this.showHandler,
-    newpage: this.newpageHandler,
-    hide: this.hideHandler,
-    jump: this.jumpHandler,
-    sound: this.soundHandler,
-    say: this.sayHandler,
-    if: this.ifHandler,
-    call: this.callHandler,
-    moveto: this.moveToHandler,
-    route: this.routeHandler,
-    wait: this.waitHandler,
-  }
-
   constructor() {
+    // プロパティの初期化
+    this.bgm = null
+    this.isAuto = false
+    this.isNext = false
+    this.isSkip = false
+    this.onNextHandler = null
+    this.sceneFile = {}
+    this.sceneConfig = {}
+    this.commandList = {
+      text: this.textHandler,
+      choice: this.choiceHandler,
+      show: this.showHandler,
+      newpage: this.newpageHandler,
+      hide: this.hideHandler,
+      jump: this.jumpHandler,
+      sound: this.soundHandler,
+      say: this.sayHandler,
+      if: this.ifHandler,
+      call: this.callHandler,
+      moveto: this.moveToHandler,
+      route: this.routeHandler,
+      wait: this.waitHandler,
+    }
+
     // gameContainerの初期化（HTMLのgameContainerを取得する）
     this.gameContainer = document.getElementById('gameContainer')
     // Drawerの初期化（canvasタグのサイズを設定する)
@@ -101,9 +102,26 @@ export class Core {
     outputLog('sceneFile', 'debug', this.sceneFile)
   }
 
+  // ファイルの存在確認を行う関数
+  async checkResourceExists(url) {
+    try {
+      const response = await fetch(url, { method: 'HEAD' })
+      return response.ok
+    } catch (error) {
+      outputLog(`Resource check failed: ${url}`, 'error', error)
+      return false
+    }
+  }
+
   async loadScreen(sceneConfig) {
     outputLog('call', 'debug', sceneConfig)
     // sceneConfig.templateを読み込んで、HTMLを表示する
+    // テンプレートの存在確認
+    if (!(await this.checkResourceExists(sceneConfig.template))) {
+      console.error(`Template file not found: ${sceneConfig.template}`)
+      throw new Error(`Template file not found: ${sceneConfig.template}`)
+    }
+
     const htmlString = await (await fetch(sceneConfig.template)).text()
     // 読み込んだhtmlからIDにmainを持つdivタグとStyleタグ以下を取り出して、gameContainerに表示する
     var parser = new DOMParser()
@@ -122,17 +140,31 @@ export class Core {
     this.drawer.setScreen(this.gameContainer, engineConfig.resolution)
     // シナリオの進行状況を保存
     this.scenarioManager.progress.currentScene = sceneConfig.name
-    // 背景画像を表示する
-    const background = await new ImageObject().setImageAsync(sceneConfig.background)
-    this.displayedImages['background'] = {
-      image: background,
-      size: {
-        width: this.gameContainer.clientWidth,
-        height: this.gameContainer.clientHeight,
-      },
+
+    console.info(`background: ${await this.checkResourceExists(sceneConfig.background)}`)
+    // 背景画像の存在確認
+    if (!(await this.checkResourceExists(sceneConfig.background))) {
+      throw new Error(`Background image not found: ${sceneConfig.background}`)
+    } else {
+      // 背景画像を表示する
+      const background = await new ImageObject().setImageAsync(sceneConfig.background)
+      this.displayedImages['background'] = {
+        image: background,
+        size: {
+          width: this.gameContainer.clientWidth,
+          height: this.gameContainer.clientHeight,
+        },
+      }
     }
+
     this.drawer.show(this.displayedImages)
-    this.bgm = await new SoundObject().setAudioAsync(sceneConfig.bgm)
+
+    // BGMの存在確認
+    if (!(await this.checkResourceExists(sceneConfig.bgm))) {
+      throw new Error(`BGM file not found: ${sceneConfig.bgm}`)
+    } else {
+      this.bgm = await new SoundObject().setAudioAsync(sceneConfig.bgm)
+    }
   }
 
   async runScenario() {
@@ -143,20 +175,20 @@ export class Core {
     }
     outputLog('scenarioObject', 'debug', scenarioObject)
     // シナリオオブジェクトのtypeプロパティに応じて、対応する関数を実行する
-    const commandType = scenarioObject.type || 'text';
-    const commandFunction = this.commandList[commandType];
-    
+    const commandType = scenarioObject.type || 'text'
+    const commandFunction = this.commandList[commandType]
+
     // コマンドが存在しない場合のエラーハンドリング
     if (!commandFunction) {
       const errorMessage = `Error: Command type "${commandType}" is not defined`;
       outputLog(errorMessage, 'error', scenarioObject);
       throw new Error(errorMessage);
     }
-    
-    const boundFunction = commandFunction.bind(this);
-    outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`, 'debug', scenarioObject);
-    scenarioObject = await this.httpHandler(scenarioObject);
-    await boundFunction(scenarioObject);
+
+    const boundFunction = commandFunction.bind(this)
+    outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`, 'debug', scenarioObject)
+    scenarioObject = await this.httpHandler(scenarioObject)
+    await boundFunction(scenarioObject)
   }
 
   async textHandler(scenarioObject) {
@@ -415,6 +447,17 @@ export class Core {
     outputLog('call', 'debug', line)
     const name = line.name || line.src.split('/').pop()
     let image
+
+    // ファイルの存在確認
+    if (!(await this.checkResourceExists(line.src))) {
+      console.error(`Image file not found: ${line.src}`)
+      outputLog(`Image file not found: ${line.src}`, 'error')
+      // エラーメッセージを表示
+      await this.textHandler(`エラー: 画像ファイルが見つかりません: ${line.src}`)
+      // 空の画像オブジェクトを返す
+      return new ImageObject()
+    }
+
     // 既にインスタンスがある場合は、それを使う
     if (Object.hasOwn(this.displayedImages, name)) {
       const targetImage = this.displayedImages[name]
@@ -459,6 +502,17 @@ export class Core {
     outputLog('call', 'debug', line)
     const name = line.name || line.src.split('/').pop()
     let resource
+
+    // ファイルの存在確認
+    if (!(await this.checkResourceExists(line.src))) {
+      console.error(`Sound file not found: ${line.src}`)
+      outputLog(`Sound file not found: ${line.src}`, 'error')
+      // エラーメッセージを表示
+      await this.textHandler(`エラー: 音声ファイルが見つかりません: ${line.src}`)
+      // 空のサウンドオブジェクトを返す
+      return new SoundObject()
+    }
+
     if (Object.hasOwn(this.usedSounds, name)) {
       const targetResource = this.usedSounds[name]
       const soundObject = targetResource ? targetResource.audio : new SoundObject()
