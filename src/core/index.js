@@ -6,48 +6,59 @@ import { SoundObject } from '../resource/soundObject'
 import engineConfig from '../../engineConfig.json'
 import { outputLog } from '../utils/logger'
 import { sleep } from '../utils/waitUtil'
+import { TextMeasurer } from '../utils/TextMeasurer'
 
 export class Core {
-  bgm = null
-  isAuto = false
-  isNext = false
-  isSkip = false
-  onNextHandler = null
-  sceneFile = {}
-  sceneConfig = {}
-  commandList = {
-    text: this.textHandler,
-    choice: this.choiceHandler,
-    show: this.showHandler,
-    newpage: this.newpageHandler,
-    hide: this.hideHandler,
-    jump: this.jumpHandler,
-    sound: this.soundHandler,
-    say: this.sayHandler,
-    if: this.ifHandler,
-    call: this.callHandler,
-    moveto: this.moveToHandler,
-    route: this.routeHandler,
-    wait: this.waitHandler,
-  }
-
   constructor() {
+    this.bgm = null
+    this.isAuto = false
+    this.isNext = false
+    this.isSkip = false
+    this.onNextHandler = null
+    this.maxHeight = 0
+    this.lineHeight = 0
+    this.sceneFile = {}
+    this.sceneConfig = {}
+    this.commandList = {
+      text: this.textHandler.bind(this),
+      choice: this.choiceHandler.bind(this),
+      show: this.showHandler.bind(this),
+      newpage: this.newpageHandler.bind(this),
+      hide: this.hideHandler.bind(this),
+      jump: this.jumpHandler.bind(this),
+      sound: this.soundHandler.bind(this),
+      say: this.sayHandler.bind(this),
+      if: this.ifHandler.bind(this),
+      call: this.callHandler.bind(this),
+      moveto: this.moveToHandler.bind(this),
+      route: this.routeHandler.bind(this),
+      wait: this.waitHandler.bind(this),
+    }
+
     // gameContainerの初期化（HTMLのgameContainerを取得する）
     this.gameContainer = document.getElementById('gameContainer')
     // Drawerの初期化（canvasタグのサイズを設定する)
     this.drawer = new Drawer(this.gameContainer)
     // ScenarioManagerの初期化（変数の初期値設定）
     this.scenarioManager = new ScenarioManager()
-    // ResourceManagerの初期化（引数にconfigを渡して、リソース管理配列を作る）
+    // ResourceManagerの初期化
     this.resourceManager = new ResourceManager(import(/* webpackIgnore: true */ '/src/resource/config.js')) //  webpackIgnoreでバンドルを無視する
     this.displayedImages = {}
     this.usedSounds = {}
+    
+    // TextMeasurerの初期化
+    this.textMeasurer = new TextMeasurer()
+    
+    // メッセージボックスの寸法を取得
+    const messageBox = document.querySelector('#messageView')
+    const styles = window.getComputedStyle(messageBox)
+    this.textMeasurer.setFont(styles.font, parseFloat(styles.lineHeight) / parseFloat(styles.fontSize))
   }
 
   setConfig(config) {
     outputLog('call', 'debug', config)
     // ゲームの設定情報をセットする
-    engineConfig = config
+    Object.assign(engineConfig, config)
   }
 
   async start(initScene) {
@@ -74,7 +85,7 @@ export class Core {
         this.isNext = false
       }
     })
-    document.querySelector('#gameContainer').addEventListener('click', (e) => {
+    document.querySelector('#gameContainer').addEventListener('click', (_e) => {
       this.onNextHandler()
     })
 
@@ -143,20 +154,20 @@ export class Core {
     }
     outputLog('scenarioObject', 'debug', scenarioObject)
     // シナリオオブジェクトのtypeプロパティに応じて、対応する関数を実行する
-    const commandType = scenarioObject.type || 'text';
-    const commandFunction = this.commandList[commandType];
+    const commandType = scenarioObject.type || 'text'
+    const commandFunction = this.commandList[commandType]
     
     // コマンドが存在しない場合のエラーハンドリング
     if (!commandFunction) {
-      const errorMessage = `Error: Command type "${commandType}" is not defined`;
-      outputLog(errorMessage, 'error', scenarioObject);
-      throw new Error(errorMessage);
+      const errorMessage = `Error: Command type "${commandType}" is not defined`
+      outputLog(errorMessage, 'error', scenarioObject)
+      throw new Error(errorMessage)
     }
     
-    const boundFunction = commandFunction.bind(this);
-    outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`, 'debug', scenarioObject);
-    scenarioObject = await this.httpHandler(scenarioObject);
-    await boundFunction(scenarioObject);
+    const boundFunction = commandFunction.bind(this)
+    outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`, 'debug', scenarioObject)
+    scenarioObject = await this.httpHandler(scenarioObject)
+    await boundFunction(scenarioObject)
   }
 
   async textHandler(scenarioObject) {
@@ -169,21 +180,68 @@ export class Core {
     }
     outputLog('call', 'debug', scenarioObject)
 
+    // メッセージボックスの寸法を取得
+    const messageBox = document.querySelector('#messageView')
+    const maxWidth = messageBox.clientWidth
+    const maxHeight = messageBox.clientHeight
+
+    // 変数展開を行う
+    const expandedContent = scenarioObject.content.map(text => {
+      if (typeof text === 'string') {
+        return this.expandVariable(text)
+      } else if (text.type === 'br' || text.type === 'wait') {
+        return text
+      } else {
+        return {
+          ...text,
+          content: [this.expandVariable(text.content[0])]
+        }
+      }
+    })
+
+    // オーバーフローチェックと分割処理
+    if (this.textMeasurer.checkOverflow(expandedContent, maxWidth, maxHeight)) {
+      // テキストを行に分割
+      const lines = this.textMeasurer.splitIntoLines(expandedContent, maxWidth)
+      const lineHeight = this.textMeasurer.measureText('あ').height
+      const maxLines = Math.floor(maxHeight / lineHeight)
+
+      // 表示可能な行数までを現在のテキストとして表示
+      const currentLines = lines.slice(0, maxLines)
+      const remainingLines = lines.slice(maxLines)
+
+      // 残りの行を新しいtextタグとして追加
+      if (remainingLines.length > 0) {
+        const remainingContent = remainingLines.map(line => line.content.join('')).flat()
+        this.scenarioManager.addScenario([
+          { type: 'text', content: [remainingContent], speed: scenarioObject.speed }
+        ], this.scenarioManager.getIndex())
+      }
+
+      // 現在の行を表示用に設定
+      scenarioObject.content = currentLines.map(line => line.content.join(''))
+    } else {
+      // オーバーフローしない場合は展開済みのコンテンツを使用
+      scenarioObject.content = expandedContent
+    }
+    }
+
     // 名前が設定されている場合は、名前を表示する
     if (scenarioObject.name) {
-      this.drawer.drawName(scenarioObject.name)
+      this.drawer.drawName(scenarioObject.name);
     } else {
-      this.drawer.drawName('')
+      this.drawer.drawName('');
     }
 
     //prettier-ignore
     this.onNextHandler = () => { this.drawer.isSkip = true }
     this.drawer.clearText() // テキスト表示領域をクリア
+
     // 表示する文章を1行ずつ表示する
     for (const text of scenarioObject.content) {
       outputLog('textSpeed', 'debug', text)
       if (typeof text === 'string') {
-        await this.drawer.drawText(this.expandVariable(text), scenarioObject.speed || 25)
+        await this.drawer.drawText(text, scenarioObject.speed || 25)
       } else {
         if (text.type === 'br' || text.type === 'wait') {
           outputLog('text', 'debug', text)
@@ -193,10 +251,11 @@ export class Core {
           }
         } else {
           const container = this.drawer.createDecoratedElement(text)
-          await this.drawer.drawText(this.expandVariable(text.content[0]), text.speed || 25, container)
+          await this.drawer.drawText(text.content[0], text.speed || 25, container)
         }
       }
     }
+
     await this.waitHandler({ wait: scenarioObject.time })
     this.drawer.isSkip = false
     this.scenarioManager.setHistory(scenarioObject.content)
@@ -555,13 +614,13 @@ export class Core {
       headers: headers,
       body: JSON.stringify(body),
     })
+    const responseJson = await response.json()
+    this.sceneFile.res = responseJson
+    outputLog('res', 'debug', responseJson)
+    
     if (response.ok) {
-      const json = await response.json()
-      this.sceneFile.res = json
-      outputLog('res', 'debug', json)
       line.then = line.content.filter((content) => content.type === 'then')[0].content
     } else {
-      this.sceneFile.res = json
       line.error = line.content.filter((content) => content.type === 'error')[0].content
     }
     if (line.content) {

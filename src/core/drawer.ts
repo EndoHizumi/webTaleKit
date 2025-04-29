@@ -1,7 +1,7 @@
 import { ImageObject } from '../resource/ImageObject'
 import { outputLog } from '../utils/logger'
 import { sleep } from '../utils/waitUtil'
-
+import { TextMeasurer, DecoratedText } from '../utils/TextMeasurer'
 /*
  drawerの目的
   UIのHTMLとcanvasを描画する。
@@ -16,15 +16,24 @@ export class Drawer {
   private config: any
   private fadeCanvas!: HTMLCanvasElement
   private fadeCtx!: CanvasRenderingContext2D
+  private textMeasurer: TextMeasurer
   isSkip: boolean = false
   readySkip: boolean = false
 
   constructor(gameContainer: HTMLElement) {
     this.gameScreen = gameContainer
+    this.textMeasurer = new TextMeasurer()
     // ウィンドウのリサイズ時にスケールを調整
     window.addEventListener('resize', () => this.adjustScale(this.gameScreen))
     // 初期ロード時にもスケールを調整
     this.adjustScale(this.gameScreen)
+  }
+
+  measureText(text: string, font?: string): number {
+    if (font) {
+      this.textMeasurer.setFont(font)
+    }
+    return this.textMeasurer.measureText(text).width
   }
 
   setScreen(screenHtml: HTMLElement, resolution: { width: number; height: number }) {
@@ -67,29 +76,39 @@ export class Drawer {
   async drawText(text: string, wait: number, containerElement?: HTMLElement) {
     outputLog('drawText', 'debug', { text, wait, containerElement })
     let element: HTMLElement = this.messageText
+    
     // テキストを表示するコンテナ要素を指定した場合は、その要素に追加する
     if (containerElement) {
       this.messageText.appendChild(containerElement)
       element = containerElement
     }
-    for (const char of text) {
-      //prettier-ignore
-      setTimeout(() => { this.readySkip = true, wait });
-      // 100ミリ秒待ってから、スキップボタンが押されたら即座に表示
-      if (!this.isSkip) {
-        element.innerHTML += char
-        await sleep(wait)
-      } else {
-        if (this.readySkip) {
-          element.innerHTML += text.slice(element.textContent!.length)
-          this.readySkip = false
-          this.isSkip = false
-          break
+
+      for (const content of text) {
+        if (typeof content === 'string') {
+          for (const char of content) {
+            // スキップ準備
+            setTimeout(() => { this.readySkip = true }, wait)
+
+            // スキップ処理
+            if (!this.isSkip) {
+              element.innerHTML += char
+              await sleep(wait)
+            } else {
+              if (this.readySkip) {
+                element.innerHTML += text.slice(element.textContent!.length)
+                                this.readySkip = false
+                this.isSkip = false
+                break
+              }
+            }
+          }
         }
       }
-      await sleep(wait)
+      // 行の終わりに改行を追加
+      if (text.indexOf(text) < text.length - 1) {
+        await this.drawLineBreak()
+      }
     }
-  }
 
   async drawLineBreak() {
     // メッセージテキストに改行を追加する
@@ -102,26 +121,50 @@ export class Drawer {
     }
   }
 
-  createDecoratedElement(element: any): HTMLElement {
+  createDecoratedElement(element: DecoratedText): HTMLElement {
+    let decoratedElement: HTMLElement
+
     switch (element.type) {
       case 'color':
-        const span = document.createElement('span')
-        span.style.color = element.value
-        return span
+        decoratedElement = document.createElement('span')
+        decoratedElement.style.color = element.value || 'inherit'
+        break
       case 'ruby':
-        const ruby = document.createElement('ruby')
+        decoratedElement = document.createElement('ruby')
         const rt = document.createElement('rt')
-        rt.textContent = element.text
-        ruby.appendChild(rt)
-        return ruby
+        rt.textContent = element.text || ''
+        decoratedElement.appendChild(rt)
+        break
       case 'b':
-        return document.createElement('strong')
+        decoratedElement = document.createElement('strong')
+        break
       case 'i':
-        return document.createElement('i')
+        decoratedElement = document.createElement('i')
+        break
       default:
         outputLog(`Unknown decoration type: ${element.type}`, 'warn')
-        return document.createElement('span')
+        decoratedElement = document.createElement('span')
     }
+
+    // スタイルの継承
+    const parentStyles = window.getComputedStyle(this.messageText)
+    decoratedElement.style.fontSize = parentStyles.fontSize
+    decoratedElement.style.lineHeight = parentStyles.lineHeight
+    
+    // アクセシビリティ対応
+    switch (element.type) {
+      case 'b':
+        decoratedElement.setAttribute('aria-weight', 'bold')
+        break
+      case 'i':
+        decoratedElement.setAttribute('aria-style', 'italic')
+        break
+      case 'color':
+        decoratedElement.setAttribute('aria-description', `colored text: ${element.value}`)
+        break
+    }
+
+    return decoratedElement
   }
 
   async drawChoices(choices: any): Promise<{ selectId: number; onSelect: any }> {
