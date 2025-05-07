@@ -41,6 +41,13 @@ module.exports = async (data) => {
   })
   // HTMLをJSONに変換
   const parseJson = await HTMLToJSON(html)
+  
+  // parseJson.contentが存在するかチェック
+  if (!parseJson || !parseJson.content) {
+    console.error('Error parsing HTML: parseJson.content is undefined', parseJson)
+    return { scenario, script, lang }
+  }
+  
   parseJson.content.forEach((element) => {
     if (element.type === 'scenario') {
       scenario = flattenAttributes(element.content)

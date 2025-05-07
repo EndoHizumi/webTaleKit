@@ -1,5 +1,6 @@
 import { ImageObject } from "../resource/ImageObject"
 import { outputLog } from "../utils/logger"
+import StackTrace from 'stacktrace-js';
 export class ScenarioManager {
   private backlist: any
   private saveDataList: any
@@ -19,12 +20,32 @@ export class ScenarioManager {
         // '{scene名}'：[id]
       }
     }
+    const handler = {
+      set(obj: any, prop: any, value: any) {
+        StackTrace.get().then((stack) => {
+          console.log("%o => %o",stack[stack.length - 2].functionName,stack[stack.length - 1].functionName)
+        });
+        console.log(`プロパティ${prop}が${value}に設定されました`);
+        obj[prop] = value;
+        return true;
+      },
+      get(obj:any, prop:any) {
+        StackTrace.get().then((stack) => {
+          console.log("%o => %o",stack[stack.length - 2].functionName,stack[stack.length - 1].functionName)
+        });
+        console.log(`プロパティ${prop}が読み取られました`);
+        return obj[prop];
+      }
+    };
+    this.progress = new Proxy(this.progress, handler)
   }
 
   setScenario (scenario: any, sceneName: string=''): void {
     outputLog('call','debug', {scenario, sceneName})
     this.scenarioData = scenario
+    outputLog("sceneName","debug", sceneName)
     this.progress.currentScene = sceneName
+    outputLog("this.progress.currentScene ", "debug", this.progress.currentScene )
     this.progress.currentIndex = 0
   }
 

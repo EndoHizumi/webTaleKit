@@ -31,6 +31,9 @@
       <item label="エラーハンドリングテスト" onSelect="test_error">
         <route to="test_error" />
       </item>
+      <item label="セーブ・ロードテスト" onSelect="saveload">
+        <route to="saveload" />
+      </item>
     </choice>
   </scenario>
 

@@ -1,0 +1,91 @@
+<scene>
+  <script>
+      export const sceneConfig = {
+        name: "Save/Load Test",
+        template: "./src/screen/title.html",
+        background: "./src/resource/background/living_room.jpg",
+        bgm: "./src/resource/bgm/calm_music.wav"
+      }
+  </script>
+  <scenario>
+    <say name="Guide">
+      Hello. This is a test scene for the save and load functionality.
+    </say>
+    <say name="Guide">
+      In this scene, you can test the save and load functionality.
+    </say>
+    <say name="Guide">
+      First, click the "save" button at the bottom of the screen to display the save screen.
+    </say>
+    <say name="Guide">
+      On the save screen, you can select a slot to save the game state.
+    </say>
+    <say name="Guide">
+      Next, click the "load" button to display the load screen.
+    </say>
+    <say name="Guide">
+      On the load screen, you can load a saved game state.
+    </say>
+    <say name="Guide">
+      You can also use the "q.save" and "q.load" buttons for quick save and load.
+    </say>
+    <choice prompt="Which feature would you like to test?">
+      <option label="Test save functionality" id="1">
+        <say name="Guide">
+          Let's test the save functionality.
+        </say>
+        <say name="Guide">
+          You can display the save screen by clicking the "save" button at the bottom of the screen or by using the following command.
+        </say>
+        <save />
+        <say name="Guide">
+          Save completed. Now let's test the load functionality.
+        </say>
+        <jump index="20" />
+      </option>
+      <option label="Test load functionality" id="2">
+        <say name="Guide">
+          Let's test the load functionality.
+        </say>
+        <say name="Guide">
+          You can display the load screen by clicking the "load" button at the bottom of the screen or by using the following command.
+        </say>
+        <load />
+        <say name="Guide">
+          Load completed.
+        </say>
+        <jump index="20" />
+      </option>
+      <option label="Test quick save" id="3">
+        <say name="Guide">
+          Let's test the quick save functionality.
+        </say>
+        <say name="Guide">
+          Clicking the "q.save" button at the bottom of the screen will save the current state to slot 0.
+        </say>
+        <save slot="0" message="Quick save completed." />
+        <jump index="20" />
+      </option>
+      <option label="Test quick load" id="4">
+        <say name="Guide">
+          Let's test the quick load functionality.
+        </say>
+        <say name="Guide">
+          Clicking the "q.load" button at the bottom of the screen will load the state from slot 0.
+        </say>
+        <load slot="0" message="No quick save data found." />
+        <jump index="20" />
+      </option>
+    </choice>
+    <say name="Guide">
+      The save and load functionality test is complete.
+    </say>
+    <say name="Guide">
+      You can use this functionality to save and load your game progress.
+    </say>
+    <say name="Guide">
+      Now, let's return to the title screen.
+    </say>
+    <jump index="0" />
+  </scenario>
+</scene>

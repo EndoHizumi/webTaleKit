@@ -52,6 +52,10 @@ module.exports = {
               source: path.resolve(__dirname, './src/screen'),
               destination: path.resolve(__dirname, 'dist/src/screen'),
             },
+            {
+              source: path.resolve(__dirname, './src/scene'),
+              destination: path.resolve(__dirname, 'dist/src/scene'),
+            },
           ],
         },
       },
@@ -60,7 +64,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\\.ts$/,
+        test: /\.ts$/,
         use: 'ts-loader',
         exclude: /node_modules/,
       },

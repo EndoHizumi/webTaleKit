@@ -6,10 +6,10 @@ export async function outputLog(msg: string = 'None', level: LogLevel = 'log', o
   if (!['log', 'debug', 'warn', 'error'].includes(level)) {
     level = 'log';
   }
-  
+
   try {
     const stack = await StackTrace.get();
-    const caller = stack[1];
+    const caller = stack[stack.length - 1];
     const callerText = `${caller.functionName}:${caller.lineNumber}:${caller.columnNumber}`;
     // prettier-ignore
     console[level](level.toUpperCase(), callerText, msg, option || '');
@@ -17,3 +17,4 @@ export async function outputLog(msg: string = 'None', level: LogLevel = 'log', o
     console.error('Error getting stack trace:', error);
   }
 }
+

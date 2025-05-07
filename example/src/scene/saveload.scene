@@ -1,0 +1,91 @@
+<scene>
+  <script>
+     export const sceneConfig = {
+        name: "セーブ・ロードテスト",
+        template: "./src/screen/title.html",
+        background: "./src/resource/background/living_room.jpg",
+        bgm: "./src/resource/bgm/calm_music.wav"
+      }
+  </script>
+  <scenario>
+    <say name="ガイド">
+      こんにちは。これはセーブ・ロード機能のテストシーンです。
+    </say>
+    <say name="ガイド">
+      このシーンでは、セーブ・ロード機能をテストすることができます。
+    </say>
+    <say name="ガイド">
+      まず、画面下部の「save」ボタンをクリックして、セーブ画面を表示してみましょう。
+    </say>
+    <say name="ガイド">
+      セーブ画面では、スロットを選択してゲームの状態を保存できます。
+    </say>
+    <say name="ガイド">
+      次に、「load」ボタンをクリックして、ロード画面を表示してみましょう。
+    </say>
+    <say name="ガイド">
+      ロード画面では、保存したゲームの状態を読み込むことができます。
+    </say>
+    <say name="ガイド">
+      また、「q-save」と「q-load」ボタンを使うと、クイックセーブ・クイックロードができます。
+    </say>
+    <choice prompt="どの機能をテストしますか？">
+      <item label="セーブ機能をテストする" id="1">
+        <say name="ガイド">
+          それでは、セーブ機能をテストしましょう。
+        </say>
+        <say name="ガイド">
+          画面下部の「save」ボタンをクリックするか、以下のコマンドでセーブ画面を表示できます。
+        </say>
+        <save />
+        <say name="ガイド">
+          セーブが完了しました。次はロード機能をテストしましょう。
+        </say>
+        <jump index="20" />
+      </item>
+      <item label="ロード機能をテストする" id="2">
+        <say name="ガイド">
+          それでは、ロード機能をテストしましょう。
+        </say>
+        <say name="ガイド">
+          画面下部の「load」ボタンをクリックするか、以下のコマンドでロード画面を表示できます。
+        </say>
+        <load />
+        <say name="ガイド">
+          ロードが完了しました。
+        </say>
+        <jump index="20" />
+      </item>
+      <item label="クイックセーブをテストする" id="3">
+        <say name="ガイド">
+          それでは、クイックセーブ機能をテストしましょう。
+        </say>
+        <say name="ガイド">
+          画面下部の「q.save」ボタンをクリックすると、スロット0に現在の状態が保存されます。
+        </say>
+        <save slot="0" message="クイックセーブが完了しました。" />
+        <jump index="20" />
+      </item>
+      <item label="クイックロードをテストする" id="4">
+        <say name="ガイド">
+          それでは、クイックロード機能をテストしましょう。
+        </say>
+        <say name="ガイド">
+          画面下部の「q.load」ボタンをクリックすると、スロット0から状態が読み込まれます。
+        </say>
+        <load slot="0" message="クイックセーブデータがありません。" />
+        <jump index="20" />
+      </item>
+    </choice>
+    <say name="ガイド">
+      セーブ・ロード機能のテストが完了しました。
+    </say>
+    <say name="ガイド">
+      この機能を使って、ゲームの進行状況を保存したり、読み込んだりすることができます。
+    </say>
+    <say name="ガイド">
+      それでは、タイトル画面に戻りましょう。
+    </say>
+    <jump index="0" />
+  </scenario>
+</scene>

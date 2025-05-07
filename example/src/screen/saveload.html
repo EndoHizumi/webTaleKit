@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebTaleKit - セーブ/ロード</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 1280px;
+            height: 720px;
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #saveLoadContainer {
+            position: absolute;
+            width: 90%;
+            height: 80%;
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 2px solid #4a4a9c;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .tab.active {
+            background-color: #4a4a9c;
+        }
+
+        .slot-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-gap: 15px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .save-slot {
+            background-color: rgba(74, 74, 156, 0.3);
+            border: 1px solid #4a4a9c;
+            border-radius: 5px;
+            padding: 10px;
+            display: flex;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .save-slot:hover {
+            background-color: rgba(74, 74, 156, 0.5);
+        }
+
+        .save-slot.empty {
+            background-color: rgba(50, 50, 50, 0.3);
+        }
+
+        .save-slot.empty:hover {
+            background-color: rgba(50, 50, 50, 0.5);
+        }
+
+        .slot-thumbnail {
+            width: 160px;
+            height: 90px;
+            background-color: #333;
+            margin-right: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slot-info {
+            flex-grow: 1;
+        }
+
+        .slot-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .slot-date {
+            font-size: 0.8em;
+            color: #ccc;
+        }
+
+        .slot-scene {
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .back-button {
+            padding: 10px 20px;
+            background-color: #4a4a9c;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: #5a5aac;
+        }
+
+        .empty-message {
+            color: #999;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="main">
+        <div id="saveLoadContainer">
+            <div class="tab-container">
+                <button class="tab active" id="saveTab">セーブ</button>
+                <button class="tab" id="loadTab">ロード</button>
+            </div>
+            <div class="slot-container" id="slotContainer">
+                <!-- スロットはJavaScriptで動的に生成されます -->
+            </div>
+            <div class="button-container">
+                <button class="back-button" id="backButton">戻る</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

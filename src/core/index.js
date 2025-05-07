@@ -30,6 +30,8 @@ export class Core {
       moveto: this.moveToHandler,
       route: this.routeHandler,
       wait: this.waitHandler,
+      save: this.saveHandler,
+      load: this.loadHandler,
     }
     // gameContainerの初期化（HTMLのgameContainerを取得する）
     this.gameContainer = document.getElementById('gameContainer')
@@ -77,6 +79,9 @@ export class Core {
       this.onNextHandler()
     })
 
+    // コントロールボタンのイベントリスナーを設定
+    this.setupControlButtons()
+
     await this.textHandler('タップでスタート')
     // BGMを再生する
     this.bgm.play(true)
@@ -95,6 +100,7 @@ export class Core {
       this.sceneFile.init(this.getAPIForScript())
     }
     // シナリオの進行状況を初期化
+    outputLog("call","debug", `sceneFileName: ${sceneFileName}`)
     this.scenarioManager.setScenario(this.sceneFile.scenario, sceneFileName)
     this.sceneConfig = { ...this.sceneConfig, ...this.sceneFile.sceneConfig }
     outputLog('sceneFile', 'debug', this.sceneFile)
@@ -119,8 +125,8 @@ export class Core {
     document.head.appendChild(styleElement)
     // ゲーム進行用に必要な情報をセットする
     this.drawer.setScreen(this.gameContainer, engineConfig.resolution)
-    // シナリオの進行状況を保存
-    this.scenarioManager.progress.currentScene = sceneConfig.name
+    // シーンファイルのタイトルを設定する
+    document.title = sceneConfig.name
     // 背景画像を表示する
     const background = await new ImageObject().setImageAsync(sceneConfig.background)
     this.displayedImages['background'] = {
@@ -681,5 +687,303 @@ export class Core {
         wait: this.waitHandler.bind(this),
       },
     }
+  }
+
+  /**
+   * ゲームの現在の状態を保存する
+   * @param {number} slotNumber - 保存するスロット番号
+   * @returns {Promise<boolean>} - 保存が成功したかどうか
+   */
+  async saveGame(slotNumber) {
+    outputLog('saveGame', 'debug', slotNumber)
+    try {
+      // 現在のゲーム状態を取得
+      const saveData = {
+        timestamp: new Date().toISOString(),
+        progress: this.scenarioManager.progress,
+        currentIndex: this.scenarioManager.getIndex(),
+        displayedImages: this.displayedImages,
+        sceneFile: this.sceneFile,
+        sceneConfig: this.sceneConfig,
+        version: '1.0.0', // セーブデータのバージョン
+        screenshot: null // スクリーンショットは将来的に実装
+      }
+
+      // localStorageに保存
+      localStorage.setItem(`webTaleKit_save_${slotNumber}`, JSON.stringify(saveData))
+      return true
+    } catch (error) {
+      outputLog('Error saving game', 'error', error)
+      return false
+    }
+  }
+
+  /**
+   * 保存されたゲーム状態を読み込む
+   * @param {number} slotNumber - 読み込むスロット番号
+   * @returns {Promise<boolean>} - 読み込みが成功したかどうか
+   */
+  async loadGame(slotNumber) {
+    outputLog('loadGame', 'debug', slotNumber)
+    try {
+      // localStorageからデータを取得
+      const saveDataString = localStorage.getItem(`webTaleKit_save_${slotNumber}`)
+      if (!saveDataString) {
+        outputLog('No save data found', 'warn', slotNumber)
+        return false
+      }
+
+      const saveData = JSON.parse(saveDataString)
+      
+      // バージョンチェック（将来的に互換性処理を追加）
+      if (saveData.version !== '1.0.0') {
+        outputLog('Save data version mismatch', 'warn', { current: '1.0.0', save: saveData.version })
+        // 必要に応じて変換処理を追加
+      }
+
+      // シーンの再ロード
+      await this.loadScene(saveData.progress.currentScene)
+      
+      // 進行状況の復元
+      this.scenarioManager.progress = saveData.progress
+      this.scenarioManager.setIndex(saveData.currentIndex)
+      
+      // 画面の再ロード
+      await this.loadScreen(saveData.sceneConfig)
+      
+      // 表示画像の復元
+      this.displayedImages = saveData.displayedImages
+      this.drawer.show(this.displayedImages)
+      
+      return true
+    } catch (error) {
+      outputLog('Error loading game', 'error', error)
+      return false
+    }
+  }
+
+  /**
+   * セーブ・ロード画面を表示する
+   * @param {string} mode - 'save'または'load'
+   */
+  async showSaveLoadScreen(mode = 'save') {
+    outputLog('showSaveLoadScreen', 'debug', mode)
+    
+    // 現在の画面状態を保存
+    const currentHtml = this.gameContainer.innerHTML
+    
+    // セーブ・ロード画面のHTMLを読み込む
+    const htmlString = await (await fetch('./src/screen/saveload.html')).text()
+    var parser = new DOMParser()
+    var doc = parser.parseFromString(htmlString, 'text/html')
+    this.gameContainer.innerHTML = doc.getElementById('main').innerHTML
+    
+    // タブの切り替え処理
+    const saveTab = document.getElementById('saveTab')
+    const loadTab = document.getElementById('loadTab')
+    const slotContainer = document.getElementById('slotContainer')
+    
+    // 初期タブ設定
+    saveTab.classList.toggle('active', mode === 'save')
+    loadTab.classList.toggle('active', mode === 'load')
+    
+    // タブクリックイベント
+    saveTab.addEventListener('click', () => {
+      saveTab.classList.add('active')
+      loadTab.classList.remove('active')
+      this.renderSaveSlots(slotContainer, 'save')
+    })
+    
+    loadTab.addEventListener('click', () => {
+      loadTab.classList.add('active')
+      saveTab.classList.remove('active')
+      this.renderSaveSlots(slotContainer, 'load')
+    })
+    
+    // 戻るボタンのイベント
+    document.getElementById('backButton').addEventListener('click', () => {
+      this.gameContainer.innerHTML = currentHtml
+      // 必要なイベントリスナーを再設定
+      this.drawer.setScreen(this.gameContainer, engineConfig.resolution)
+    })
+    
+    // スロット一覧を表示
+    this.renderSaveSlots(slotContainer, mode)
+  }
+
+  /**
+   * セーブ・ロードスロットを描画する
+   * @param {HTMLElement} container - スロットを表示するコンテナ要素
+   * @param {string} mode - 'save'または'load'
+   */
+  renderSaveSlots(container, mode) {
+    container.innerHTML = '' // コンテナをクリア
+    
+    // スロット数（デフォルト10）
+    const slotCount = 10
+    
+    for (let i = 1; i <= slotCount; i++) {
+      // セーブデータを取得
+      const saveDataString = localStorage.getItem(`webTaleKit_save_${i}`)
+      const saveData = saveDataString ? JSON.parse(saveDataString) : null
+      
+      // スロット要素を作成
+      const slotElement = document.createElement('div')
+      slotElement.className = `save-slot ${saveData ? '' : 'empty'}`
+      
+      // サムネイル部分
+      const thumbnailElement = document.createElement('div')
+      thumbnailElement.className = 'slot-thumbnail'
+      if (saveData && saveData.screenshot) {
+        const img = document.createElement('img')
+        img.src = saveData.screenshot
+        img.alt = `Save ${i}`
+        thumbnailElement.appendChild(img)
+      } else {
+        thumbnailElement.textContent = saveData ? 'No Image' : 'Empty'
+      }
+      
+      // 情報部分
+      const infoElement = document.createElement('div')
+      infoElement.className = 'slot-info'
+      
+      const titleElement = document.createElement('div')
+      titleElement.className = 'slot-title'
+      titleElement.textContent = `セーブデータ ${i}`
+      
+      const dateElement = document.createElement('div')
+      dateElement.className = 'slot-date'
+      dateElement.textContent = saveData
+        ? new Date(saveData.timestamp).toLocaleString('ja-JP')
+        : '----/--/-- --:--:--'
+      
+      const sceneElement = document.createElement('div')
+      sceneElement.className = 'slot-scene'
+      sceneElement.textContent = saveData
+        ? `シーン: ${saveData.progress.currentScene}`
+        : ''
+      
+      infoElement.appendChild(titleElement)
+      infoElement.appendChild(dateElement)
+      infoElement.appendChild(sceneElement)
+      
+      slotElement.appendChild(thumbnailElement)
+      slotElement.appendChild(infoElement)
+      
+      // クリックイベント
+      slotElement.addEventListener('click', async () => {
+        if (mode === 'save') {
+          // セーブ処理
+          const success = await this.saveGame(i)
+          if (success) {
+            // 成功メッセージ
+            alert(`セーブデータ ${i} に保存しました。`)
+            // スロット一覧を更新
+            this.renderSaveSlots(container, mode)
+          } else {
+            // エラーメッセージ
+            alert('セーブに失敗しました。')
+          }
+        } else if (mode === 'load' && saveData) {
+          // ロード処理
+          const success = await this.loadGame(i)
+          if (success) {
+            // 成功したら画面を閉じる
+            document.getElementById('backButton').click()
+          } else {
+            // エラーメッセージ
+            alert('ロードに失敗しました。')
+          }
+        }
+      })
+      
+      container.appendChild(slotElement)
+    }
+  
+  }
+
+  /**
+   * WebTaleScriptのsaveタグを処理するハンドラー
+   * @param {Object} scenarioObject - シナリオオブジェクト
+   */
+  async saveHandler(scenarioObject) {
+    outputLog('saveHandler', 'debug', scenarioObject)
+    
+    if (scenarioObject.slot) {
+      // スロット番号が指定されている場合は直接保存
+      const success = await this.saveGame(scenarioObject.slot)
+      if (success && scenarioObject.message) {
+        await this.textHandler(scenarioObject.message)
+      }
+    } else {
+      // スロット番号が指定されていない場合はセーブ画面を表示
+      await this.showSaveLoadScreen('save')
+    }
+  }
+
+  /**
+   * WebTaleScriptのloadタグを処理するハンドラー
+   * @param {Object} scenarioObject - シナリオオブジェクト
+   */
+  async loadHandler(scenarioObject) {
+    outputLog('loadHandler', 'debug', scenarioObject)
+    
+    if (scenarioObject.slot) {
+      // スロット番号が指定されている場合は直接ロード
+      const success = await this.loadGame(scenarioObject.slot)
+      if (!success && scenarioObject.message) {
+        await this.textHandler(scenarioObject.message)
+      }
+    } else {
+      // スロット番号が指定されていない場合はロード画面を表示
+      await this.showSaveLoadScreen('load')
+    }
+  }
+
+  /**
+   * コントロールボタンのイベントリスナーを設定する
+   */
+  setupControlButtons() {
+    const controlButtons = document.querySelectorAll('.control-item')
+    controlButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault()
+        const action = button.id
+        
+        switch (action) {
+          case 'save':
+            this.showSaveLoadScreen('save')
+            break
+          case 'load':
+            this.showSaveLoadScreen('load')
+            break
+          case 'q-save':
+            // クイックセーブ（スロット0に保存）
+            this.saveGame(0).then(success => {
+              if (success) {
+                // 成功メッセージを表示（将来的にはUI上に表示）
+                console.log('クイックセーブしました')
+              }
+            })
+            break
+          case 'q-load':
+            // クイックロード（スロット0から読み込み）
+            this.loadGame(0).then(success => {
+              if (!success) {
+                console.log('クイックセーブデータがありません')
+              }
+            })
+            break
+          case 'skip':
+            this.isSkip = true
+            this.drawer.isSkip = true
+            break
+          case 'auto':
+            this.isAuto = !this.isAuto
+            break
+          // 他のボタンの処理も追加可能
+        }
+      })
+    })
   }
 }

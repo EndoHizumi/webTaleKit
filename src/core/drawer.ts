@@ -313,12 +313,17 @@ export class Drawer {
 
   drawCanvas(img: ImageObject, pos: any, size: any, reverse: any, ctx?: CanvasRenderingContext2D) {
     outputLog('drawCanvas', 'debug', { img, pos, size, reverse })
-    if (ctx === undefined) {
+    if (!ctx) {
       ctx = this.ctx
     }
-    const canvas = img.draw(reverse).getCanvas()
-    // canvasから画像を取得して、this.ctxに描画
-    ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, pos.x, pos.y, canvas.width, canvas.height) //CanvasRenderingContext2D.drawImage: Passed-in canvas is empty
+    try {      
+      const canvas = img.draw(reverse).getCanvas()
+      if (!canvas) return
+      // canvasから画像を取得して、this.ctxに描画
+      ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, pos.x, pos.y, canvas.width, canvas.height) //CanvasRenderingContext2D.drawImage: Passed-in canvas is empty
+    } catch {
+      return
+    }
   }
 
   adjustScale(targetElement: HTMLElement) {

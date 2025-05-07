@@ -25,6 +25,9 @@
       <item label="Special Effects" onSelect="effects">
         <route scene="effects" />
       </item>
+      <item label="Save and Load Test" onSelect="saveload">
+        <route scene="saveload" />
+      </item>
     </choice>
   </scenario>
 
