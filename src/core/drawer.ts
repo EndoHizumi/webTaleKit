@@ -104,10 +104,6 @@ export class Drawer {
           }
         }
       }
-      // 行の終わりに改行を追加
-      if (text.indexOf(text) < text.length - 1) {
-        await this.drawLineBreak()
-      }
     }
 
   async drawLineBreak() {

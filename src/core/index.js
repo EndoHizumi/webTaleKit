@@ -48,11 +48,6 @@ export class Core {
     
     // TextMeasurerの初期化
     this.textMeasurer = new TextMeasurer()
-    
-    // メッセージボックスの寸法を取得
-    const messageBox = document.querySelector('#messageView')
-    const styles = window.getComputedStyle(messageBox)
-    this.textMeasurer.setFont(styles.font, parseFloat(styles.lineHeight) / parseFloat(styles.fontSize))
   }
 
   setConfig(config) {
@@ -70,6 +65,10 @@ export class Core {
     await this.loadScene(initScene || 'title')
     // 画面を表示する
     await this.loadScreen(this.sceneConfig)
+     // メッセージボックスの寸法を取得
+     const messageBox = document.querySelector('#messageView')
+     const styles = window.getComputedStyle(messageBox)
+     this.textMeasurer.setFont(styles.font, parseFloat(styles.lineHeight) / parseFloat(styles.fontSize))
     // 入力イベントを設定する
     document.querySelector('#gameContainer').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
@@ -224,7 +223,6 @@ export class Core {
       // オーバーフローしない場合は展開済みのコンテンツを使用
       scenarioObject.content = expandedContent
     }
-    }
 
     // 名前が設定されている場合は、名前を表示する
     if (scenarioObject.name) {
@@ -251,6 +249,7 @@ export class Core {
           }
         } else {
           const container = this.drawer.createDecoratedElement(text)
+          outputLog("text", 'debug', text)
           await this.drawer.drawText(text.content[0], text.speed || 25, container)
         }
       }

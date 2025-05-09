@@ -11,7 +11,7 @@ export interface TextLine {
 }
 
 export interface DecoratedText {
-  type: 'color' | 'ruby' | 'b' | 'i'
+  type: 'color' | 'ruby' | 'b' | 'i' | 'br' | 'wait'
   content: string[]
   value?: string
   text?: string
@@ -56,6 +56,8 @@ export class TextMeasurer {
    * 装飾テキストの寸法を計測
    */
   measureDecoratedText(text: DecoratedText): TextMetrics {
+    // 改行タグの場合は、0を返す
+    if (text.type === 'br' || text.type === 'wait') return {width: 0,height: 0}
     let tempFont = this.ctx.font
 
     // 装飾に応じたフォント設定
@@ -68,6 +70,9 @@ export class TextMeasurer {
         break
     }
 
+
+
+    outputLog("decoratedText", "debug", text)
     const metrics = this.measureText(text.content[0])
     this.ctx.font = tempFont
     return metrics
@@ -107,6 +112,7 @@ export class TextMeasurer {
         }
       } else {
         // 装飾テキスト処理
+        outputLog("contents","debug",content)
         const decoratedMetrics = this.measureDecoratedText(item)
 
         if (currentWidth + decoratedMetrics.width > maxWidth && currentLine.length > 0) {
