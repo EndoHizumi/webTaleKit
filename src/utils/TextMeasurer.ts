@@ -36,16 +36,21 @@ export class TextMeasurer {
    */
   setFont(font: string, lineHeight: number = 1.2) {
     this.fontStyle = font
-    this.lineHeight = lineHeight
+    this.lineHeight = lineHeight || 1.2
     this.ctx.font = font
+    console.debug("fontStyle", font)
+    console.debug("lineHeight", lineHeight)
   }
 
   /**
    * テキストの寸法を計測
    */
+  //FIXME: HeightでNaNが返ってくる
   measureText(text: string): TextMetrics {
     const metrics = this.ctx.measureText(text)
-    const fontSize = parseInt(this.fontStyle)
+    const fontSize = Number(this.fontStyle.split('px')[0])
+    console.debug("fontSize", Number(this.fontStyle.split('px')[0]))
+    console.debug("this.lineHeight",this.lineHeight)
     return {
       width: metrics.width,
       height: fontSize * this.lineHeight
@@ -72,7 +77,7 @@ export class TextMeasurer {
 
 
 
-    outputLog("decoratedText", "debug", text)
+
     const metrics = this.measureText(text.content[0])
     this.ctx.font = tempFont
     return metrics
@@ -112,7 +117,7 @@ export class TextMeasurer {
         }
       } else {
         // 装飾テキスト処理
-        outputLog("contents","debug",content)
+
         const decoratedMetrics = this.measureDecoratedText(item)
 
         if (currentWidth + decoratedMetrics.width > maxWidth && currentLine.length > 0) {
@@ -146,7 +151,14 @@ export class TextMeasurer {
    */
   checkOverflow(content: (string | DecoratedText)[], maxWidth: number, maxHeight: number): boolean {
     const lines = this.splitIntoLines(content, maxWidth)
+    console.debug("measureText: %o", this.measureText('あ'))
     const totalHeight = lines.length * this.measureText('あ').height
+
+
+    console.debug("charHeight", this.measureText('あ').height)
+    console.debug("totalHeight", totalHeight)
+    console.debug("checkOverflow", totalHeight > maxHeight)
+    // 各行の高さを計算
     return totalHeight > maxHeight
   }
 }

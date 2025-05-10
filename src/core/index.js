@@ -51,13 +51,13 @@ export class Core {
   }
 
   setConfig(config) {
-    outputLog('call', 'debug', config)
+
     // ゲームの設定情報をセットする
     Object.assign(engineConfig, config)
   }
 
   async start(initScene) {
-    outputLog('call', 'debug', initScene)
+
     // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
     // titleタグの内容を書き換える
     document.title = engineConfig.title
@@ -68,6 +68,7 @@ export class Core {
      // メッセージボックスの寸法を取得
      const messageBox = document.querySelector('#messageView')
      const styles = window.getComputedStyle(messageBox)
+    console.log("styles: %o",styles)
      this.textMeasurer.setFont(styles.font, parseFloat(styles.lineHeight) / parseFloat(styles.fontSize))
     // 入力イベントを設定する
     document.querySelector('#gameContainer').addEventListener('keydown', (e) => {
@@ -98,7 +99,7 @@ export class Core {
   }
 
   async loadScene(sceneFileName) {
-    outputLog('call', 'debug', sceneFileName)
+
     // sceneファイルを読み込む
     this.sceneFile = await import(/* webpackChunkName: "[request]" */ `/src/js/${sceneFileName}.js`)
     // sceneファイルの初期化処理を実行
@@ -108,11 +109,11 @@ export class Core {
     // シナリオの進行状況を初期化
     this.scenarioManager.setScenario(this.sceneFile.scenario, sceneFileName)
     this.sceneConfig = { ...this.sceneConfig, ...this.sceneFile.sceneConfig }
-    outputLog('sceneFile', 'debug', this.sceneFile)
+
   }
 
   async loadScreen(sceneConfig) {
-    outputLog('call', 'debug', sceneConfig)
+
     // sceneConfig.templateを読み込んで、HTMLを表示する
     const htmlString = await (await fetch(sceneConfig.template)).text()
     // 読み込んだhtmlからIDにmainを持つdivタグとStyleタグ以下を取り出して、gameContainerに表示する
@@ -146,12 +147,12 @@ export class Core {
   }
 
   async runScenario() {
-    outputLog('call index:', 'debug', this.scenarioManager.getIndex())
+
     let scenarioObject = this.scenarioManager.next()
     if (!scenarioObject) {
       return
     }
-    outputLog('scenarioObject', 'debug', scenarioObject)
+
     // シナリオオブジェクトのtypeプロパティに応じて、対応する関数を実行する
     const commandType = scenarioObject.type || 'text'
     const commandFunction = this.commandList[commandType]
@@ -159,25 +160,25 @@ export class Core {
     // コマンドが存在しない場合のエラーハンドリング
     if (!commandFunction) {
       const errorMessage = `Error: Command type "${commandType}" is not defined`
-      outputLog(errorMessage, 'error', scenarioObject)
+
       throw new Error(errorMessage)
     }
     
     const boundFunction = commandFunction.bind(this)
-    outputLog(`boundFunction:${boundFunction.name.split(' ')[1]}`, 'debug', scenarioObject)
+
     scenarioObject = await this.httpHandler(scenarioObject)
     await boundFunction(scenarioObject)
   }
 
   async textHandler(scenarioObject) {
-    outputLog('textHandler:line', 'debug', scenarioObject)
+
     // 文章だけの場合は、contentプロパティに配列として設定する
     if (typeof scenarioObject === 'string') scenarioObject = { content: [scenarioObject] }
     // httpレスポンスがある場合は、list.contentに追加して、表示対象に加える
     if (scenarioObject.then || scenarioObject.error) {
       scenarioObject.content = scenarioObject.content.concat(scenarioObject.then || scenarioObject.error)
     }
-    outputLog('call', 'debug', scenarioObject)
+
 
     // メッセージボックスの寸法を取得
     const messageBox = document.querySelector('#messageView')
@@ -185,13 +186,14 @@ export class Core {
     const maxHeight = messageBox.clientHeight
 
     // 変数展開を行う
+
     const expandedContent = scenarioObject.content.map(text => {
       if (typeof text === 'string') {
         return this.expandVariable(text)
       } else if (text.type === 'br' || text.type === 'wait') {
         return text
       } else {
-        return {
+        return {  
           ...text,
           content: [this.expandVariable(text.content[0])]
         }
@@ -211,10 +213,11 @@ export class Core {
 
       // 残りの行を新しいtextタグとして追加
       if (remainingLines.length > 0) {
-        const remainingContent = remainingLines.map(line => line.content.join('')).flat()
-        this.scenarioManager.addScenario([
-          { type: 'text', content: [remainingContent], speed: scenarioObject.speed }
-        ], this.scenarioManager.getIndex())
+        remainingLines.map(line => {
+          this.scenarioManager.addScenario([
+            { type: 'text', content: line.content, speed: scenarioObject.speed }
+          ], this.scenarioManager.getIndex())
+        })
       }
 
       // 現在の行を表示用に設定
@@ -237,19 +240,19 @@ export class Core {
 
     // 表示する文章を1行ずつ表示する
     for (const text of scenarioObject.content) {
-      outputLog('textSpeed', 'debug', text)
+
       if (typeof text === 'string') {
         await this.drawer.drawText(text, scenarioObject.speed || 25)
       } else {
         if (text.type === 'br' || text.type === 'wait') {
-          outputLog('text', 'debug', text)
+
           if (text.type === 'br') this.drawer.drawLineBreak()
           if (!text.nw) {
             await this.waitHandler({ wait: text.time })
           }
         } else {
           const container = this.drawer.createDecoratedElement(text)
-          outputLog("text", 'debug', text)
+
           await this.drawer.drawText(text.content[0], text.speed || 25, container)
         }
       }
@@ -261,7 +264,7 @@ export class Core {
   }
 
   expandVariable(text) {
-    outputLog('call', 'debug', text)
+
     if (typeof text !== 'string') return text
     return text.replace(/{{([^{}]+)}}/g, (match) => {
       const expr = match.slice(2, -2)
@@ -273,17 +276,17 @@ export class Core {
   async waitHandler(line) {
     // line.timeがある場合、line.waitに代入する
     if (line.time) line.wait = line.time
-    outputLog('call', 'debug', line)
+
     //prettier-ignore
     this.onNextHandler = () => { this.isNext = true }
-    outputLog('wait type', 'debug', typeof line.wait)
+
 
     // line.waitが数値に変換可能な文字列の場合、数値に変換
     if (typeof line.wait === 'string' && !isNaN(Number(line.wait))) {
       line.wait = Number(line.wait)
     }
     if (typeof line.wait === 'number') {
-      outputLog('wait number', 'debug', line.wait)
+
       if (line.wait > 0 || this.isAuto) {
         const waitTime = line.wait || 1500
         // 指定された時間だけ待機
@@ -297,7 +300,7 @@ export class Core {
 
   // クリック待ち処理
   async clickWait() {
-    outputLog('call', 'debug')
+
     this.drawer.setVisibility('#waitCircle', true)
     return new Promise((resolve) => {
       const intervalId = setInterval(() => {
@@ -312,7 +315,7 @@ export class Core {
   }
 
   async sayHandler(line) {
-    outputLog('call', 'debug', line)
+
     // say(name:string, pattern: string, voice: {playの引数},  ...text)
     if (line.voice) await this.soundHandler({ path: line.voice, play: undefined })
     await this.textHandler({ content: line.content, name: line.name, speed: line.speed || 25 })
@@ -320,7 +323,7 @@ export class Core {
   }
 
   async choiceHandler(line) {
-    outputLog('call', 'debug', line)
+
     document.querySelector('#interactiveView').style.visibility = 'visible'
     if (line.prompt) this.textHandler(line.prompt)
     // ムスタッシュ構文があるときは、変数の展開
@@ -336,7 +339,7 @@ export class Core {
   }
 
   jumpHandler(line) {
-    outputLog('call:', 'debug', line.index)
+
     // ジャンプ先が現在の行より小さいときは、今の行とジャンプ先の行の間で、sub=falseの行を抽出して、scenarioManagerに追加する
     if (line.index < this.scenarioManager.getIndex()) {
       // scenarioManagerからシナリオを取得
@@ -346,23 +349,23 @@ export class Core {
         before: scenario.slice(0, line.index),
         after: scenario.slice(this.scenarioManager.getIndex()),
       }
-      outputLog('noEditScenarioList', 'debug', noEditScenarioList)
+
       // ジャンプ先のインデックスまでのシナリオを取得
       const scenarioList = scenario.slice(line.index, this.scenarioManager.getIndex())
-      outputLog('scenarioList', 'debug', scenarioList)
+
       // sub=falseの行だけを取得
       const subFalseScenario = scenarioList.filter((line) => !line.sub)
-      outputLog('subFalseScenario', 'debug', subFalseScenario)
+
       // scenarioManagerに追加
       this.scenarioManager.setScenario([...noEditScenarioList.before, ...subFalseScenario, ...noEditScenarioList.after])
-      outputLog('scenarioManager', 'debug', this.scenarioManager.getScenario())
+
     }
     this.newpageHandler()
     this.scenarioManager.setIndex(Number(line.index))
   }
 
   async showHandler(line) {
-    outputLog('line', 'debug', line)
+
     // ムスタッシュ構文があるときは、変数の展開
     Object.keys(line).forEach((item) => {
       line[item] = this.expandVariable(line[item])
@@ -420,7 +423,7 @@ export class Core {
       entry: line.entry,
     }
 
-    outputLog('displayedImages', 'debug', this.displayedImages[key])
+
     if (line.sepia) this.displayedImages[key].image.setSepia(line.sepia)
     if (line.mono) this.displayedImages[key].image.setMonochrome(line.mono)
     if (line.blur) this.displayedImages[key].image.setBlur(line.blur)
@@ -439,11 +442,11 @@ export class Core {
       // 通常の表示処理
       this.drawer.show(this.displayedImages)
     }
-    outputLog('this.displayedImages', 'debug', this.displayedImages)
+
   }
 
   async hideHandler(line) {
-    outputLog('call', 'debug', line)
+
     const targetImage = this.displayedImages[line.name]
     if (line.mode === 'cg') {
       this.displayedImages = { ...this.tempImages }
@@ -463,14 +466,14 @@ export class Core {
   }
 
   async moveToHandler(line) {
-    outputLog('moveToHandler:line', 'debug', line)
+
     const key = line.name
-    outputLog('moveToHandler:displayedImages', 'debug', this.displayedImages)
+
     await this.drawer.moveTo(key, this.displayedImages, { x: line.x, y: line.y }, line.duration | 1)
   }
 
   async getImageObject(line) {
-    outputLog('call', 'debug', line)
+
     const name = line.name || line.src.split('/').pop()
     let image
     // 既にインスタンスがある場合は、それを使う
@@ -479,14 +482,14 @@ export class Core {
       const imageObject = targetImage ? targetImage.image : new ImageObject()
       image = await imageObject.setImageAsync(line.src)
     } else {
-      outputLog('new ImageObject', 'debug')
+
       image = await new ImageObject().setImageAsync(line.src)
     }
     return image
   }
 
   async soundHandler(line) {
-    outputLog('call', 'debug', line)
+
     let soundObject = null
     if (line.mode === 'bgm') {
       if (this.bgm.isPlaying) {
@@ -514,7 +517,7 @@ export class Core {
   }
 
   async getSoundObject(line) {
-    outputLog('call', 'debug', line)
+
     const name = line.name || line.src.split('/').pop()
     let resource
     if (Object.hasOwn(this.usedSounds, name)) {
@@ -528,7 +531,7 @@ export class Core {
   }
 
   newpageHandler() {
-    outputLog('call', 'debug')
+
     this.displayedImages = {
       background: {
         image: this.getBackground(),
@@ -543,16 +546,16 @@ export class Core {
   }
 
   async ifHandler(line) {
-    outputLog('call', 'debug', line)
+
     const isTrue = this.executeCode(`return ${line.condition}`)
-    outputLog(`${isTrue}`, 'debug')
+
     const appendScenario = isTrue ? line.content[0].content : line.content[1].content
-    outputLog('', 'debug', appendScenario)
+
     this.scenarioManager.addScenario(appendScenario)
   }
 
   async routeHandler(line) {
-    outputLog('call', 'debug', line)
+
     if (this.bgm.isPlaying) {
       this.bgm.stop()
       this.bgm = null
@@ -572,7 +575,7 @@ export class Core {
 
   // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？
   callHandler(line) {
-    outputLog('call', 'debug', line)
+
     this.executeCode(line.method)
   }
 
@@ -580,7 +583,7 @@ export class Core {
     if (!(line.get || line.post || line.put || line.delete)) {
       return line
     }
-    outputLog('call', 'debug', line)
+
     // progress属性を処理する
     // prettier-ignore
     const progressText = line.content.filter((content) => content.type === 'progress')[0]
@@ -606,8 +609,8 @@ export class Core {
         }),
         {},
       )
-    outputLog('headers', 'debug', headers)
-    outputLog('body', 'debug', body)
+
+
     const response = await fetch(line.get || line.post || line.put || line.delete, {
       method: line.get ? 'GET' : line.post ? 'POST' : line.put ? 'PUT' : 'DELETE',
       headers: headers,
@@ -615,7 +618,7 @@ export class Core {
     })
     const responseJson = await response.json()
     this.sceneFile.res = responseJson
-    outputLog('res', 'debug', responseJson)
+
     
     if (response.ok) {
       line.then = line.content.filter((content) => content.type === 'then')[0].content
@@ -647,7 +650,7 @@ export class Core {
   }
 
   executeCode(code) {
-    outputLog('call', 'debug', code)
+
     try {
       const context = { ...this.sceneFile }
       const func = new Function(...Object.keys(context), code)

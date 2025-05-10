@@ -74,7 +74,6 @@ export class Drawer {
   }
 
   async drawText(text: string, wait: number, containerElement?: HTMLElement) {
-    outputLog('drawText', 'debug', { text, wait, containerElement })
     let element: HTMLElement = this.messageText
     
     // テキストを表示するコンテナ要素を指定した場合は、その要素に追加する
@@ -138,7 +137,7 @@ export class Drawer {
         decoratedElement = document.createElement('i')
         break
       default:
-        outputLog(`Unknown decoration type: ${element.type}`, 'warn')
+
         decoratedElement = document.createElement('span')
     }
 
@@ -215,7 +214,7 @@ export class Drawer {
       })
       button.innerHTML = choice.label
       button.onclick = () => {
-        outputLog('click', 'debug', choice)
+
         this.interactiveView.querySelectorAll('.choice').forEach((element) => {
           element.parentNode?.removeChild(element)
         })
@@ -238,12 +237,12 @@ export class Drawer {
   }
 
   async fadeIn(duration: number = 1000, img?: ImageObject, option?: object): Promise<void> {
-    outputLog('Fade in', 'debug', duration)
+
     return this.fade(0, 1, duration, img, option)
   }
 
   async fadeOut(duration: number = 1000, img?: ImageObject, option?: object): Promise<void> {
-    outputLog('Fade out', 'debug', duration)
+
     return this.fade(1, 0, duration, img, option)
   }
 
@@ -276,11 +275,11 @@ export class Drawer {
           this.fadeCtx.fillRect(0, 0, this.fadeCanvas.width, this.fadeCanvas.height)
         }
 
-        outputLog('Fade animation', 'debug', { progress, alpha: currentAlpha })
+
         if (progress < 1) {
           requestAnimationFrame(animate)
         } else {
-          outputLog('Fade animation complete', 'debug')
+
           this.clear(this.fadeCtx)
           resolve()
         }
@@ -351,7 +350,7 @@ export class Drawer {
   }
 
   drawCanvas(img: ImageObject, pos: any, size: any, reverse: any, ctx?: CanvasRenderingContext2D) {
-    outputLog('drawCanvas', 'debug', { img, pos, size, reverse })
+
     if (ctx === undefined) {
       ctx = this.ctx
     }
