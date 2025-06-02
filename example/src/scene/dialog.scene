@@ -1,0 +1,38 @@
+<scene>
+    <scenario>
+        <text>ダイアログのテスト</text>
+        <say name="ナレーター">このシーンでは、ダイアログの基本的な使い方をデモンストレーションします。</say>
+        <say name="ナレーター">まずは、シンプルなダイアログから始めましょう。</say>
+        <!-- <dialog id="confirm" template="./src/screen/confirm_dialog.html">
+            <prompt>保存しますか？</prompt>
+            <options>
+                <option value="yes" id="ok" label="はい">
+                    <text>保存しました</text>
+                </option>
+                <option value="no" id="cancel" label="いいえ">
+                    <text>キャンセルしました</text>
+                </option>
+            </options>
+        </dialog> -->
+        <!-- デフォルトテンプレート使用 -->
+        <say name="ナレーター">ダイアログを表示します。</say>
+        <dialog id="simple">
+            <prompt>犬は好きですか</prompt>
+            <actions>
+                <action value="yes" id="ok" label="はい">
+                    <text>いいですね、私も大好きです。</text>
+                </action>
+                <action value="no" id="cancel" label="いいえ">
+                    <text>よろしい、ならば、戦争だ。</text>
+                </action>
+            </actions>
+        </dialog>
+        <say name="ナレーター">このようにユーザーへの問いかけを行うことができます。</say>
+        <choice>
+            <item label="タイトルに戻る" onSelect="title">
+                <route to="title" />
+            </item>
+        </choice>
+    </scenario>
+    <script></script>
+</scene>

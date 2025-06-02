@@ -6,6 +6,7 @@ import { SoundObject } from '../resource/soundObject'
 import engineConfig from '../../engineConfig.json'
 import { outputLog } from '../utils/logger'
 import { sleep } from '../utils/waitUtil'
+import { getDefaultDialogTemplate } from '../utils/fallbackTemplate'
 
 export class Core {
   constructor() {
@@ -31,6 +32,7 @@ export class Core {
       moveto: this.moveToHandler,
       route: this.routeHandler,
       wait: this.waitHandler,
+      dialog: this.dialogHandler,
     }
 
     // gameContainerの初期化（HTMLのgameContainerを取得する）
@@ -113,57 +115,91 @@ export class Core {
     }
   }
 
-  async loadScreen(sceneConfig) {
-    outputLog('call', 'debug', sceneConfig)
+  async loadScreen(sceneConfig, options = {}) {
+    const {
+      isDialog = false, // ダイアログモードかどうか
+      fallbackTemplate = null, // フォールバック用テンプレート
+      skipBackground = false, // 背景画像の読み込みをスキップ
+      skipBgm = false, // BGMの読み込みをスキップ
+    } = options
+
+    outputLog('call', 'debug', { sceneConfig, options })
+    // シナリオの進行状況を保存
+    this.scenarioManager.progress.currentScene = sceneConfig.name
     // sceneConfig.templateを読み込んで、HTMLを表示する
     // テンプレートの存在確認
-    if (!(await this.checkResourceExists(sceneConfig.template))) {
+    if (!isDialog && !(await this.checkResourceExists(sceneConfig.template))) {
       console.error(`Template file not found: ${sceneConfig.template}`)
       throw new Error(`Template file not found: ${sceneConfig.template}`)
     }
-
+    
     const htmlString = await (await fetch(sceneConfig.template)).text()
     // 読み込んだhtmlからIDにmainを持つdivタグとStyleタグ以下を取り出して、gameContainerに表示する
-    var parser = new DOMParser()
-    var doc = parser.parseFromString(htmlString, 'text/html')
-    this.gameContainer.innerHTML = doc.getElementById('main').innerHTML
-    // 既に読み込んだスタイルシートがあったら削除する
-    const styleTags = document.head.getElementsByTagName('style')
-    for (const styleTag of styleTags) {
-      document.head.removeChild(styleTag)
+    let parser = new DOMParser()
+    let doc = parser.parseFromString(htmlString, 'text/html')
+    let mainDiv = doc.getElementById('main')
+    
+    if (!mainDiv) {
+      // mainが見つからない場合は、フォールバックテンプレートを使用
+      if (fallbackTemplate) {
+        console.warn(`Main div not found in  template, using fallback: ${fallbackTemplate}`)
+        mainDiv = doc.createElement('div')
+        const fallbackTemplateText = fallbackTemplate()
+        mainDiv.innerHTML = fallbackTemplateText.htmlString
+        // フォールバックテンプレートのスタイルを適用
+        const styleElement = doc.createElement('style')
+        styleElement.textContent = fallbackTemplateText.styleString || ''
+        doc.head.appendChild(styleElement)
+      } else {
+        throw new Error('Main div not found in template and no fallback provided.')
+      }
     }
-
+    if (!this.gameContainer) {
+      throw new Error('Game container not found.')
+    }
+    // ゲーム進行用に必要な情報をセットする
+    if (!isDialog) {
+      // 既に読み込んだスタイルシートがあったら削除する
+      const styleTags = document.head.getElementsByTagName('style')
+      for (const styleTag of styleTags) {
+        document.head.removeChild(styleTag)
+      }
+      this.gameContainer.innerHTML = mainDiv.innerHTML
+      this.drawer.setScreen(this.gameContainer, engineConfig.resolution)
+    } else {
+      this.gameContainer.appendChild(mainDiv)
+    }
     // Styleタグを取り出して、headタグに追加する
     const styleElement = doc.head.getElementsByTagName('style')[0]
     document.head.appendChild(styleElement)
-    // ゲーム進行用に必要な情報をセットする
-    this.drawer.setScreen(this.gameContainer, engineConfig.resolution)
-    // シナリオの進行状況を保存
-    this.scenarioManager.progress.currentScene = sceneConfig.name
 
-    console.info(`background: ${await this.checkResourceExists(sceneConfig.background)}`)
-    // 背景画像の存在確認
-    if (!(await this.checkResourceExists(sceneConfig.background))) {
-      throw new Error(`Background image not found: ${sceneConfig.background}`)
-    } else {
-      // 背景画像を表示する
-      const background = await new ImageObject().setImageAsync(sceneConfig.background)
-      this.displayedImages['background'] = {
-        image: background,
-        size: {
-          width: this.gameContainer.clientWidth,
-          height: this.gameContainer.clientHeight,
-        },
+
+    if (!skipBackground) {
+      console.info(`background: ${await this.checkResourceExists(sceneConfig.background)}`)
+      // 背景画像の存在確認
+      if (!(await this.checkResourceExists(sceneConfig.background))) {
+        throw new Error(`Background image not found: ${sceneConfig.background}`)
+      } else {
+        // 背景画像を表示する
+        const background = await new ImageObject().setImageAsync(sceneConfig.background)
+        this.displayedImages['background'] = {
+          image: background,
+          size: {
+            width: this.gameContainer.clientWidth,
+            height: this.gameContainer.clientHeight,
+          },
+        }
       }
+      this.drawer.show(this.displayedImages)
     }
 
-    this.drawer.show(this.displayedImages)
-
-    // BGMの存在確認
-    if (!(await this.checkResourceExists(sceneConfig.bgm))) {
-      throw new Error(`BGM file not found: ${sceneConfig.bgm}`)
-    } else {
-      this.bgm = await new SoundObject().setAudioAsync(sceneConfig.bgm)
+    if (!skipBgm) {
+      // BGMの存在確認
+      if (!(await this.checkResourceExists(sceneConfig.bgm))) {
+        throw new Error(`BGM file not found: ${sceneConfig.bgm}`)
+      } else {
+        this.bgm = await new SoundObject().setAudioAsync(sceneConfig.bgm)
+      }
     }
   }
 
@@ -632,6 +668,73 @@ export class Core {
       )
     }
     return line
+  }
+
+  async dialogHandler(scenarioObject) {
+    outputLog('call', 'debug', scenarioObject)
+    let result = null
+    if (!scenarioObject || !scenarioObject.content) {
+      throw new Error('Invalid scenario object for dialog handler.')
+    }
+    // ダイアログのテンプレートを読み込む
+    await this.loadScreen(scenarioObject, {
+      isDialog: true,
+      skipBackground: true,
+      skipBgm: true,
+      fallbackTemplate: getDefaultDialogTemplate
+    });
+    // ダイアログ用のコンテナを取得
+    const dialogContainer = document.querySelector('#dialogContainer')
+    if (!dialogContainer) {
+      throw new Error('Dialog container not found.')
+    }
+    scenarioObject.content.forEach((content) => {
+      if(content.type === 'prompt') {
+        let prompt = content
+        // プロンプトの内容を設定
+      outputLog('dialogHandler:content', 'debug', prompt)
+      // ムスタッシュ構文があるときは、変数の展開
+      dialogContainer.querySelector('.dialog-prompt').innerHTML = prompt.content.map((text) => this.expandVariable(text)).join('\n')
+      } else if (content.type === 'actions') {
+        // ボタンの追加
+        let actions = content.content
+        outputLog('dialogHandler:actions', 'debug', actions)
+        const buttonContainer = dialogContainer.querySelector('.dialog-buttons')
+        actions.forEach((action) => {
+          outputLog('dialogHandler:action', 'debug', action)
+          // ムスタッシュ構文があるときは、変数の展開
+          action.label = this.expandVariable(action.label)
+          // テンプレートのボタン取得
+          let button = buttonContainer.querySelector(`#dialog-button-${action.id}`)
+          outputLog('dialogHandler:button', 'debug', action)
+          if (!button) {
+            // 無い場合は、新しいボタンを作成
+            button = document.createElement('button')
+            button.id = `dialog-button-${action.id}`
+            button.classList.add('dialog-button')
+            button.innerText = action.label
+            buttonContainer.appendChild(button)
+          }
+          button.innerText = action.label
+          button.addEventListener('click', () => {
+            // 選択されたアクションを処理
+            this.scenarioManager.addScenario(action.content)
+            result = action.id // 選択されたアクションのIDを保存
+            outputLog('dialogHandler:result', 'debug', result)
+            // ダイアログを閉じる
+            dialogContainer.close()
+          })
+        })
+      }
+    })
+
+    dialogContainer.showModal() // ダイアログを表示
+    return new Promise((resolve) => {
+      dialogContainer.addEventListener('close', () => {
+        resolve(result)
+      })
+    })
+
   }
 
   setBackground(image) {
