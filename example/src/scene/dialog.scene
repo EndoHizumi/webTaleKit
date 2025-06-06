@@ -3,17 +3,6 @@
         <text>ダイアログのテスト</text>
         <say name="ナレーター">このシーンでは、ダイアログの基本的な使い方をデモンストレーションします。</say>
         <say name="ナレーター">まずは、シンプルなダイアログから始めましょう。</say>
-        <!-- <dialog id="confirm" template="./src/screen/confirm_dialog.html">
-            <prompt>保存しますか？</prompt>
-            <options>
-                <option value="yes" id="ok" label="はい">
-                    <text>保存しました</text>
-                </option>
-                <option value="no" id="cancel" label="いいえ">
-                    <text>キャンセルしました</text>
-                </option>
-            </options>
-        </dialog> -->
         <!-- デフォルトテンプレート使用 -->
         <say name="ナレーター">ダイアログを表示します。</say>
         <dialog id="simple">
@@ -27,6 +16,84 @@
                 </action>
             </actions>
         </dialog>
+        <say name="ナレーター">２つ目は、確認ダイアログを表示します。</say>
+        <!-- 確認ダイアログ -->
+        <dialog id="confirm">
+            <prompt>本当に続けますか？</prompt>
+            <actions>
+                <action value="yes" id="ok" label="OK">
+                    <text>続行します。</text>
+                </action>
+                <action value="no" id="cancel" label="キャンセル">
+                    <text>中止します。</text>
+                </action>
+            </actions>
+        </dialog>
+        <say name="ナレーター">３つ目は、選択肢を提供するダイアログです。</say>
+        <!-- 選択肢ダイアログ -->
+        <dialog id="choice">
+            <prompt>どの色が好きですか？</prompt>
+            <actions>
+                <action value="red" id="red" label="赤">
+                    <text>赤は情熱的な色ですね。</text>
+                </action>
+                <action value="blue" id="blue" label="青">
+                    <text>青は落ち着いた色です。</text>
+                </action>
+                <action value="green" id="green" label="緑">
+                    <text>緑は自然を感じさせます。</text>
+                </action>
+            </actions>
+        </dialog>
+
+        <say name="ナレーター">４つ目に、ユーザーへの問いかけを行うダイアログです。</say>
+        <!-- ユーザーへの問いかけダイアログ -->
+        <dialog id="question">
+            <prompt>あなたの好きな食べ物は何ですか？</prompt>
+            <actions>
+                <action value="pizza" id="pizza" label="ピザ">
+                    <text>ピザは美味しいですね！</text>
+                </action>
+                <action value="sushi" id="sushi" label="寿司">
+                    <text>寿司も最高です！</text>
+                </action>
+                <action value="ramen" id="ramen" label="ラーメン">
+                    <text>ラーメンは心を温めます。</text>
+                </action>
+            </actions>
+        </dialog>
+        <say name="ナレーター">最後に、ユーザーカスタムダイアログを表示します。</say>
+        <!-- ユーザーカスタムダイアログ -->
+        <dialog id="custom" template="./src/screen/incoming.html">
+            <prompt>カスタムダイアログのテスト</prompt>
+            <actions>
+                <action value="yes" id="answer" label="">
+                    <text>はい、もしもし。</text>
+                </action>
+                <action value="no" id="decline" label="">
+                    <text>ツー…ツー…</text>
+                </action>
+                <action value="no" id="message" label="">
+                    <say name="自動音声">ただ今、留守にしています・・・ピーっとなったら、メッセージをどうぞ</say>
+                </action>
+                <action value="no" id="contact" label="">
+                    <dialog id="contact">
+                        <prompt>連絡先を選択してください</prompt>
+                        <actions>
+                            <action value="friend" id="friend" label="友達">
+                                <text>友達に連絡します。</text>
+                            </action>
+                            <action value="family" id="family" label="家族">
+                                <text>家族に連絡します。</text>
+                            </action>
+                            <action value="colleague" id="colleague" label="同僚">
+                                <text>同僚に連絡します。</text>
+                            </action>
+                        </actions>
+                </action>
+            </actions>
+        </dialog>
+
         <say name="ナレーター">このようにユーザーへの問いかけを行うことができます。</say>
         <choice>
             <item label="タイトルに戻る" onSelect="title">

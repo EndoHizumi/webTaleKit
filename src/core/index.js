@@ -137,8 +137,9 @@ export class Core {
     // 読み込んだhtmlからIDにmainを持つdivタグとStyleタグ以下を取り出して、gameContainerに表示する
     let parser = new DOMParser()
     let doc = parser.parseFromString(htmlString, 'text/html')
-    let mainDiv = doc.getElementById('main')
-    
+    outputLog('doc', 'debug', doc)
+    let mainDiv = isDialog ? doc.getElementById('dialogContainer') : doc.getElementById('main')
+
     if (!mainDiv) {
       // mainが見つからない場合は、フォールバックテンプレートを使用
       if (fallbackTemplate) {
@@ -147,7 +148,7 @@ export class Core {
         const fallbackTemplateText = fallbackTemplate()
         mainDiv.innerHTML = fallbackTemplateText.htmlString
         // フォールバックテンプレートのスタイルを適用
-        const styleElement = doc.createElement('style')
+        const styleElement = doc.head.getElementsByTagName('style')[0] || doc.createElement('style')
         styleElement.textContent = fallbackTemplateText.styleString || ''
         doc.head.appendChild(styleElement)
       } else {
@@ -676,6 +677,12 @@ export class Core {
     if (!scenarioObject || !scenarioObject.content) {
       throw new Error('Invalid scenario object for dialog handler.')
     }
+    // 既にあるダイアログがある場合は、閉じる
+    const existingDialog = document.querySelector('#dialogContainer')
+    if (existingDialog) {
+      existingDialog.close()
+      existingDialog.remove()
+    }
     // ダイアログのテンプレートを読み込む
     await this.loadScreen(scenarioObject, {
       isDialog: true,
@@ -694,7 +701,10 @@ export class Core {
         // プロンプトの内容を設定
       outputLog('dialogHandler:content', 'debug', prompt)
       // ムスタッシュ構文があるときは、変数の展開
-      dialogContainer.querySelector('.dialog-prompt').innerHTML = prompt.content.map((text) => this.expandVariable(text)).join('\n')
+      const promptElement = dialogContainer.querySelector('.dialog-prompt')
+      if (promptElement) {
+        promptElement.innerHTML = prompt.content.map((text) => this.expandVariable(text)).join('\n')
+      }
       } else if (content.type === 'actions') {
         // ボタンの追加
         let actions = content.content
@@ -706,7 +716,7 @@ export class Core {
           action.label = this.expandVariable(action.label)
           // テンプレートのボタン取得
           let button = buttonContainer.querySelector(`#dialog-button-${action.id}`)
-          outputLog('dialogHandler:button', 'debug', action)
+          outputLog('dialogHandler:button', 'debug', button || 'not found')
           if (!button) {
             // 無い場合は、新しいボタンを作成
             button = document.createElement('button')
