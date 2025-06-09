@@ -6,6 +6,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts --ext .js",
     "test": "jest",
+    "dev": "npm run build && cd example && npm run dev",
     "build": "rimraf ./dist/ && tsc && cp -r package.json README.md engineConfig.json parser/ dist/ && cp src/core/index.js  dist/src/core/"
   },
   "bin": {
@@ -14,6 +15,7 @@
   "author": "EndoHizumi",
   "license": "MIT",
   "dependencies": {
+    "html-inline": "^1.2.0",
     "html-minifier": "^4.0.0",
     "html-to-json-parser": "^2.0.1",
     "rimraf": "^6.0.1",
