@@ -28,6 +28,9 @@
       <item label="エラーハンドリングテスト" onSelect="test_error">
         <route to="test_error" />
       </item>
+      <item label="ダイアログテスト" onSelect="test_dialog">
+        <route to="dialog" />
+      </item>
     </choice>
   </scenario>
 

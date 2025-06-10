@@ -16,6 +16,7 @@
     "src/utils/logger.ts",
     "src/utils/store.ts",
     "src/utils/waitUtil.ts",
+    "src/utils/fallbackTemplate.ts",
     "src/core/drawer.ts",
     "src/core/resourceManager.ts",
     "src/core/scenarioManager.ts",
