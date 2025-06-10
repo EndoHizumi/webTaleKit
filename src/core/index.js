@@ -6,6 +6,7 @@ import { SoundObject } from '../resource/soundObject'
 import engineConfig from '../../engineConfig.json'
 import { outputLog } from '../utils/logger'
 import { sleep } from '../utils/waitUtil'
+import { createScriptAPI } from './scriptAPI'
 
 export class Core {
   constructor() {
@@ -655,71 +656,6 @@ export class Core {
 
   // Scriptから安全にアクセスできるメソッドを定義
   getAPIForScript() {
-    return {
-      drawer: {
-        drawName: this.drawer.drawName.bind(this.drawer),
-        drawText: this.drawer.drawText.bind(this.drawer),
-        drawChoices: this.drawer.drawChoices.bind(this.drawer),
-        clearText: this.drawer.clearText.bind(this.drawer),
-        show: this.drawer.show.bind(this.drawer),
-        moveTo: this.drawer.moveTo.bind(this.drawer),
-        fadeIn: this.drawer.fadeIn.bind(this.drawer),
-        fadeOut: this.drawer.fadeOut.bind(this.drawer),
-      },
-      sound: {
-        play: this.soundHandler.bind(this),
-        stop: (name) => this.soundHandler({ name, stop: true }),
-        pause: (name) => this.soundHandler({ name, pause: true }),
-      },
-      scenario: {
-        jump: this.jumpHandler.bind(this),
-        addScene: this.scenarioManager.addScenario.bind(this.scenarioManager),
-        getProgress: () => this.scenarioManager.progress,
-        setProgress: (progress) => (this.scenarioManager.progress = progress),
-        getIndex: () => this.scenarioManager.getIndex(),
-        setIndex: (index) => this.scenarioManager.setIndex(index),
-        hasNext: () => this.scenarioManager.hasNext(),
-        next: () => this.scenarioManager.next(),
-        getHistory: () => this.scenarioManager.getHistory(),
-        setHistory: (history) => this.scenarioManager.setHistory(history),
-        setScenario: (scenario) => this.scenarioManager.setScenario(scenario),
-        getScenario: () => this.scenarioManager.getScenario(),
-        getSceneName: () => this.scenarioManager.progress.currentScene,
-        setScreenName: (name) => (this.sceneConfig.name = name),
-      },
-      images: {
-        get: this.getImageObject.bind(this),
-        getAll: () => this.displayedImages,
-        set: (name, image) => (this.displayedImages[name] = image),
-        delete: (name) => delete this.displayedImages[name],
-      },
-      sounds: {
-        get: (name) => this.usedSounds[name],
-        getAll: () => this.usedSounds,
-        set: (name, sound) => (this.usedSounds[name] = sound),
-        delete: (name) => delete this.usedSounds[name],
-        load: this.getSoundObject.bind(this),
-      },
-      background: {
-        set: this.setBackground.bind(this),
-        get: this.getBackground.bind(this),
-      },
-      wait: this.waitHandler.bind(this),
-      clickWait: this.clickWait.bind(this),
-      core: {
-        text: this.textHandler.bind(this),
-        choice: this.choiceHandler.bind(this),
-        show: this.showHandler.bind(this),
-        newpage: this.newpageHandler.bind(this),
-        hide: this.hideHandler.bind(this),
-        jump: this.jumpHandler.bind(this),
-        sound: this.soundHandler.bind(this),
-        say: this.sayHandler.bind(this),
-        if: this.ifHandler.bind(this),
-        moveto: this.moveToHandler.bind(this),
-        route: this.routeHandler.bind(this),
-        wait: this.waitHandler.bind(this),
-      },
-    }
+    return createScriptAPI(this)
   }
 }
