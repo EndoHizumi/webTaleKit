@@ -30,7 +30,19 @@ Firefoxでも、Chromeでも、Edgeでも、好きなブラウザを使いたま
 
 ## 環境構築手順
 
-1. Node.js(20以降)が必要です。(nvm等お好みの方法がある場合は、そちらでも構いません)
+1. Git が必要です。
+   - **インストール確認:** `git --version` でバージョンが表示されれば OK
+   - Windowsの場合は、Git公式サイト (<https://git-scm.com/>) からインストールしてください。
+   - Macの場合は、`brew install git` を実行してインストールしてください。
+   - Linuxの場合は、以下のコマンドを実行してインストールしてください。
+
+    ```bash
+    sudo apt-get update
+    sudo apt-get install git
+    ```
+
+2. Node.js(20以降)が必要です。(nvm等お好みの方法がある場合は、そちらでも構いません)
+   - **インストール確認:** `node --version` でv20以上のバージョンが表示されれば OK
    - Windowsの場合は、Node.js公式サイト (<https://nodejs.org/>) からインストールしてください。
    - Macの場合は、`brew install node` を実行してインストールしてください。
    - Linuxの場合は、以下のコマンドを実行して、インストールしてください。
@@ -40,7 +52,7 @@ Firefoxでも、Chromeでも、Edgeでも、好きなブラウザを使いたま
         sudo apt-get install -y nodejs
     ```
 
-2. 以下のコマンドを実行してください
+3. 以下のコマンドを実行してください
 
     ``` bash
     npm create tale-game your-game-title
@@ -63,21 +75,27 @@ npm run play
 ### 画像を差し替える
 
 - キャラを変える場合
-  - src/resource/chara/guide.png に上書きしてください。
+  - `./src/resource/chara/guide.png` に上書きしてください。
 - 背景画像を変える
-  - src/resource/background/title_bg.png　に上書きしてください。
+  - `./src/resource/background/title_bg.png` に上書きしてください。
 - BGMを変える
-  - src/resource/bgm/title_theme.mp3　に上書きしてください。
+  - `./src/resource/bgm/title_theme.mp3` に上書きしてください。
 
 - 選択肢の画像を変える
-  - src\resource\system\systemPicture\02_button\button.png　に上書きしてください。
+  - `./src/resource/system/systemPicture/02_button/button.png` に上書きしてください。
 - 選択肢(マウスオーバー時)の画像を変える
-  - src\resource\system\systemPicture\02_button\button2.png　に上書きしてください。
+  - `./src/resource/system/systemPicture/02_button/button2.png` に上書きしてください。
 - 選択肢(クリック時)の画像を変える
-  - src\resource\system\systemPicture\02_button\button3.png　に上書きしてください。
+  - `./src/resource/system/systemPicture/02_button/button3.png` に上書きしてください。
+
+**パス表記について:**
+
+- `./` は「現在のフォルダから」という意味です
+- パス区切り文字は `/` (スラッシュ) を使用しています
+- **Windowsをお使いの方:** `\` (バックスラッシュ) でも動作しますが、上記の `/` 形式を推奨します
 
 - キャラを増やす
-  - src\resource\character 以下に表示したい画像を置きます。
+  - `./src/resource/character` 以下に表示したい画像を置きます。
   - 登場させたい行数で、`<show src="表示したい画像のパス"></show>` を記述する
 - セリフを増やす
   - セリフを表示させたい行数で、`<say name="キャラの名前">セリフをここに入れる</say>` を記述する
