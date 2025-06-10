@@ -72,48 +72,65 @@ npm install
 npm run play
 ```
 
-## Quick Start（デモゲームを弄ってみよう
+## Quick Start（デモゲームを弄ってみよう）
 
-### 画像を差し替える
+このセクションでは、プログラミングの知識がなくても簡単にゲームをカスタマイズできる方法を説明します。
 
-- キャラを変える場合
-  - `./src/resource/chara/guide.png` に上書きしてください。
-- 背景画像を変える
-  - `./src/resource/background/title_bg.png` に上書きしてください。
-- BGMを変える
-  - `./src/resource/bgm/title_theme.mp3` に上書きしてください。
+### 画像を差し替える（簡単なカスタマイズ）
 
-- 選択肢の画像を変える
-  - `./src/resource/system/systemPicture/02_button/button.png` に上書きしてください。
-- 選択肢(マウスオーバー時)の画像を変える
-  - `./src/resource/system/systemPicture/02_button/button2.png` に上書きしてください。
-- 選択肢(クリック時)の画像を変える
-  - `./src/resource/system/systemPicture/02_button/button3.png` に上書きしてください。
+**手順:** 既存の画像ファイルを新しい画像で置き換える（ファイル名は同じにしてください）
+
+#### キャラクターや背景を変える
+
+- **キャラを変える場合**
+  - `./src/resource/chara/guide.png` を新しいキャラ画像で上書きしてください（ファイル名は `guide.png` のまま）
+- **背景画像を変える**
+  - `./src/resource/background/title_bg.png` を新しい背景画像で上書きしてください（ファイル名は `title_bg.png` のまま）
+- **BGMを変える**
+  - `./src/resource/bgm/title_theme.mp3` を新しい音楽ファイルで上書きしてください（ファイル名は `title_theme.mp3` のまま）
+
+#### ボタンの見た目を変える
+
+- **選択肢の画像を変える**
+  - `./src/resource/system/systemPicture/02_button/button.png`（通常時）- ファイル名は `button.png` のまま上書き
+  - `./src/resource/system/systemPicture/02_button/button2.png`（マウスを乗せた時）- ファイル名は `button2.png` のまま上書き
+  - `./src/resource/system/systemPicture/02_button/button3.png`（クリック時）- ファイル名は `button3.png` のまま上書き
 
 **パス表記について:**
 
-- `./` は「現在のフォルダから」という意味です
+- `./` は「現在のプロジェクトフォルダから」という意味です
 - パス区切り文字は `/` (スラッシュ) を使用しています
 - **Windowsをお使いの方:** `\` (バックスラッシュ) でも動作しますが、上記の `/` 形式を推奨します
 
-- キャラを増やす
-  - `./src/resource/character` 以下に表示したい画像を置きます。
-  - 登場させたい行数で、`<show src="表示したい画像のパス"></show>` を記述する
-- セリフを増やす
-  - セリフを表示させたい行数で、`<say name="キャラの名前">セリフをここに入れる</say>` を記述する
-- 地の文を増やす
-  - 地の文を表示させたい行数で、`<text>セリフをここに入れる</text>` を記述する
+### シナリオファイルを編集する（テキストの変更）
 
-- 選択肢を増やす
-  - 43行目のchoiceタグの中(44行-50行)で、以下のように記述すると、選択されたときに、地の文を表示する
+シナリオファイル（`.scene`ファイル）をテキストエディタで開いて、以下の方法で内容を変更できます：
 
-   ``` html
-    <item label='選択肢の文言'>
-        <text>セリフをここに入れる</text>
-    </item>
-   ```
+#### 基本的な要素の追加
 
-   実装例
+- **キャラを増やす**
+  1. `./src/resource/character` フォルダに新しいキャラ画像を保存
+  2. シナリオファイルで `<show src="キャラ画像のファイル名"></show>` を記述
+- **セリフを増やす**
+  - `<say name="キャラの名前">ここにセリフを入力</say>` を記述
+- **地の文（ナレーション）を増やす**
+  - `<text>ここに地の文を入力</text>` を記述
+
+**初心者の方へ:** まずは既存のテキストを変更することから始めることをお勧めします。
+
+#### 選択肢を追加・変更する
+
+選択肢はプレイヤーがゲームの進行を選ぶ重要な要素です。シナリオファイル内の `<choice>` タグを編集することで変更できます。
+
+**基本的な選択肢の書き方:**
+
+``` html
+<item label='選択肢の文言'>
+    <text>選択後に表示される文章</text>
+</item>
+```
+
+**実用的な例:**
 
    ```　html
           <choice prompt="ゲームを始めますか？">
