@@ -56,9 +56,11 @@ Firefoxでも、Chromeでも、Edgeでも、好きなブラウザを使いたま
 
     ``` bash
     npm create tale-game your-game-title
+    cd your-game-title
+    npm run play
     ```
 
-プロジェクトに移動して、`npm run play`を実行して、デモゲームが起動すれば、構築は完了です。
+デモゲームが起動すれば、構築は完了です。
 
 ## 動作確認手順
 
