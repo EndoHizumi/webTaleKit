@@ -1,0 +1,15 @@
+<scene>
+  <scenario>
+    <text>これはリソースエラーハンドリングのテストです</text>
+    <text>存在しない画像ファイルを指定しています</text>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'resource_error_test',
+      background: './src/resource/background/non_existent_image.png',
+      bgm: './src/resource/bgm/non_existent_audio.mp3',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>
