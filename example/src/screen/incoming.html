@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>着信画面</title>
+  <style>
+
+    #dialogContainer {
+      background-color: transparent;
+    }
+
+    .phone-screen {
+      position: relative;
+      width: 100%;
+      max-width: 375px;
+      height: 100vh;
+      max-height: 812px;
+      background: linear-gradient(135deg, #0f172a, #1e293b, #0f172a);
+      overflow: hidden;
+      border-radius: 30px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    /* ステータスバー */
+    .status-bar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px 0;
+      color: white;
+      font-size: 14px;
+    }
+
+    .signal {
+      display: flex;
+      gap: 4px;
+    }
+
+    .signal-dot {
+      width: 4px;
+      height: 4px;
+      background-color: white;
+      border-radius: 50%;
+    }
+
+    .signal-weak {
+      opacity: 0.5;
+    }
+
+    .battery {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .battery-percent {
+      font-size: 12px;
+    }
+
+    .battery-icon {
+      width: 24px;
+      height: 12px;
+      border: 1px solid white;
+      border-radius: 2px;
+      padding: 1px;
+    }
+
+    .battery-level {
+      width: 100%;
+      height: 100%;
+      background-color: #4ade80;
+      border-radius: 1px;
+    }
+
+    /* 背景オーバーレイ */
+    .phone-screen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.4);
+      z-index: 1;
+    }
+
+    /* 着信ラベル */
+    .incoming-label {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      margin-top: 32px;
+    }
+
+    .incoming-text {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+    }
+
+    .phone-type {
+      color: white;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    /* 発信者情報 */
+    .caller-info {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 48px;
+    }
+
+    .avatar-container {
+      position: relative;
+    }
+
+    .avatar {
+      width: 128px;
+      height: 128px;
+      border-radius: 50%;
+      border: 4px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      background-color: #475569;
+      color: white;
+      font-size: 32px;
+    }
+
+    .avatar-image {
+      width: 100%;
+      height: 100%;
+      background-image: url("https://placeholder.pics/svg/128");
+      background-size: cover;
+      background-position: center;
+    }
+
+    .avatar-fallback {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .avatar-ring {
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
+
+    .caller-name {
+      color: white;
+      font-size: 24px;
+      font-weight: 300;
+      margin-top: 24px;
+    }
+
+    .caller-number {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 18px;
+      margin-top: 4px;
+    }
+
+    /* アクションボタン */
+    .dialog-buttons {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 32px;
+      z-index: 10;
+    }
+
+    .additional-options {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-bottom: 32px;
+    }
+
+    .option-button {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .option-button:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .main-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dialog-button {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 4px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .decline-button {
+      background-color: #ef4444;
+    }
+
+    .decline-button:hover {
+      background-color: #dc2626;
+    }
+
+    .answer-button {
+      background-color: #22c55e;
+      animation: bounce 2s infinite;
+    }
+
+    .answer-button:hover {
+      background-color: #16a34a;
+    }
+
+    .slide-hint {
+      text-align: center;
+      margin-top: 24px;
+    }
+
+    .slide-hint p {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 14px;
+    }
+
+    /* 装飾要素 */
+    .decoration-dot {
+      position: absolute;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      z-index: 2;
+    }
+
+    .dot1 {
+      top: 25%;
+      left: 16px;
+      width: 8px;
+      height: 8px;
+      animation: pulse 3s infinite;
+    }
+
+    .dot2 {
+      top: 33%;
+      right: 24px;
+      width: 4px;
+      height: 4px;
+      animation: pulse 3s infinite 1s;
+    }
+
+    .dot3 {
+      bottom: 33%;
+      left: 32px;
+      width: 6px;
+      height: 6px;
+      animation: pulse 3s infinite 0.5s;
+    }
+
+    /* アニメーション */
+    @keyframes ping {
+
+      75%,
+      100% {
+        transform: scale(1.5);
+        opacity: 0;
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 0.5;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .pulse {
+      animation: pulse 1.5s infinite;
+    }
+  </style>
+</head>
+
+<body>
+  <dialog id="dialogContainer">
+    <div  class="phone-screen">
+      <!-- ステータスバー -->
+      <div class="status-bar">
+        <div class="signal">
+          <div class="signal-dot"></div>
+          <div class="signal-dot"></div>
+          <div class="signal-dot signal-weak"></div>
+        </div>
+        <div class="time" id="current-time">12:30</div>
+        <div class="battery">
+          <span class="battery-percent">100%</span>
+          <div class="battery-icon">
+            <div class="battery-level"></div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- 着信ラベル -->
+      <div class="incoming-label">
+        <p class="incoming-text">着信中</p>
+        <p class="phone-type">携帯電話</p>
+      </div>
+  
+      <!-- 発信者情報 -->
+      <div class="caller-info">
+        <div class="avatar-container" id="avatar-container">
+          <div class="avatar">
+            <div class="avatar-image"></div>
+            <div class="avatar-fallback">田中</div>
+          </div>
+          <div class="avatar-ring"></div>
+        </div>
+  
+        <h2 class="caller-name">田中 太郎</h2>
+        <p class="caller-number">090-1234-5678</p>
+      </div>
+  
+      <!-- アクションボタン -->
+      <div class="dialog-buttons">
+        <div class="additional-options">
+          <button id="dialog-button-message" class="option-button message-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </button>
+
+          <button id="dialog-button-contact" class="option-button contact-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <line x1="19" y1="8" x2="19" y2="14"></line>
+              <line x1="16" y1="11" x2="22" y2="11"></line>
+            </svg>
+          </button>
+        </div>
+  
+        <div class="main-actions">
+          <button id="dialog-button-decline" class="dialog-button decline-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91">
+              </path>
+              <line x1="22" y1="2" x2="2" y2="22"></line>
+            </svg>
+          </button>
+
+          <button id="dialog-button-answer" class="dialog-button answer-button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path
+                d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+              </path>
+            </svg>
+          </button>
+        </div>
+  
+        <div class="slide-hint" id="slide-hint">
+          <p>スライドして応答</p>
+        </div>
+      </div>
+  
+      <!-- 装飾要素 -->
+      <div class="decoration-dot dot1"></div>
+      <div class="decoration-dot dot2"></div>
+      <div class="decoration-dot dot3"></div>
+    </div>
+  </dialog>
+  <script>document.addEventListener("DOMContentLoaded", () => {
+      // 現在時刻の更新
+      function updateTime() {
+        const now = new Date()
+        const hours = now.getHours().toString().padStart(2, "0")
+        const minutes = now.getMinutes().toString().padStart(2, "0")
+        document.getElementById("current-time").textContent = `${hours}:${minutes}`
+      }
+
+      // 初期時刻設定と1分ごとの更新
+      updateTime()
+      setInterval(updateTime, 60000)
+
+      // 着信状態の管理
+      let isRinging = true
+      const avatarContainer = document.getElementById("avatar-container")
+      const answerButton = document.getElementById("answer-button")
+      const declineButton = document.getElementById("decline-button")
+      const slideHint = document.getElementById("slide-hint")
+
+      // 通話応答処理
+      function handleAnswer() {
+        isRinging = false
+        avatarContainer.querySelector(".avatar-ring").classList.add("hidden")
+        answerButton.classList.remove("bounce")
+        slideHint.classList.add("hidden")
+        // ここで通話応答のロジックを実装
+        alert("通話に応答しました")
+      }
+
+      // 通話拒否処理
+      function handleDecline() {
+        isRinging = false
+        avatarContainer.querySelector(".avatar-ring").classList.add("hidden")
+        answerButton.classList.remove("bounce")
+        slideHint.classList.add("hidden")
+        // ここで通話拒否のロジックを実装
+        alert("通話を拒否しました")
+      }
+
+      // ボタンイベントリスナー
+      answerButton.addEventListener("click", handleAnswer)
+      declineButton.addEventListener("click", handleDecline)
+
+      // アバターのパルスアニメーション
+      avatarContainer.classList.add("pulse")
+    })
+  </script>
+</body>
+
+</html>
