@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>webTaleKit 用語集</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #87CEEB 0%, #4169E1 50%, #1E90FF 100%);
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .main-layout {
+            display: flex;
+            gap: 20px;
+        }
+        .sidebar {
+            flex: 0 0 280px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        .content {
+            flex: 1;
+            min-width: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .intro {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #3498db;
+        }
+        .nav {
+            background: #34495e;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .nav h3 {
+            color: white;
+            margin: 0 0 15px 0;
+            font-size: 1.2em;
+            border-bottom: 1px solid #4a5f7a;
+            padding-bottom: 10px;
+        }
+        .nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .nav li {
+            background: transparent;
+            border-radius: 5px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .nav li:hover {
+            border-left-color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+        }
+        .nav a {
+            color: #ecf0f1;
+            text-decoration: none;
+            padding: 8px 15px;
+            display: block;
+            transition: color 0.3s;
+            font-size: 0.95em;
+        }
+        .nav a:hover {
+            color: #3498db;
+        }
+        .section {
+            background: white;
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        .category-section {
+            border-left: 5px solid #e74c3c;
+        }
+        .section-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        .term-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+        .term-item:hover {
+            border-left-color: #e74c3c;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        .term-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        .term-english {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+        .term-description {
+            color: #555;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+        .term-example {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 12px 15px;
+            border-radius: 5px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            margin-top: 10px;
+            border-left: 3px solid #3498db;
+        }
+        .term-related {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .term-related strong {
+            color: #2c3e50;
+        }
+        .related-link {
+            color: #3498db;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+        .related-link:hover {
+            text-decoration: underline;
+        }
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50px;
+            text-decoration: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+        .back-to-top:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        .search-box {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        @media (max-width: 1024px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                flex: none;
+                position: static;
+                max-height: none;
+                margin-bottom: 20px;
+            }
+            .nav ul {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .nav li {
+                background: #3498db;
+                border-left: none;
+            }
+            .nav a {
+                color: white;
+                padding: 8px 15px;
+            }
+            .nav a:hover {
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+            }
+        }
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>webTaleKit 用語集</h1>
+        
+        <div class="intro">
+            <h2>概要</h2>
+            <p>webTaleKitに関連する専門用語と概念を五十音順で解説しています。ビジュアルノベル開発における重要な概念やエンジン固有の機能について理解を深めることができます。</p>
+            <p>各用語には詳細な説明、使用例、関連用語への参照が含まれています。</p>
+        </div>
+
+        <div class="main-layout">
+            <aside class="sidebar">
+                <div class="search-box">
+                    <input type="text" class="search-input" id="searchInput" placeholder="用語を検索...">
+                </div>
+                <nav class="nav">
+                    <h3>カテゴリー</h3>
+                    <ul>
+                        <li><a href="#architecture">システム構成</a></li>
+                        <li><a href="#scripting">スクリプト・言語</a></li>
+                        <li><a href="#resources">リソース管理</a></li>
+                        <li><a href="#ui">UI・表示</a></li>
+                        <li><a href="#audio">音響</a></li>
+                        <li><a href="#development">開発・ビルド</a></li>
+                    </ul>
+                </nav>
+            </aside>
+            <main class="content">
+
+        <section id="architecture" class="section category-section">
+            <div class="section-title">システム構成</div>
+            
+            <div class="term-item" data-term="core">
+                <div class="term-name">Core（コア）</div>
+                <div class="term-english">Core Class</div>
+                <div class="term-description">
+                    webTaleKitエンジンの中核となるクラス。ゲーム全体の制御、シナリオ実行、各種ハンドラーの管理を行います。全てのタグ処理は最終的にCoreクラスのメソッドで実行されます。
+                </div>
+                <div class="term-example">
+                    const core = new Core()
+                    await core.start('title')
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#drawer" class="related-link">Drawer</a>
+                    <a href="#scenariomanager" class="related-link">ScenarioManager</a>
+                    <a href="#resourcemanager" class="related-link">ResourceManager</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="drawer">
+                <div class="term-name">Drawer（描画エンジン）</div>
+                <div class="term-english">Drawer Class</div>
+                <div class="term-description">
+                    Canvas要素への描画処理を担当するクラス。キャラクターや背景画像の表示、テキスト描画、フェード効果、画像移動などの視覚的な演出を管理します。
+                </div>
+                <div class="term-example">
+                    this.drawer = new Drawer(gameContainer)
+                    this.drawer.drawText('Hello World', 25)
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#canvas-layer" class="related-link">キャンバスレイヤー</a>
+                    <a href="#imageobject" class="related-link">ImageObject</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="scenariomanager">
+                <div class="term-name">ScenarioManager（シナリオ管理）</div>
+                <div class="term-english">ScenarioManager Class</div>
+                <div class="term-description">
+                    シナリオの進行状況、履歴管理、インデックス制御を担当するクラス。jumpタグによる分岐制御や、プレイヤーの選択結果の記録などを行います。
+                </div>
+                <div class="term-example">
+                    scenarioManager.setScenario(scenario)
+                    scenarioManager.next()
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#scenario-object" class="related-link">Scenarioオブジェクト</a>
+                    <a href="#backlog" class="related-link">バックログ</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="resourcemanager">
+                <div class="term-name">ResourceManager（リソース管理）</div>
+                <div class="term-english">ResourceManager Class</div>
+                <div class="term-description">
+                    ゲーム内で使用される画像、音声、その他のアセットファイルの読み込み、キャッシュ、管理を行うクラス。config.jsからリソース定義を読み込み、名前でアクセスできるようにします。
+                </div>
+                <div class="term-example">
+                    resourceManager = new ResourceManager(configImport)
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#resource-config" class="related-link">リソース定義オブジェクト</a>
+                    <a href="#imageobject" class="related-link">ImageObject</a>
+                    <a href="#soundobject" class="related-link">SoundObject</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="canvas-layer">
+                <div class="term-name">キャンバスレイヤー</div>
+                <div class="term-english">Canvas Layer</div>
+                <div class="term-description">
+                    webTaleKitの画面表示は3つのレイヤーで構成されます：UIレイヤー（HTML/CSS）、キャラレイヤー（Canvas）、背景レイヤー（Canvas）。キャラと背景は合成されるため実質2レイヤー構成となります。
+                </div>
+                <div class="term-example">
+                    // UIレイヤー: HTMLメッセージボックス
+                    // キャラレイヤー: キャラクター立ち絵表示
+                    // 背景レイヤー: 背景画像表示
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#drawer" class="related-link">Drawer</a>
+                    <a href="#ui-layer" class="related-link">UIレイヤー</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="scripting" class="section category-section">
+            <div class="section-title">スクリプト・言語</div>
+            
+            <div class="term-item" data-term="webtaleScript">
+                <div class="term-name">WebTaleScript（WTS）</div>
+                <div class="term-english">WebTaleScript</div>
+                <div class="term-description">
+                    webTaleKit独自のマークアップ言語。HTMLに似た構文でゲームの進行を記述できます。各タグはエンジンのメソッドと対応しており、最終的にJavaScriptに変換されて実行されます。
+                </div>
+                <div class="term-example">
+                    &lt;text&gt;こんにちは&lt;/text&gt;
+                    &lt;say name="主人公"&gt;元気ですか？&lt;/say&gt;
+                    &lt;choice prompt="答えてください"&gt;
+                        &lt;item label="はい"&gt;元気です&lt;/item&gt;
+                    &lt;/choice&gt;
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#scene-file" class="related-link">シーンファイル</a>
+                    <a href="#scenario-object" class="related-link">Scenarioオブジェクト</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="scene-file">
+                <div class="term-name">シーンファイル</div>
+                <div class="term-english">Scene File (.scene)</div>
+                <div class="term-description">
+                    WebTaleScript（WTS）とJavaScriptでゲームの進行を記述するファイル。scenarioセクションにはWTSで進行制御を、scriptセクションにはJavaScriptで変数定義や関数を記述します。
+                </div>
+                <div class="term-example">
+                    &lt;scene&gt;
+                      &lt;scenario&gt;
+                        &lt;text&gt;シナリオ内容&lt;/text&gt;
+                      &lt;/scenario&gt;
+                      &lt;script&gt;
+                        export const sceneConfig = { name: 'title' }
+                      &lt;/script&gt;
+                    &lt;/scene&gt;
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#webtaleScript" class="related-link">WebTaleScript</a>
+                    <a href="#scene-config" class="related-link">sceneConfig</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="scenario-object">
+                <div class="term-name">Scenarioオブジェクト</div>
+                <div class="term-english">Scenario Object</div>
+                <div class="term-description">
+                    WebTaleScriptを変換したJSONオブジェクト。webTaleKitエンジンはこのオブジェクトを読み取り・実行してゲームを進行させます。各要素はtypeとcontentプロパティを持ちます。
+                </div>
+                <div class="term-example">
+                    {
+                      type: 'text',
+                      content: ['表示するテキスト'],
+                      speed: 25
+                    }
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#webtaleScript" class="related-link">WebTaleScript</a>
+                    <a href="#scenariomanager" class="related-link">ScenarioManager</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="if-global">
+                <div class="term-name">ifグローバル属性</div>
+                <div class="term-english">if Global Attribute</div>
+                <div class="term-description">
+                    すべてのWebTaleScriptタグで使用できるグローバル属性。JavaScript式を条件として指定し、条件がtrueの場合のみそのタグが実行されます。動的なゲーム進行制御に使用されます。
+                </div>
+                <div class="term-example">
+                    &lt;text if="playerLevel >= 10"&gt;上級者向けメッセージ&lt;/text&gt;
+                    &lt;show src="special.png" if="hasItem('key')" /&gt;
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#webtaleScript" class="related-link">WebTaleScript</a>
+                    <a href="#conditional-branch" class="related-link">条件分岐</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="scene-config">
+                <div class="term-name">sceneConfig</div>
+                <div class="term-english">Scene Configuration</div>
+                <div class="term-description">
+                    各シーンの設定を定義するJavaScriptオブジェクト。シーン名、背景画像、BGM、使用するテンプレートファイルなどを指定します。シーンファイルのscriptセクションでexportします。
+                </div>
+                <div class="term-example">
+                    export const sceneConfig = {
+                      name: 'title',
+                      background: './resource/bg/title.jpg',
+                      bgm: './resource/bgm/theme.mp3',
+                      template: './screen/title.html'
+                    }
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#scene-file" class="related-link">シーンファイル</a>
+                    <a href="#template" class="related-link">テンプレート</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="resources" class="section category-section">
+            <div class="section-title">リソース管理</div>
+            
+            <div class="term-item" data-term="resource-config">
+                <div class="term-name">リソース定義オブジェクト</div>
+                <div class="term-english">Resource Configuration Object</div>
+                <div class="term-description">
+                    ゲーム内で使用する画像、音声ファイルのパスと名前を紐づけるオブジェクト。config.jsファイルで定義し、名前でリソースを呼び出せるようになります。
+                </div>
+                <div class="term-example">
+                    export const audio = [{ title: '/audio/mainTheme.wav' }]
+                    export const chara = [{ hero: '/chara/hero.png' }]
+                    export const background = [{ forest: '/bg/forest.jpg' }]
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#resourcemanager" class="related-link">ResourceManager</a>
+                    <a href="#imageobject" class="related-link">ImageObject</a>
+                    <a href="#soundobject" class="related-link">SoundObject</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="imageobject">
+                <div class="term-name">ImageObject</div>
+                <div class="term-english">Image Object</div>
+                <div class="term-description">
+                    画像リソースを管理するクラス。画像の読み込み、フィルター効果（セピア、モノクロ、ぼかし）、透明度設定、左右反転などの操作を提供します。
+                </div>
+                <div class="term-example">
+                    const image = new ImageObject()
+                    await image.setImageAsync('./chara/hero.png')
+                    image.setSepia(0.5)
+                    image.setOpacity(0.8)
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#resourcemanager" class="related-link">ResourceManager</a>
+                    <a href="#show-tag" class="related-link">showタグ</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="soundobject">
+                <div class="term-name">SoundObject</div>
+                <div class="term-english">Sound Object</div>
+                <div class="term-description">
+                    音声リソースを管理するクラス。BGM、効果音、ボイスの再生・停止・一時停止、音量調整などの機能を提供します。Web Audio APIを使用して実装されています。
+                </div>
+                <div class="term-example">
+                    const sound = new SoundObject()
+                    await sound.setAudioAsync('./bgm/theme.mp3')
+                    sound.play(true) // ループ再生
+                    sound.setVolume(0.7)
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#resourcemanager" class="related-link">ResourceManager</a>
+                    <a href="#sound-tag" class="related-link">soundタグ</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="displayed-images">
+                <div class="term-name">displayedImages</div>
+                <div class="term-english">Displayed Images Object</div>
+                <div class="term-description">
+                    現在画面に表示されている画像の管理オブジェクト。各画像の座標、サイズ、表示状態、フィルター設定などを保持し、hideやmovetoタグでの操作対象の特定に使用されます。
+                </div>
+                <div class="term-example">
+                    this.displayedImages = {
+                      'hero': {
+                        image: imageObject,
+                        pos: { x: 100, y: 200 },
+                        size: { width: 400, height: 600 }
+                      }
+                    }
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#imageobject" class="related-link">ImageObject</a>
+                    <a href="#show-tag" class="related-link">showタグ</a>
+                    <a href="#hide-tag" class="related-link">hideタグ</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="ui" class="section category-section">
+            <div class="section-title">UI・表示</div>
+            
+            <div class="term-item" data-term="template">
+                <div class="term-name">テンプレート</div>
+                <div class="term-english">Template</div>
+                <div class="term-description">
+                    ゲーム画面のレイアウトを定義するHTMLファイル。メッセージウィンドウ、キャラクター名表示、選択肢ボタンなどのUI要素を含みます。シーンごとに異なるテンプレートを使用可能です。
+                </div>
+                <div class="term-example">
+                    &lt;div id="main"&gt;
+                      &lt;div id="messageWindow"&gt;
+                        &lt;div id="nameView"&gt;&lt;/div&gt;
+                        &lt;div id="messageView"&gt;&lt;/div&gt;
+                      &lt;/div&gt;
+                    &lt;/div&gt;
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#ui-layer" class="related-link">UIレイヤー</a>
+                    <a href="#scene-config" class="related-link">sceneConfig</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="ui-layer">
+                <div class="term-name">UIレイヤー</div>
+                <div class="term-english">UI Layer</div>
+                <div class="term-description">
+                    HTML、CSS、JavaScriptで構成されるユーザーインターフェース層。メッセージボックス、選択肢ボタン、システムメニューなどが表示されます。Canvas要素の上に重ねて表示されます。
+                </div>
+                <div class="term-example">
+                    &lt;!-- UIレイヤーの要素例 --&gt;
+                    &lt;div id="nameView"&gt;主人公&lt;/div&gt;
+                    &lt;div id="messageView"&gt;こんにちは&lt;/div&gt;
+                    &lt;div id="interactiveView"&gt;選択肢&lt;/div&gt;
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#template" class="related-link">テンプレート</a>
+                    <a href="#canvas-layer" class="related-link">キャンバスレイヤー</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="message-window">
+                <div class="term-name">メッセージウィンドウ</div>
+                <div class="term-english">Message Window</div>
+                <div class="term-description">
+                    ゲーム内のテキストやキャラクターの台詞を表示するUI要素。通常は画面下部に配置され、背景が半透明になっています。クリックやキー入力で次のテキストに進みます。
+                </div>
+                <div class="term-example">
+                    &lt;div id="messageWindow"&gt;
+                      &lt;div id="nameView"&gt;キャラクター名&lt;/div&gt;
+                      &lt;div id="messageView"&gt;表示されるテキスト&lt;/div&gt;
+                    &lt;/div&gt;
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#text-tag" class="related-link">textタグ</a>
+                    <a href="#say-tag" class="related-link">sayタグ</a>
+                    <a href="#ui-layer" class="related-link">UIレイヤー</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="backlog">
+                <div class="term-name">バックログ</div>
+                <div class="term-english">Backlog</div>
+                <div class="term-description">
+                    プレイヤーが過去に読んだテキストや選択した内容を記録する機能。一次配列として管理され、ゲーム履歴の確認やセーブデータの一部として使用されます。
+                </div>
+                <div class="term-example">
+                    // バックログ配列の例
+                    ['テキスト1', 'テキスト2', 'テキスト3']
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#scenariomanager" class="related-link">ScenarioManager</a>
+                    <a href="#save-system" class="related-link">セーブシステム</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="audio" class="section category-section">
+            <div class="section-title">音響</div>
+            
+            <div class="term-item" data-term="bgm">
+                <div class="term-name">BGM</div>
+                <div class="term-english">Background Music</div>
+                <div class="term-description">
+                    ゲーム中に流れる背景音楽。通常はループ再生され、シーン切り替え時に自動的に変更されます。soundタグのmode="bgm"で制御するか、sceneConfigで指定します。
+                </div>
+                <div class="term-example">
+                    &lt;sound src="./bgm/peaceful.mp3" mode="bgm" play loop /&gt;
+                    
+                    // sceneConfigでの指定
+                    export const sceneConfig = {
+                      bgm: './resource/bgm/theme.mp3'
+                    }
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#soundobject" class="related-link">SoundObject</a>
+                    <a href="#sound-tag" class="related-link">soundタグ</a>
+                    <a href="#scene-config" class="related-link">sceneConfig</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="voice">
+                <div class="term-name">ボイス</div>
+                <div class="term-english">Voice</div>
+                <div class="term-description">
+                    キャラクターの台詞に同期して再生される音声ファイル。sayタグのvoice属性で指定し、テキスト表示と同時に再生されます。キャラクターの感情表現を豊かにします。
+                </div>
+                <div class="term-example">
+                    &lt;say name="ヒロイン" voice="./voice/heroine_01.wav"&gt;
+                      お疲れ様でした。
+                    &lt;/say&gt;
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#soundobject" class="related-link">SoundObject</a>
+                    <a href="#say-tag" class="related-link">sayタグ</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="se">
+                <div class="term-name">効果音（SE）</div>
+                <div class="term-english">Sound Effect</div>
+                <div class="term-description">
+                    ゲーム中の演出で使用される短い音声ファイル。ドアの開閉音、足音、環境音などを再生してゲームの臨場感を高めます。通常は一度だけ再生されます。
+                </div>
+                <div class="term-example">
+                    &lt;sound src="./se/door.wav" play /&gt;
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#soundobject" class="related-link">SoundObject</a>
+                    <a href="#sound-tag" class="related-link">soundタグ</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="development" class="section category-section">
+            <div class="section-title">開発・ビルド</div>
+            
+            <div class="term-item" data-term="build-system">
+                <div class="term-name">ビルドシステム</div>
+                <div class="term-english">Build System</div>
+                <div class="term-description">
+                    webTaleKitプロジェクトを本番環境向けにコンパイル・最適化するシステム。sceneファイルのJavaScript変換、screen以下のHTML/CSS/JSのインライン化、バンドル処理を行います。
+                </div>
+                <div class="term-example">
+                    npm run build
+                    // sceneファイル → JavaScriptに変換
+                    // テンプレート → インライン化
+                    // 全体 → バンドル
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#scene-file" class="related-link">シーンファイル</a>
+                    <a href="#template" class="related-link">テンプレート</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="directory-structure">
+                <div class="term-name">ディレクトリ構造</div>
+                <div class="term-english">Directory Structure</div>
+                <div class="term-description">
+                    webTaleKitプロジェクトの標準的なフォルダ構成。src/scene（シナリオ）、src/screen（テンプレート）、src/resource（素材）などに分けて整理されます。
+                </div>
+                <div class="term-example">
+                    src/
+                    ├── scene/          # シーンファイル
+                    ├── screen/         # テンプレート
+                    ├── resource/       # 素材ファイル
+                    │   ├── background/ # 背景画像
+                    │   ├── chara/      # キャラクター画像
+                    │   ├── bgm/        # BGM
+                    │   └── se/         # 効果音
+                    └── config.js       # リソース定義
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#resource-config" class="related-link">リソース定義オブジェクト</a>
+                    <a href="#scene-file" class="related-link">シーンファイル</a>
+                </div>
+            </div>
+
+            <div class="term-item" data-term="save-system">
+                <div class="term-name">セーブシステム</div>
+                <div class="term-english">Save System</div>
+                <div class="term-description">
+                    ゲームの進行状況をJSONファイルとして保存・読み込みする機能。現在のシーン、進行インデックス、表示中の画像、開発者定義の変数などが保存されます。
+                </div>
+                <div class="term-example">
+                    // セーブデータ形式例
+                    {
+                      displayedImage: {...},
+                      scenario: 'title',
+                      index: 5,
+                      // カスタム変数
+                      playerLevel: 10,
+                      hasKey: true
+                    }
+                </div>
+                <div class="term-related">
+                    <strong>関連用語：</strong>
+                    <a href="#backlog" class="related-link">バックログ</a>
+                    <a href="#scenariomanager" class="related-link">ScenarioManager</a>
+                </div>
+            </div>
+        </section>
+
+            </main>
+        </div>
+    </div>
+
+    <a href="#top" class="back-to-top">↑ TOPへ</a>
+
+    <script>
+        // 検索機能
+        const searchInput = document.getElementById('searchInput');
+        const termItems = document.querySelectorAll('.term-item');
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            termItems.forEach(item => {
+                const termName = item.querySelector('.term-name').textContent.toLowerCase();
+                const termDesc = item.querySelector('.term-description').textContent.toLowerCase();
+                const termEnglish = item.querySelector('.term-english').textContent.toLowerCase();
+                
+                if (termName.includes(searchTerm) || 
+                    termDesc.includes(searchTerm) || 
+                    termEnglish.includes(searchTerm) ||
+                    item.dataset.term.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // スムーススクロール
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // 戻るボタンの表示制御
+        window.addEventListener('scroll', function() {
+            const backToTop = document.querySelector('.back-to-top');
+            if (window.pageYOffset > 300) {
+                backToTop.style.display = 'block';
+            } else {
+                backToTop.style.display = 'none';
+            }
+        });
+
+        // 用語項目のホバー効果
+        termItems.forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateX(5px)';
+            });
+            
+            item.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateX(0)';
+            });
+        });
+    </script>
+</body>
+</html>

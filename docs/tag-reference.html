@@ -254,6 +254,11 @@
             <h2>概要</h2>
             <p>webTaleKitは、TypeScript/JavaScriptベースのビジュアルノベルエンジンです。このリファレンスでは、.sceneファイルで使用できるすべてのタグとその属性について詳しく説明しています。</p>
             <p>各タグは特定の機能を提供し、組み合わせることで豊かなインタラクティブストーリーを作成できます。</p>
+            
+            <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; border-left: 4px solid #2196F3; margin-top: 20px;">
+                <h3 style="margin-top: 0; color: #1976D2;">🌟 グローバル属性</h3>
+                <p style="margin-bottom: 0;"><strong>if属性：</strong>すべてのタグで<code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">if="条件式"</code>を使用できます。条件がtrueの場合のみそのタグが実行されます。</p>
+            </div>
         </div>
 
         <div class="main-layout">
@@ -386,7 +391,14 @@
   &lt;/data&gt;
   &lt;then&gt;データの読み込みが完了しました。&lt;/then&gt;
   &lt;error&gt;データの読み込みに失敗しました。&lt;/error&gt;
-&lt;/text&gt;</pre>
+&lt;/text&gt;
+
+&lt;!-- ifグローバル属性の使用例 --&gt;
+&lt;text if="playerLevel >= 10"&gt;レベル10以上のプレイヤーのみに表示されるメッセージです。&lt;/text&gt;
+
+&lt;text if="hasItem('key')"&gt;鍵を持っている場合のメッセージです。&lt;/text&gt;
+
+&lt;text if="gameMode === 'hard'"&gt;ハードモード専用のヒントです。&lt;/text&gt;</pre>
                 </div>
             </div>
 
@@ -402,6 +414,7 @@
                     <li>waitタグのnw属性を指定すると、待機をスキップできます</li>
                     <li>HTTPリクエスト機能を使用すると、API連携やAI統合が可能になります</li>
                     <li>HTTPレスポンスの結果は、sceneFile.resに格納されます</li>
+                    <li><strong>if属性：</strong>条件がtrueの場合のみテキストが表示されます（例: if="playerLevel >= 5"）</li>
                 </ul>
             </div>
         </section>
@@ -444,6 +457,15 @@
 
 &lt;say name="{{characterName}}" speed="50"&gt;
   変数も使用できます。
+&lt;/say&gt;
+
+&lt;!-- ifグローバル属性の使用例 --&gt;
+&lt;say name="店主" if="playerMoney >= 100"&gt;
+  いらっしゃいませ！何かお買い物ですか？
+&lt;/say&gt;
+
+&lt;say name="警備員" if="hasPermission === false"&gt;
+  ここから先は立ち入り禁止です。
 &lt;/say&gt;</pre>
                 </div>
             </div>
@@ -454,6 +476,7 @@
                     <li>nameは必須属性です</li>
                     <li>voiceで指定した音声ファイルは台詞と同時に再生されます</li>
                     <li>textタグと同様にマークアップタグが使用できます</li>
+                    <li><strong>if属性：</strong>条件がtrueの場合のみ台詞が表示されます（例: if="characterPresent"）</li>
                 </ul>
             </div>
         </section>
@@ -504,6 +527,16 @@
   &lt;item label="次のシーンへ"&gt;
     &lt;route to="next_scene" /&gt;
   &lt;/item&gt;
+&lt;/choice&gt;
+
+&lt;!-- ifグローバル属性の使用例 --&gt;
+&lt;choice prompt="何をしますか？" if="canMakeChoice"&gt;
+  &lt;item label="戦う"&gt;
+    &lt;text&gt;戦闘を開始します。&lt;/text&gt;
+  &lt;/item&gt;
+  &lt;item label="逃げる"&gt;
+    &lt;text&gt;逃走します。&lt;/text&gt;
+  &lt;/item&gt;
 &lt;/choice&gt;</pre>
                 </div>
             </div>
@@ -514,6 +547,7 @@
                     <li>各itemには任意のタグを含めることができます</li>
                     <li>選択後は自動的に選択肢が非表示になります</li>
                     <li>promptが空文字列の場合、プロンプトは表示されません</li>
+                    <li><strong>if属性：</strong>条件がtrueの場合のみ選択肢が表示されます（例: if="allowChoices"）</li>
                 </ul>
             </div>
         </section>
@@ -625,7 +659,14 @@
 
 &lt;!-- 遅延表示 --&gt;
 &lt;show src="./resource/chara/surprise.png" name="驚き" pos="center:middle" 
-      entry="{time: 2, wait: true}" /&gt;</pre>
+      entry="{time: 2, wait: true}" /&gt;
+
+&lt;!-- ifグローバル属性の使用例 --&gt;
+&lt;show src="./resource/chara/angry.png" name="主人公" pos="left:middle" 
+      if="playerEmotion === 'angry'" /&gt;
+
+&lt;show src="./resource/item/treasure.png" name="宝箱" pos="center:middle" 
+      if="foundTreasure" /&gt;</pre>
                 </div>
             </div>
 
@@ -638,6 +679,7 @@
                     <li>posとx,yの両方を指定した場合、x,yが優先されます</li>
                     <li>lookをtrueにすると画像が左右反転されます（キャラの向きを変える時に便利）</li>
                     <li>entryで表示開始を遅延できます（演出効果に有効）</li>
+                    <li><strong>if属性：</strong>条件がtrueの場合のみ画像が表示されます（例: if="showCharacter"）</li>
                 </ul>
             </div>
         </section>
