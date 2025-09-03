@@ -7,6 +7,7 @@ import engineConfig from '../../engineConfig.json'
 import { outputLog } from '../utils/logger'
 import { sleep } from '../utils/waitUtil'
 import { getDefaultDialogTemplate } from '../utils/fallbackTemplate'
+import { generateStore } from '../utils/store'
 
 export class Core {
   constructor() {
@@ -33,6 +34,8 @@ export class Core {
       route: this.routeHandler,
       wait: this.waitHandler,
       dialog: this.dialogHandler,
+      save: this.saveHandler,
+      load: this.loadHandler,
     }
 
     // gameContainerの初期化（HTMLのgameContainerを取得する）
@@ -45,6 +48,8 @@ export class Core {
     this.resourceManager = new ResourceManager(import(/* webpackIgnore: true */ '/src/resource/config.js')) //  webpackIgnoreでバンドルを無視する
     this.displayedImages = {}
     this.usedSounds = {}
+    // ストレージの初期化
+    this.store = generateStore()
   }
 
   setConfig(config) {
@@ -832,7 +837,156 @@ export class Core {
         moveto: this.moveToHandler.bind(this),
         route: this.routeHandler.bind(this),
         wait: this.waitHandler.bind(this),
+        save: this.saveHandler.bind(this),
+        load: this.loadHandler.bind(this),
+      },
+      save: {
+        save: this.saveHandler.bind(this),
+        load: this.loadHandler.bind(this),
+        getSaveData: () => this.getSaveData(),
+        setSaveData: (data) => this.setSaveData(data),
+        getSaveList: () => this.getSaveList(),
+        deleteSave: (slot) => this.deleteSave(slot),
       },
     }
+  }
+
+  async saveHandler(line) {
+    outputLog('call', 'debug', line)
+    const slot = line.slot || 'auto'
+    const name = line.name || `セーブ${slot}`
+    
+    const saveData = {
+      slot: slot,
+      name: name,
+      timestamp: new Date().toISOString(),
+      scenarioManager: {
+        progress: this.scenarioManager.progress,
+        sceneName: this.scenarioManager.getSceneName(),
+        currentIndex: this.scenarioManager.getIndex(),
+        history: this.scenarioManager.getHistory ? this.scenarioManager.getHistory() : [],
+      },
+      sceneConfig: this.sceneConfig,
+      displayedImages: Object.keys(this.displayedImages).reduce((acc, key) => {
+        if (key !== 'background') {
+          acc[key] = {
+            src: this.displayedImages[key].image?.src || null,
+            pos: this.displayedImages[key].pos,
+            size: this.displayedImages[key].size,
+            look: this.displayedImages[key].look,
+            entry: this.displayedImages[key].entry,
+          }
+        }
+        return acc
+      }, {}),
+      backgroundImage: this.displayedImages.background?.image?.src || null,
+      usedSounds: Object.keys(this.usedSounds).reduce((acc, key) => {
+        acc[key] = {
+          src: this.usedSounds[key].audio?.src || null,
+        }
+        return acc
+      }, {}),
+      bgmSrc: this.bgm?.src || null,
+    }
+
+    this.store.set(`save_${slot}`, saveData)
+    outputLog('Game saved', 'info', saveData)
+    
+    if (line.message !== false) {
+      await this.textHandler(`ゲームをセーブしました: ${name}`)
+    }
+  }
+
+  async loadHandler(line) {
+    outputLog('call', 'debug', line)
+    const slot = line.slot || 'auto'
+    
+    const saveData = this.store[`save_${slot}`]
+    if (!saveData) {
+      const errorMsg = `セーブデータが見つかりません: スロット${slot}`
+      outputLog(errorMsg, 'error')
+      if (line.message !== false) {
+        await this.textHandler(errorMsg)
+      }
+      return
+    }
+
+    try {
+      this.scenarioManager.progress = saveData.scenarioManager.progress
+      this.scenarioManager.setIndex(saveData.scenarioManager.currentIndex)
+      this.sceneConfig = saveData.sceneConfig
+
+      if (saveData.scenarioManager.sceneName) {
+        await this.loadScene(saveData.scenarioManager.sceneName)
+        await this.loadScreen(this.sceneConfig)
+      }
+
+      this.displayedImages = {}
+      if (saveData.backgroundImage) {
+        const background = await new ImageObject().setImageAsync(saveData.backgroundImage)
+        this.displayedImages['background'] = {
+          image: background,
+          size: {
+            width: this.gameContainer.clientWidth,
+            height: this.gameContainer.clientHeight,
+          },
+        }
+      }
+
+      for (const [key, imageData] of Object.entries(saveData.displayedImages)) {
+        if (imageData.src) {
+          const image = await new ImageObject().setImageAsync(imageData.src)
+          this.displayedImages[key] = {
+            image: image,
+            pos: imageData.pos,
+            size: imageData.size,
+            look: imageData.look,
+            entry: imageData.entry,
+          }
+        }
+      }
+
+      this.drawer.show(this.displayedImages)
+
+      if (saveData.bgmSrc && saveData.bgmSrc !== this.bgm?.src) {
+        if (this.bgm?.isPlaying) {
+          this.bgm.stop()
+        }
+        this.bgm = await new SoundObject().setAudioAsync(saveData.bgmSrc)
+        this.bgm.play(true)
+      }
+
+      outputLog('Game loaded', 'info', saveData)
+      
+      if (line.message !== false) {
+        await this.textHandler(`ゲームをロードしました: ${saveData.name}`)
+      }
+    } catch (error) {
+      const errorMsg = `ロードに失敗しました: ${error.message}`
+      outputLog(errorMsg, 'error', error)
+      if (line.message !== false) {
+        await this.textHandler(errorMsg)
+      }
+    }
+  }
+
+  getSaveData() {
+    const saveKeys = Object.keys(this.store).filter(key => key.startsWith('save_'))
+    return saveKeys.map(key => this.store[key]).sort((a, b) => {
+      return new Date(b.timestamp) - new Date(a.timestamp)
+    })
+  }
+
+  setSaveData(data) {
+    this.store.set(`save_${data.slot}`, data)
+  }
+
+  getSaveList() {
+    return this.getSaveData()
+  }
+
+  deleteSave(slot) {
+    delete this.store[`save_${slot}`]
+    outputLog(`Save deleted: slot ${slot}`, 'info')
   }
 }

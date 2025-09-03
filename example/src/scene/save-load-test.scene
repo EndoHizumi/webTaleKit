@@ -1,0 +1,39 @@
+<scene>
+    <scenario>
+        <text>セーブ・ロード機能のテストです</text>
+        <say name="ナレーター">このシーンでは、セーブとロードの基本機能をテストします。</say>
+        
+        <choice>
+            <item label="セーブテスト" onSelect="save_test">
+                <save slot="test1" name="テストセーブ1" />
+                <text>ゲームがセーブされました！</text>
+            </item>
+            <item label="オートセーブ" onSelect="auto_save">
+                <save />
+                <text>オートセーブが作成されました！</text>
+            </item>
+            <item label="ロードテスト" onSelect="load_test">
+                <load slot="test1" />
+            </item>
+            <item label="オートロード" onSelect="auto_load">
+                <load />
+            </item>
+            <item label="サイレントセーブ" onSelect="silent_save">
+                <save slot="silent" name="サイレントセーブ" message="false" />
+                <text>メッセージなしでセーブしました</text>
+            </item>
+            <item label="タイトルに戻る" onSelect="title">
+                <route to="title" />
+            </item>
+        </choice>
+    </scenario>
+
+    <script>
+        export const sceneConfig = {
+            name: 'save_load_test',
+            background: './src/resource/background/room.png',
+            bgm: './src/resource/bgm/bgm_01.ogg',
+            template: './src/screen/title.html'
+        }
+    </script>
+</scene>

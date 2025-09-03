@@ -31,6 +31,9 @@
       <item label="ダイアログテスト" onSelect="test_dialog">
         <route to="dialog" />
       </item>
+      <item label="セーブ・ロードテスト" onSelect="save_load_test">
+        <route to="save-load-test" />
+      </item>
     </choice>
   </scenario>
 
