@@ -5,6 +5,7 @@
         
         <choice>
             <item label="セーブテスト" onSelect="save_test">
+                <text>セーブ前のテキスト</text>
                 <save slot="test1" name="テストセーブ1" />
                 <text>ゲームがセーブされました！</text>
             </item>
@@ -26,13 +27,14 @@
                 <route to="title" />
             </item>
         </choice>
+        <jump index="1" />
     </scenario>
 
     <script>
         export const sceneConfig = {
-            name: 'save_load_test',
-            background: './src/resource/background/room.png',
-            bgm: './src/resource/bgm/bgm_01.ogg',
+            name: 'save-load-test',
+            background:  './src/resource/background/title_bg.png',
+            bgm: '',
             template: './src/screen/title.html'
         }
     </script>

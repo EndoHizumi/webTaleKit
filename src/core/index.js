@@ -131,6 +131,7 @@ export class Core {
     outputLog('call', 'debug', { sceneConfig, options })
     // シナリオの進行状況を保存
     this.scenarioManager.progress.currentScene = sceneConfig.name
+    this.scenarioManager.setSceneName(sceneConfig.name)
     // sceneConfig.templateを読み込んで、HTMLを表示する
     // テンプレートの存在確認
     if (!isDialog && !(await this.checkResourceExists(sceneConfig.template))) {
@@ -861,10 +862,10 @@ export class Core {
       name: name,
       timestamp: new Date().toISOString(),
       scenarioManager: {
-        progress: this.scenarioManager.progress,
-        sceneName: this.scenarioManager.getSceneName(),
+        progress: JSON.parse(JSON.stringify(this.scenarioManager.progress)),
+        sceneName: this.scenarioManager.getSceneName() || this.sceneConfig.name,
         currentIndex: this.scenarioManager.getIndex(),
-        history: this.scenarioManager.getHistory ? this.scenarioManager.getHistory() : [],
+        history: this.scenarioManager.getHistory ? [...this.scenarioManager.getHistory()] : [],
       },
       sceneConfig: this.sceneConfig,
       displayedImages: Object.keys(this.displayedImages).reduce((acc, key) => {
@@ -879,7 +880,7 @@ export class Core {
         }
         return acc
       }, {}),
-      backgroundImage: this.displayedImages.background?.image?.src || null,
+      backgroundImage: this.displayedImages.background?.image?.getImage()?.src || null,
       usedSounds: Object.keys(this.usedSounds).reduce((acc, key) => {
         acc[key] = {
           src: this.usedSounds[key].audio?.src || null,
@@ -901,8 +902,8 @@ export class Core {
     outputLog('call', 'debug', line)
     const slot = line.slot || 'auto'
     
-    const saveData = this.store[`save_${slot}`]
-    if (!saveData) {
+    const saveDataRaw = this.store.get ? this.store.get(`save_${slot}`) : this.store[`save_${slot}`]
+    if (!saveDataRaw) {
       const errorMsg = `セーブデータが見つかりません: スロット${slot}`
       outputLog(errorMsg, 'error')
       if (line.message !== false) {
@@ -911,16 +912,26 @@ export class Core {
       return
     }
 
+    // ディープコピーで循環参照を回避
+    const saveData = JSON.parse(JSON.stringify(saveDataRaw))
+
     try {
-      this.scenarioManager.progress = saveData.scenarioManager.progress
-      this.scenarioManager.setIndex(saveData.scenarioManager.currentIndex)
-      this.sceneConfig = saveData.sceneConfig
-
-      if (saveData.scenarioManager.sceneName) {
-        await this.loadScene(saveData.scenarioManager.sceneName)
-        await this.loadScreen(this.sceneConfig)
+      const sceneName = saveData.scenarioManager.sceneName || saveData.sceneConfig.name
+      if (!sceneName) {
+        throw new Error('Scene name not found in save data')
       }
+      
+      // シーンとプログレスを復元
+      await this.loadScene(sceneName)
+      await this.loadScreen(saveData.sceneConfig)
+      
+      // ScenarioManagerの状態を復元
+      this.scenarioManager.setSceneName(saveData.scenarioManager.sceneName)
+      this.scenarioManager.setIndex(saveData.scenarioManager.currentIndex)
+      this.scenarioManager.setHistory(saveData.scenarioManager.history || [])
+      this.scenarioManager.progress = { ...this.scenarioManager.progress, ...saveData.scenarioManager.progress }
 
+      // 画像の復元
       this.displayedImages = {}
       if (saveData.backgroundImage) {
         const background = await new ImageObject().setImageAsync(saveData.backgroundImage)
@@ -946,15 +957,15 @@ export class Core {
         }
       }
 
-      this.drawer.show(this.displayedImages)
-
-      if (saveData.bgmSrc && saveData.bgmSrc !== this.bgm?.src) {
-        if (this.bgm?.isPlaying) {
-          this.bgm.stop()
-        }
+      // BGMの復元
+      if (saveData.bgmSrc) {
         this.bgm = await new SoundObject().setAudioAsync(saveData.bgmSrc)
-        this.bgm.play(true)
+        if (this.bgm && !this.bgm.isPlaying) {
+          this.bgm.play(true)
+        }
       }
+
+      this.drawer.show(this.displayedImages)
 
       outputLog('Game loaded', 'info', saveData)
       
