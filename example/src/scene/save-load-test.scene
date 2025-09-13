@@ -1,13 +1,16 @@
 <scene>
     <scenario>
+        <show mode="bg" src="./src/resource/background/title_bg.png"></show>
+        <sound mode="bgm" src="./src/resource/bgm/title_theme.mp3" play />
         <text>セーブ・ロード機能のテストです</text>
         <say name="ナレーター">このシーンでは、セーブとロードの基本機能をテストします。</say>
         
         <choice>
             <item label="セーブテスト" onSelect="save_test">
-                <text>セーブ前のテキスト</text>
+                <show mode="bg" src="./src/resource/background/stage.jpg"></show>
+                <sound mode="bgm" src="./src/resource/bgm/calm_music.wav" play />
                 <save slot="test1" name="テストセーブ1" />
-                <text>ゲームがセーブされました！</text>
+                <text>ロードされたら、この文章が表示されます。</text>
             </item>
             <item label="オートセーブ" onSelect="auto_save">
                 <save />
@@ -27,14 +30,14 @@
                 <route to="title" />
             </item>
         </choice>
-        <jump index="1" />
+        <jump index="0" />
     </scenario>
 
     <script>
         export const sceneConfig = {
             name: 'save-load-test',
             background:  './src/resource/background/title_bg.png',
-            bgm: '',
+            bgm: './src/resource/bgm/title_theme.mp3',
             template: './src/screen/title.html'
         }
     </script>
