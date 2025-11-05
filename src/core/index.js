@@ -923,7 +923,7 @@ export class Core {
       
       // シーンとプログレスを復元
       await this.loadScene(sceneName)
-      await this.loadScreen(saveData.sceneConfig)
+      await this.loadScreen(saveData.sceneConfig, { skipBackground: true })
       
       // ScenarioManagerの状態を復元
       this.scenarioManager.setSceneName(saveData.scenarioManager.sceneName)
