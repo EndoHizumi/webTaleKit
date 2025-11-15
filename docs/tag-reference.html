@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>webTaleKit タグリファレンス</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #87CEEB 0%, #4169E1 50%, #1E90FF 100%);
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .main-layout {
+            display: flex;
+            gap: 20px;
+        }
+        .sidebar {
+            flex: 0 0 280px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        .content {
+            flex: 1;
+            min-width: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .intro {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #3498db;
+        }
+        .nav {
+            background: #34495e;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .nav h3 {
+            color: white;
+            margin: 0 0 15px 0;
+            font-size: 1.2em;
+            border-bottom: 1px solid #4a5f7a;
+            padding-bottom: 10px;
+        }
+        .nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .nav li {
+            background: transparent;
+            border-radius: 5px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .nav li:hover {
+            border-left-color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+        }
+        .nav a {
+            color: #ecf0f1;
+            text-decoration: none;
+            padding: 8px 15px;
+            display: block;
+            transition: color 0.3s;
+            font-size: 0.95em;
+        }
+        .nav a:hover {
+            color: #3498db;
+        }
+        .tag-section {
+            background: white;
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #e74c3c;
+        }
+        .tag-name {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        .tag-description {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            color: #555;
+        }
+        .attributes {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .attributes h4 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #bdc3c7;
+            padding-bottom: 5px;
+        }
+        .attr-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+        }
+        .attr-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 3px solid #3498db;
+        }
+        .attr-name {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .attr-type {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+        .examples {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .examples h4 {
+            margin-top: 0;
+            color: #3498db;
+            border-bottom: 1px solid #34495e;
+            padding-bottom: 5px;
+        }
+        .code-block {
+            background: #34495e;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow-x: auto;
+            border-left: 3px solid #3498db;
+        }
+        .code-block pre {
+            margin: 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        .usage-notes {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .usage-notes h4 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50px;
+            text-decoration: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+        .back-to-top:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        @media (max-width: 1024px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                flex: none;
+                position: static;
+                max-height: none;
+                margin-bottom: 20px;
+            }
+            .nav ul {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .nav li {
+                background: #3498db;
+                border-left: none;
+            }
+            .nav a {
+                color: white;
+                padding: 8px 15px;
+            }
+            .nav a:hover {
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+            }
+        }
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            .attr-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>webTaleKit タグリファレンス</h1>
+        
+        <div class="intro">
+            <h2>概要</h2>
+            <p>webTaleKitは、TypeScript/JavaScriptベースのビジュアルノベルエンジンです。このリファレンスでは、.sceneファイルで使用できるすべてのタグとその属性について詳しく説明しています。</p>
+            <p>各タグは特定の機能を提供し、組み合わせることで豊かなインタラクティブストーリーを作成できます。</p>
+            
+            <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; border-left: 4px solid #2196F3; margin-top: 20px;">
+                <h3 style="margin-top: 0; color: #1976D2;">🌟 グローバル属性</h3>
+                <p style="margin-bottom: 0;"><strong>if属性：</strong>すべてのタグで<code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">if="条件式"</code>を使用できます。条件がtrueの場合のみそのタグが実行されます。</p>
+            </div>
+        </div>
+
+        <div class="main-layout">
+            <aside class="sidebar">
+                <nav class="nav">
+                    <h3>タグ一覧</h3>
+                    <ul>
+                        <li><a href="#text">text</a></li>
+                        <li><a href="#say">say</a></li>
+                        <li><a href="#choice">choice</a></li>
+                        <li><a href="#show">show</a></li>
+                        <li><a href="#hide">hide</a></li>
+                        <li><a href="#sound">sound</a></li>
+                        <li><a href="#jump">jump</a></li>
+                        <li><a href="#route">route</a></li>
+                        <li><a href="#if">if</a></li>
+                        <li><a href="#call">call</a></li>
+                        <li><a href="#moveto">moveto</a></li>
+                        <li><a href="#wait">wait</a></li>
+                        <li><a href="#dialog">dialog</a></li>
+                        <li><a href="#newpage">newpage</a></li>
+                    </ul>
+                </nav>
+            </aside>
+            <main class="content">
+
+        <section id="text" class="tag-section">
+            <div class="tag-name">&lt;text&gt;</div>
+            <div class="tag-description">
+                基本的なテキスト表示を行います。ゲームの地の文や説明文の表示に使用されます。
+            </div>
+            
+            <div class="attributes">
+                <h4>属性</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">speed</div>
+                        <div class="attr-type">number (省略可)</div>
+                        <div>テキストの表示速度（ミリ秒）。デフォルト: 25</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">time</div>
+                        <div class="attr-type">number (省略可)</div>
+                        <div>表示後の待機時間（ミリ秒）</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">get / post / put / delete</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>HTTPリクエストのURL。子要素でheader、data、then、errorを指定</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="attributes">
+                <h4>マークアップタグ</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">&lt;color value="色名"&gt;</div>
+                        <div class="attr-type">文字色指定</div>
+                        <div>文字の色を変更します（red, blue, #ff0000など）</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">&lt;b&gt;</div>
+                        <div class="attr-type">太字</div>
+                        <div>テキストを太字で表示します</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">&lt;i&gt;</div>
+                        <div class="attr-type">斜体</div>
+                        <div>テキストを斜体で表示します</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">&lt;ruby text="ルビ"&gt;</div>
+                        <div class="attr-type">ルビ</div>
+                        <div>漢字等にルビを振ります</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">&lt;br&gt;</div>
+                        <div class="attr-type">改行 + 待機</div>
+                        <div>テキストを改行し、クリック待ちします（waitタグのエイリアス）</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">&lt;wait time="ミリ秒" nw /&gt;</div>
+                        <div class="attr-type">一時停止</div>
+                        <div>テキスト表示中に指定時間待機します。timeを省略するとクリック待ち。nw属性で待機スキップ</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>使用例</h4>
+                <div class="code-block">
+                    <pre>&lt;text&gt;これは基本的なテキストです。&lt;/text&gt;
+
+&lt;text speed="10"&gt;ゆっくりと表示されるテキストです。&lt;/text&gt;
+
+&lt;text&gt;変数も使用できます: {{playerName}}&lt;/text&gt;
+
+&lt;!-- マークアップタグの使用例 --&gt;
+&lt;text&gt;
+  &lt;color value="red"&gt;赤い文字&lt;/color&gt;や&lt;b&gt;太字&lt;/b&gt;、&lt;i&gt;斜体&lt;/i&gt;も使えます。
+  &lt;br&gt;改行も簡単です。
+&lt;/text&gt;
+
+&lt;!-- ルビの使用例 --&gt;
+&lt;text&gt;
+  &lt;ruby text="かんじ"&gt;漢字&lt;/ruby&gt;にルビを振ることができます。
+&lt;/text&gt;
+
+&lt;!-- テキスト内での待機 --&gt;
+&lt;text&gt;
+  こんにちは。&lt;wait time="1000" /&gt;お元気ですか？
+&lt;/text&gt;
+
+&lt;!-- 複合的な使用例 --&gt;
+&lt;text&gt;
+  &lt;color value="blue"&gt;&lt;b&gt;重要な&lt;/b&gt;&lt;/color&gt;お知らせがあります。&lt;br&gt;
+  &lt;wait time="500" /&gt;&lt;i&gt;しばらくお待ちください...&lt;/i&gt;
+&lt;/text&gt;
+
+&lt;!-- HTTPリクエストの使用例 --&gt;
+&lt;text get="https://api.example.com/data"&gt;
+  &lt;progress&gt;データを読み込み中...&lt;/progress&gt;
+  &lt;header&gt;
+    &lt;content-type&gt;application/json&lt;/content-type&gt;
+    &lt;authorization&gt;Bearer token&lt;/authorization&gt;
+  &lt;/header&gt;
+  &lt;data&gt;
+    &lt;query&gt;example&lt;/query&gt;
+  &lt;/data&gt;
+  &lt;then&gt;データの読み込みが完了しました。&lt;/then&gt;
+  &lt;error&gt;データの読み込みに失敗しました。&lt;/error&gt;
+&lt;/text&gt;
+
+&lt;!-- ifグローバル属性の使用例 --&gt;
+&lt;text if="playerLevel >= 10"&gt;レベル10以上のプレイヤーのみに表示されるメッセージです。&lt;/text&gt;
+
+&lt;text if="hasItem('key')"&gt;鍵を持っている場合のメッセージです。&lt;/text&gt;
+
+&lt;text if="gameMode === 'hard'"&gt;ハードモード専用のヒントです。&lt;/text&gt;</pre>
+                </div>
+            </div>
+
+            <div class="usage-notes">
+                <h4>使用上の注意</h4>
+                <ul>
+                    <li>マークアップタグは適切に閉じてください（&lt;b&gt;...&lt;/b&gt;）</li>
+                    <li>マークアップタグはネストすることができます</li>
+                    <li>{{variable}}形式でJavaScript変数を展開できます</li>
+                    <li>speedが小さいほど文字表示が速くなります</li>
+                    <li>colorタグのvalue属性には色名（red, blue）やHEXコード（#ff0000）が使用できます</li>
+                    <li>&lt;br&gt;タグは改行と同時にクリック待ちが発生します（&lt;wait /&gt;のエイリアス）</li>
+                    <li>waitタグのnw属性を指定すると、待機をスキップできます</li>
+                    <li>HTTPリクエスト機能を使用すると、API連携やAI統合が可能になります</li>
+                    <li>HTTPレスポンスの結果は、sceneFile.resに格納されます</li>
+                    <li><strong>if属性：</strong>条件がtrueの場合のみテキストが表示されます（例: if="playerLevel >= 5"）</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="say" class="tag-section">
+            <div class="tag-name">&lt;say&gt;</div>
+            <div class="tag-description">
+                キャラクターの台詞を表示します。キャラクター名と音声ファイルを指定できます。
+            </div>
+            
+            <div class="attributes">
+                <h4>属性</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">name</div>
+                        <div class="attr-type">string (必須)</div>
+                        <div>話者の名前</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">voice</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>音声ファイルのパス</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">speed</div>
+                        <div class="attr-type">number (省略可)</div>
+                        <div>テキストの表示速度。デフォルト: 25</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>使用例</h4>
+                <div class="code-block">
+                    <pre>&lt;say name="主人公"&gt;こんにちは！&lt;/say&gt;
+
+&lt;say name="ヒロイン" voice="./voice/heroine_01.wav"&gt;
+  お疲れ様でした。
+&lt;/say&gt;
+
+&lt;say name="{{characterName}}" speed="50"&gt;
+  変数も使用できます。
+&lt;/say&gt;
+
+&lt;!-- ifグローバル属性の使用例 --&gt;
+&lt;say name="店主" if="playerMoney >= 100"&gt;
+  いらっしゃいませ！何かお買い物ですか？
+&lt;/say&gt;
+
+&lt;say name="警備員" if="hasPermission === false"&gt;
+  ここから先は立ち入り禁止です。
+&lt;/say&gt;</pre>
+                </div>
+            </div>
+
+            <div class="usage-notes">
+                <h4>使用上の注意</h4>
+                <ul>
+                    <li>nameは必須属性です</li>
+                    <li>voiceで指定した音声ファイルは台詞と同時に再生されます</li>
+                    <li>textタグと同様にマークアップタグが使用できます</li>
+                    <li><strong>if属性：</strong>条件がtrueの場合のみ台詞が表示されます（例: if="characterPresent"）</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="choice" class="tag-section">
+            <div class="tag-name">&lt;choice&gt;</div>
+            <div class="tag-description">
+                プレイヤーが選択できる選択肢を表示します。ストーリーの分岐に使用されます。
+            </div>
+            
+            <div class="attributes">
+                <h4>属性</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">prompt</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>選択肢の前に表示するプロンプトテキスト</div>
+                    </div>
+                </div>
+                <h4>子要素: &lt;item&gt;</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">label</div>
+                        <div class="attr-type">string (必須)</div>
+                        <div>選択肢に表示するテキスト</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">onSelect</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>選択時のイベント識別子</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>使用例</h4>
+                <div class="code-block">
+                    <pre>&lt;choice prompt="どちらを選びますか？"&gt;
+  &lt;item label="はい" onSelect="yes"&gt;
+    &lt;say name="主人公"&gt;はいを選びました。&lt;/say&gt;
+  &lt;/item&gt;
+  &lt;item label="いいえ" onSelect="no"&gt;
+    &lt;say name="主人公"&gt;いいえを選びました。&lt;/say&gt;
+  &lt;/item&gt;
+&lt;/choice&gt;
+
+&lt;choice&gt;
+  &lt;item label="次のシーンへ"&gt;
+    &lt;route to="next_scene" /&gt;
+  &lt;/item&gt;
+&lt;/choice&gt;
+
+&lt;!-- ifグローバル属性の使用例 --&gt;
+&lt;choice prompt="何をしますか？" if="canMakeChoice"&gt;
+  &lt;item label="戦う"&gt;
+    &lt;text&gt;戦闘を開始します。&lt;/text&gt;
+  &lt;/item&gt;
+  &lt;item label="逃げる"&gt;
+    &lt;text&gt;逃走します。&lt;/text&gt;
+  &lt;/item&gt;
+&lt;/choice&gt;</pre>
+                </div>
+            </div>
+
+            <div class="usage-notes">
+                <h4>使用上の注意</h4>
+                <ul>
+                    <li>各itemには任意のタグを含めることができます</li>
+                    <li>選択後は自動的に選択肢が非表示になります</li>
+                    <li>promptが空文字列の場合、プロンプトは表示されません</li>
+                    <li><strong>if属性：</strong>条件がtrueの場合のみ選択肢が表示されます（例: if="allowChoices"）</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="show" class="tag-section">
+            <div class="tag-name">&lt;show&gt;</div>
+            <div class="tag-description">
+                画像（背景、キャラクター、エフェクトなど）を画面に表示します。
+            </div>
+            
+            <div class="attributes">
+                <h4>属性</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">src</div>
+                        <div class="attr-type">string (必須)</div>
+                        <div>画像ファイルのパス</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">name</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>画像の識別名</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">mode</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>表示モード: bg, chara, cutin, cg, effect</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">pos</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>位置指定: left/center/right:top/middle/bottom</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">x, y</div>
+                        <div class="attr-type">number (省略可)</div>
+                        <div>詳細な座標指定（ピクセル）</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">width, height</div>
+                        <div class="attr-type">number (省略可)</div>
+                        <div>画像のサイズ（ピクセル）</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">transition</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>表示エフェクト: fade</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">duration</div>
+                        <div class="attr-type">number (省略可)</div>
+                        <div>エフェクトの時間（ミリ秒）</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">opacity</div>
+                        <div class="attr-type">number (省略可)</div>
+                        <div>透明度（0.0-1.0）</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">sepia</div>
+                        <div class="attr-type">number (省略可)</div>
+                        <div>セピア効果の強度</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">mono</div>
+                        <div class="attr-type">boolean (省略可)</div>
+                        <div>モノクロ効果</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">blur</div>
+                        <div class="attr-type">number (省略可)</div>
+                        <div>ぼかし効果の強度</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">look</div>
+                        <div class="attr-type">boolean (省略可)</div>
+                        <div>画像を左右反転して表示</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">entry</div>
+                        <div class="attr-type">object (省略可)</div>
+                        <div>表示開始の遅延設定 {time: 秒数, wait: boolean}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>使用例</h4>
+                <div class="code-block">
+                    <pre>&lt;!-- 背景画像の表示 --&gt;
+&lt;show src="./resource/background/forest.jpg" mode="bg" /&gt;
+
+&lt;!-- キャラクターの表示 --&gt;
+&lt;show src="./resource/chara/hero.png" name="主人公" pos="left:middle" /&gt;
+
+&lt;!-- フェードイン効果付きで表示 --&gt;
+&lt;show src="./resource/chara/heroine.png" name="ヒロイン" pos="right:middle" 
+      transition="fade" duration="2000" /&gt;
+
+&lt;!-- エフェクト適用 --&gt;
+&lt;show src="./resource/effect/sparkle.png" name="キラキラ" 
+      opacity="0.7" sepia="0.3" /&gt;
+
+&lt;!-- 座標指定 --&gt;
+&lt;show src="./resource/item/sword.png" name="剣" x="100" y="200" /&gt;
+
+&lt;!-- 左右反転表示 --&gt;
+&lt;show src="./resource/chara/hero.png" name="主人公" pos="left:middle" look="true" /&gt;
+
+&lt;!-- 遅延表示 --&gt;
+&lt;show src="./resource/chara/surprise.png" name="驚き" pos="center:middle" 
+      entry="{time: 2, wait: true}" /&gt;
+
+&lt;!-- ifグローバル属性の使用例 --&gt;
+&lt;show src="./resource/chara/angry.png" name="主人公" pos="left:middle" 
+      if="playerEmotion === 'angry'" /&gt;
+
+&lt;show src="./resource/item/treasure.png" name="宝箱" pos="center:middle" 
+      if="foundTreasure" /&gt;</pre>
+                </div>
+            </div>
+
+            <div class="usage-notes">
+                <h4>使用上の注意</h4>
+                <ul>
+                    <li>mode="cutin"の場合、pos="center:middle"が強制されます</li>
+                    <li>mode="cg"の場合、画面全体に表示され他の画像は一時的に隠されます</li>
+                    <li>nameを指定することで、後からhideやmovetoで操作できます</li>
+                    <li>posとx,yの両方を指定した場合、x,yが優先されます</li>
+                    <li>lookをtrueにすると画像が左右反転されます（キャラの向きを変える時に便利）</li>
+                    <li>entryで表示開始を遅延できます（演出効果に有効）</li>
+                    <li><strong>if属性：</strong>条件がtrueの場合のみ画像が表示されます（例: if="showCharacter"）</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="hide" class="tag-section">
+            <div class="tag-name">&lt;hide&gt;</div>
+            <div class="tag-description">
+                showで表示した画像を非表示にします。
+            </div>
+            
+            <div class="attributes">
+                <h4>属性</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">name</div>
+                        <div class="attr-type">string (必須)</div>
+                        <div>非表示にする画像の識別名</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">mode</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>非表示モード: cg（CGモードの終了）</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">transition</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>非表示エフェクト: fade</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">duration</div>
+                        <div class="attr-type">number (省略可)</div>
+                        <div>エフェクトの時間（ミリ秒）</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>使用例</h4>
+                <div class="code-block">
+                    <pre>&lt;!-- 即座に非表示 --&gt;
+&lt;hide name="主人公" /&gt;
+
+&lt;!-- フェードアウト効果 --&gt;
+&lt;hide name="ヒロイン" transition="fade" duration="1500" /&gt;
+
+&lt;!-- CGモードの終了 --&gt;
+&lt;hide mode="cg" /&gt;</pre>
+                </div>
+            </div>
+
+            <div class="usage-notes">
+                <h4>使用上の注意</h4>
+                <ul>
+                    <li>nameで指定する識別名は、showで指定したものと一致する必要があります</li>
+                    <li>mode="cg"の場合、nameは不要で、CGモードが終了され元の画像が復元されます</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="sound" class="tag-section">
+            <div class="tag-name">&lt;sound&gt;</div>
+            <div class="tag-description">
+                BGMや効果音の再生・停止・一時停止を制御します。
+            </div>
+            
+            <div class="attributes">
+                <h4>属性</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">src</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>音声ファイルのパス</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">name</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>音声の識別名</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">mode</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>音声モード: bgm, se</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">play</div>
+                        <div class="attr-type">boolean (省略可)</div>
+                        <div>再生開始</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">stop</div>
+                        <div class="attr-type">boolean (省略可)</div>
+                        <div>再生停止</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">pause</div>
+                        <div class="attr-type">boolean (省略可)</div>
+                        <div>再生一時停止</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">loop</div>
+                        <div class="attr-type">boolean (省略可)</div>
+                        <div>ループ再生</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>使用例</h4>
+                <div class="code-block">
+                    <pre>&lt;!-- BGMの再生 --&gt;
+&lt;sound src="./resource/bgm/peaceful.mp3" mode="bgm" play loop /&gt;
+
+&lt;!-- 効果音の再生 --&gt;
+&lt;sound src="./resource/se/door.wav" play /&gt;
+
+&lt;!-- BGMの停止 --&gt;
+&lt;sound mode="bgm" stop /&gt;
+
+&lt;!-- 特定の音声の一時停止 --&gt;
+&lt;sound name="環境音" pause /&gt;</pre>
+                </div>
+            </div>
+
+            <div class="usage-notes">
+                <h4>使用上の注意</h4>
+                <ul>
+                    <li>mode="bgm"の場合、以前のBGMは自動的に停止されます</li>
+                    <li>loopを指定すると、音声が無限にループ再生されます</li>
+                    <li>play, stop, pauseは排他的に使用してください</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="jump" class="tag-section">
+            <div class="tag-name">&lt;jump&gt;</div>
+            <div class="tag-description">
+                シナリオ内の指定した行番号にジャンプします。
+            </div>
+            
+            <div class="attributes">
+                <h4>属性</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">index</div>
+                        <div class="attr-type">number (必須)</div>
+                        <div>ジャンプ先の行番号（0から開始）</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>使用例</h4>
+                <div class="code-block">
+                    <pre>&lt;!-- 10行目にジャンプ --&gt;
+&lt;jump index="10" /&gt;
+
+&lt;!-- 選択肢での使用例 --&gt;
+&lt;choice prompt="もう一度見ますか？"&gt;
+  &lt;item label="はい"&gt;
+    &lt;jump index="5" /&gt;
+  &lt;/item&gt;
+  &lt;item label="いいえ"&gt;
+    &lt;text&gt;終了します。&lt;/text&gt;
+  &lt;/item&gt;
+&lt;/choice&gt;</pre>
+                </div>
+            </div>
+
+            <div class="usage-notes">
+                <h4>使用上の注意</h4>
+                <ul>
+                    <li>行番号は0から開始します</li>
+                    <li>存在しない行番号を指定するとエラーになります</li>
+                    <li>後方にジャンプした場合、間の行は再実行されません</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="route" class="tag-section">
+            <div class="tag-name">&lt;route&gt;</div>
+            <div class="tag-description">
+                別のシーンファイルに遷移します。
+            </div>
+            
+            <div class="attributes">
+                <h4>属性</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">to</div>
+                        <div class="attr-type">string (必須)</div>
+                        <div>遷移先のシーンファイル名</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>使用例</h4>
+                <div class="code-block">
+                    <pre>&lt;!-- タイトルシーンに遷移 --&gt;
+&lt;route to="title" /&gt;
+
+&lt;!-- 次のシーンに遷移 --&gt;
+&lt;route to="chapter2" /&gt;
+
+&lt;!-- 選択肢での使用例 --&gt;
+&lt;choice&gt;
+  &lt;item label="タイトルに戻る"&gt;
+    &lt;route to="title" /&gt;
+  &lt;/item&gt;
+&lt;/choice&gt;</pre>
+                </div>
+            </div>
+
+            <div class="usage-notes">
+                <h4>使用上の注意</h4>
+                <ul>
+                    <li>遷移前に現在のシーンのcleanUp関数が呼ばれます</li>
+                    <li>BGMは自動的に停止され、新しいシーンのBGMが再生されます</li>
+                    <li>画面は新しいシーンの設定でリセットされます</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="if" class="tag-section">
+            <div class="tag-name">&lt;if&gt;</div>
+            <div class="tag-description">
+                条件に基づいてシナリオを分岐します。JavaScript式を条件として使用できます。
+            </div>
+            
+            <div class="attributes">
+                <h4>属性</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">condition</div>
+                        <div class="attr-type">string (必須)</div>
+                        <div>評価するJavaScript式</div>
+                    </div>
+                </div>
+                <h4>子要素</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">&lt;then&gt;</div>
+                        <div class="attr-type">element</div>
+                        <div>条件がtrueの場合に実行される内容</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">&lt;else&gt;</div>
+                        <div class="attr-type">element (省略可)</div>
+                        <div>条件がfalseの場合に実行される内容</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>使用例</h4>
+                <div class="code-block">
+                    <pre>&lt;if condition="playerScore >= 80"&gt;
+  &lt;then&gt;
+    &lt;say name="先生"&gt;素晴らしい成績ですね！&lt;/say&gt;
+  &lt;/then&gt;
+  &lt;else&gt;
+    &lt;say name="先生"&gt;もう少し頑張りましょう。&lt;/say&gt;
+  &lt;/else&gt;
+&lt;/if&gt;
+
+&lt;if condition="hasKey === true"&gt;
+  &lt;then&gt;
+    &lt;text&gt;扉を開けることができます。&lt;/text&gt;
+    &lt;route to="inside_room" /&gt;
+  &lt;/then&gt;
+  &lt;else&gt;
+    &lt;text&gt;鍵が必要です。&lt;/text&gt;
+  &lt;/else&gt;
+&lt;/if&gt;</pre>
+                </div>
+            </div>
+
+            <div class="usage-notes">
+                <h4>使用上の注意</h4>
+                <ul>
+                    <li>conditionには任意のJavaScript式を記述できます</li>
+                    <li>シーンのscript部分で定義した変数や関数を参照できます</li>
+                    <li>elseは省略可能です</li>
+                    <li>ifは入れ子にすることができます</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="call" class="tag-section">
+            <div class="tag-name">&lt;call&gt;</div>
+            <div class="tag-description">
+                JavaScript関数を実行します。ゲームの状態変更や複雑な処理に使用されます。
+            </div>
+            
+            <div class="attributes">
+                <h4>属性</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">method</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>実行するJavaScriptコード</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">func</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>実行する関数呼び出し（methodの別名）</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>使用例</h4>
+                <div class="code-block">
+                    <pre>&lt;!-- 変数の設定 --&gt;
+&lt;call method="playerScore = 100" /&gt;
+
+&lt;!-- 関数の呼び出し --&gt;
+&lt;call func="saveGame()" /&gt;
+
+&lt;!-- 複雑な処理 --&gt;
+&lt;call method="
+  if (inventory.includes('key')) {
+    hasKey = true;
+    removeItem('key');
+  }
+" /&gt;</pre>
+                </div>
+            </div>
+
+            <div class="usage-notes">
+                <h4>使用上の注意</h4>
+                <ul>
+                    <li>methodとfuncは同じ機能です（互換性のため両方サポート）</li>
+                    <li>シーンのscript部分で定義した変数や関数にアクセスできます</li>
+                    <li>エラーが発生した場合はコンソールに出力されます</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="moveto" class="tag-section">
+            <div class="tag-name">&lt;moveto&gt;</div>
+            <div class="tag-description">
+                表示中の画像を指定した位置に移動します。アニメーション効果付きです。
+            </div>
+            
+            <div class="attributes">
+                <h4>属性</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">name</div>
+                        <div class="attr-type">string (必須)</div>
+                        <div>移動させる画像の識別名</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">x</div>
+                        <div class="attr-type">number (必須)</div>
+                        <div>移動先のX座標</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">y</div>
+                        <div class="attr-type">number (必須)</div>
+                        <div>移動先のY座標</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">duration</div>
+                        <div class="attr-type">number (省略可)</div>
+                        <div>移動にかかる時間（秒）。デフォルト: 1</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>使用例</h4>
+                <div class="code-block">
+                    <pre>&lt;!-- 画像を表示 --&gt;
+&lt;show src="./resource/chara/hero.png" name="主人公" pos="left:middle" /&gt;
+
+&lt;!-- 中央に移動（2秒かけて） --&gt;
+&lt;moveto name="主人公" x="400" y="300" duration="2" /&gt;
+
+&lt;!-- 素早く移動 --&gt;
+&lt;moveto name="主人公" x="100" y="100" duration="0.5" /&gt;</pre>
+                </div>
+            </div>
+
+            <div class="usage-notes">
+                <h4>使用上の注意</h4>
+                <ul>
+                    <li>移動対象の画像は事前にshowで表示されている必要があります</li>
+                    <li>移動中は他のコマンドも並行して実行されます</li>
+                    <li>存在しないnameを指定してもエラーにはなりません</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="wait" class="tag-section">
+            <div class="tag-name">&lt;wait&gt;</div>
+            <div class="tag-description">
+                指定した時間だけ待機します。またはクリック待ちを行います。
+            </div>
+            
+            <div class="attributes">
+                <h4>属性</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">time</div>
+                        <div class="attr-type">number (省略可)</div>
+                        <div>待機時間（ミリ秒）</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">wait</div>
+                        <div class="attr-type">number (省略可)</div>
+                        <div>待機時間（timeの別名）</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>使用例</h4>
+                <div class="code-block">
+                    <pre>&lt;!-- 2秒待機 --&gt;
+&lt;wait time="2000" /&gt;
+
+&lt;!-- クリック待ち --&gt;
+&lt;wait /&gt;
+
+&lt;!-- テキスト内での使用 --&gt;
+&lt;text&gt;
+  こんにちは。&lt;wait time="1000" /&gt;お元気ですか？
+&lt;/text&gt;</pre>
+                </div>
+            </div>
+
+            <div class="usage-notes">
+                <h4>使用上の注意</h4>
+                <ul>
+                    <li>timeまたはwaitを省略した場合、クリック待ちになります</li>
+                    <li>timeとwaitは同じ機能です</li>
+                    <li>テキスト内のwaitタグはnw属性で無待機にできます</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="dialog" class="tag-section">
+            <div class="tag-name">&lt;dialog&gt;</div>
+            <div class="tag-description">
+                モーダルダイアログを表示します。ユーザーとのインタラクションやメニュー、確認画面の表示に使用されます。
+            </div>
+            
+            <div class="attributes">
+                <h4>属性</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">id</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>ダイアログの識別ID</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">template</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>カスタムテンプレートファイルのパス</div>
+                    </div>
+                </div>
+                <h4>子要素</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">&lt;prompt&gt;</div>
+                        <div class="attr-type">element (必須)</div>
+                        <div>ダイアログに表示するメッセージ（文字列またはテキスト要素）</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">&lt;actions&gt;</div>
+                        <div class="attr-type">element (必須)</div>
+                        <div>ダイアログのアクション群（action要素を含む）</div>
+                    </div>
+                </div>
+                <h4>&lt;action&gt;要素の属性</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">id</div>
+                        <div class="attr-type">string (必須)</div>
+                        <div>アクションの識別ID</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">label</div>
+                        <div class="attr-type">string (必須)</div>
+                        <div>ボタンに表示するラベル</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">value</div>
+                        <div class="attr-type">string (省略可)</div>
+                        <div>アクションの値</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>使用例</h4>
+                <div class="code-block">
+                    <pre>&lt;!-- 基本的なダイアログ --&gt;
+&lt;dialog id="confirm"&gt;
+  &lt;prompt&gt;本当に削除しますか？&lt;/prompt&gt;
+  &lt;actions&gt;
+    &lt;action id="yes" label="はい" value="delete"&gt;
+      &lt;call method="deleteData()" /&gt;
+      &lt;text&gt;削除しました。&lt;/text&gt;
+    &lt;/action&gt;
+    &lt;action id="no" label="いいえ" value="cancel"&gt;
+      &lt;text&gt;キャンセルしました。&lt;/text&gt;
+    &lt;/action&gt;
+  &lt;/actions&gt;
+&lt;/dialog&gt;
+
+&lt;!-- 選択肢ダイアログ --&gt;
+&lt;dialog id="choice"&gt;
+  &lt;prompt&gt;どの色が好きですか？&lt;/prompt&gt;
+  &lt;actions&gt;
+    &lt;action id="red" label="赤" value="red"&gt;
+      &lt;text&gt;赤は情熱的な色ですね。&lt;/text&gt;
+    &lt;/action&gt;
+    &lt;action id="blue" label="青" value="blue"&gt;
+      &lt;text&gt;青は落ち着いた色です。&lt;/text&gt;
+    &lt;/action&gt;
+    &lt;action id="green" label="緑" value="green"&gt;
+      &lt;text&gt;緑は自然を感じさせます。&lt;/text&gt;
+    &lt;/action&gt;
+  &lt;/actions&gt;
+&lt;/dialog&gt;
+
+&lt;!-- カスタムテンプレート使用 --&gt;
+&lt;dialog id="custom" template="./src/screen/custom.html"&gt;
+  &lt;prompt&gt;カスタムダイアログです&lt;/prompt&gt;
+  &lt;actions&gt;
+    &lt;action id="ok" label="OK"&gt;
+      &lt;text&gt;カスタムダイアログを閉じます。&lt;/text&gt;
+    &lt;/action&gt;
+  &lt;/actions&gt;
+&lt;/dialog&gt;
+
+&lt;!-- ネストしたダイアログ --&gt;
+&lt;dialog id="main"&gt;
+  &lt;prompt&gt;メニューを選択してください&lt;/prompt&gt;
+  &lt;actions&gt;
+    &lt;action id="settings" label="設定"&gt;
+      &lt;dialog id="settings"&gt;
+        &lt;prompt&gt;設定項目を選択してください&lt;/prompt&gt;
+        &lt;actions&gt;
+          &lt;action id="sound" label="音量設定"&gt;
+            &lt;text&gt;音量設定画面を開きます。&lt;/text&gt;
+          &lt;/action&gt;
+          &lt;action id="display" label="表示設定"&gt;
+            &lt;text&gt;表示設定画面を開きます。&lt;/text&gt;
+          &lt;/action&gt;
+        &lt;/actions&gt;
+      &lt;/dialog&gt;
+    &lt;/action&gt;
+  &lt;/actions&gt;
+&lt;/dialog&gt;</pre>
+                </div>
+            </div>
+
+            <div class="usage-notes">
+                <h4>使用上の注意</h4>
+                <ul>
+                    <li>ダイアログは画面の中央にモーダル表示されます</li>
+                    <li>actionsの各actionには必ずidとlabelを指定してください</li>
+                    <li>ダイアログが表示されている間、背景の操作はできません</li>
+                    <li>promptには文字列またはtext要素を指定できます</li>
+                    <li>templateを指定すると、カスタムデザインのダイアログが使用できます</li>
+                    <li>ダイアログ内でさらにダイアログを開くことができます（ネスト可能）</li>
+                    <li>アクション選択後は自動的にダイアログが閉じられます</li>
+                    <li>選択されたアクションのIDは戻り値として取得できます</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="newpage" class="tag-section">
+            <div class="tag-name">&lt;newpage&gt;</div>
+            <div class="tag-description">
+                画面をクリアして新しいページを開始します。背景画像のみが残ります。
+            </div>
+            
+            <div class="examples">
+                <h4>使用例</h4>
+                <div class="code-block">
+                    <pre>&lt;!-- ページをクリア --&gt;
+&lt;newpage /&gt;
+
+&lt;!-- 新しい場面の開始 --&gt;
+&lt;text&gt;場面が変わりました。&lt;/text&gt;</pre>
+                </div>
+            </div>
+
+            <div class="usage-notes">
+                <h4>使用上の注意</h4>
+                <ul>
+                    <li>すべてのキャラクターと効果が削除されます</li>
+                    <li>背景画像とテキスト表示領域はクリアされます</li>
+                    <li>新しい場面を開始する際に使用します</li>
+                </ul>
+            </div>
+        </section>
+
+            </main>
+        </div>
+    </div>
+
+    <a href="#top" class="back-to-top">↑ TOPへ</a>
+
+    <script>
+        // スムーススクロール
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // 戻るボタンの表示制御
+        window.addEventListener('scroll', function() {
+            const backToTop = document.querySelector('.back-to-top');
+            if (window.pageYOffset > 300) {
+                backToTop.style.display = 'block';
+            } else {
+                backToTop.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
