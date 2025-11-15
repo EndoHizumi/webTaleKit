@@ -1,5 +1,6 @@
 import { ImageObject } from '../resource/ImageObject'
 import { sleep } from '../utils/waitUtil'
+import { outputLog } from "../utils/logger"
 
 /*
  drawerの目的
@@ -195,12 +196,12 @@ export class Drawer {
   }
 
   async fadeIn(duration: number = 1000, img?: ImageObject, option?: object): Promise<void> {
-    ('Fade in', 'debug', duration)
+    outputLog('Fade in', 'debug', duration)
     return this.fade(0, 1, duration, img, option)
   }
 
   async fadeOut(duration: number = 1000, img?: ImageObject, option?: object): Promise<void> {
-    ('Fade out', 'debug', duration)
+   outputLog('Fade out', 'debug', duration)
     return this.fade(1, 0, duration, img, option)
   }
 
@@ -233,11 +234,11 @@ export class Drawer {
           this.fadeCtx.fillRect(0, 0, this.fadeCanvas.width, this.fadeCanvas.height)
         }
 
-        ('Fade animation', 'debug', { progress, alpha: currentAlpha })
+        outputLog('Fade animation', 'debug', { progress, alpha: currentAlpha })
         if (progress < 1) {
           requestAnimationFrame(animate)
         } else {
-          ('Fade animation complete', 'debug')
+          outputLog('Fade animation complete', 'debug')
           this.clear(this.fadeCtx)
           resolve()
         }
@@ -308,7 +309,7 @@ export class Drawer {
   }
 
   drawCanvas(img: ImageObject, pos: any, size: any, reverse: any, ctx?: CanvasRenderingContext2D) {
-    ('drawCanvas', 'debug', { img, pos, size, reverse })
+    outputLog('drawCanvas', 'debug', { img, pos, size, reverse })
     if (ctx === undefined) {
       ctx = this.ctx
     }
