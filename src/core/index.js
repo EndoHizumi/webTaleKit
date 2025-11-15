@@ -124,7 +124,6 @@ export class Core {
       const response = await fetch(url, { method: 'HEAD' })
       return response.ok
     } catch (error) {
-      outputLog(`Resource check failed: ${url}`, 'error', error)
       return false
     }
   }
@@ -136,7 +135,6 @@ export class Core {
       skipBackground = false, // 背景画像の読み込みをスキップ
     } = options
 
-    outputLog('call', 'debug', { sceneConfig, options })
     // 画面名を設定する。
     this.scenarioManager.progress.currentScene = sceneConfig.name
     this.scenarioManager.setSceneName(sceneConfig.name)
@@ -151,7 +149,7 @@ export class Core {
     // 読み込んだhtmlからIDにmainを持つdivタグとStyleタグ以下を取り出して、gameContainerに表示する
     let parser = new DOMParser()
     let doc = parser.parseFromString(htmlString, 'text/html')
-    outputLog('doc', 'debug', doc)
+
     let mainDiv = isDialog ? doc.getElementById('dialogContainer') : doc.getElementById('main')
 
     if (!mainDiv) {
@@ -188,7 +186,6 @@ export class Core {
     const styleElement = doc.head.getElementsByTagName('style')[0]
     document.head.appendChild(styleElement)
 
-
     if (!skipBackground) {
       console.info(`background: ${await this.checkResourceExists(sceneConfig.background)}`)
       // 背景画像の存在確認
@@ -217,27 +214,26 @@ export class Core {
     // シナリオオブジェクトのtypeプロパティに応じて、対応する関数を実行する
     const commandType = scenarioObject.type || 'text'
     const commandFunction = this.commandList[commandType]
-    
+
     // コマンドが存在しない場合のエラーハンドリング
     if (!commandFunction) {
-      const errorMessage = `Error: Command type "${commandType}" is not defined`;
-      throw new Error(errorMessage);
+      const errorMessage = `Error: Command type "${commandType}" is not defined`
+      throw new Error(errorMessage)
     }
-    
+
     const boundFunction = commandFunction.bind(this)
     scenarioObject = await this.httpHandler(scenarioObject)
-    
+
     // ifグローバル属性の処理
     if (scenarioObject.if !== undefined) {
       const condition = this.executeCode(`return ${scenarioObject.if}`)
-      outputLog(`if condition: ${scenarioObject.if} => ${condition}`, 'debug')
+
       // 条件がfalseの場合、このタグの処理をスキップ
       if (!condition) {
-        outputLog('Skipping tag due to false if condition', 'debug')
         return
       }
     }
-    
+
     await boundFunction(scenarioObject)
   }
 
@@ -478,7 +474,7 @@ export class Core {
     // ファイルの存在確認
     if (!(await this.checkResourceExists(line.src))) {
       console.error(`Image file not found: ${line.src}`)
-      outputLog(`Image file not found: ${line.src}`, 'error')
+
       // エラーメッセージを表示
       await this.textHandler(`エラー: 画像ファイルが見つかりません: ${line.src}`)
       // 空の画像オブジェクトを返す
@@ -497,17 +493,16 @@ export class Core {
   }
 
   async soundHandler(line) {
-    outputLog('soundHandler', 'debug', line)
     const soundObject = await this.getSoundObject(line)
 
     if (line.mode === 'bgm') {
       // BGMの場合、既存のBGMを停止して、新しいBGMをセットする
-      if( this.bgm && this.bgm.isPlaying) {
+      if (this.bgm && this.bgm.isPlaying) {
         this.bgm.stop()
       }
       this.bgm = soundObject
       this.bgm.play(true)
-    }else {
+    } else {
       if ('play' in line) {
         'loop' in line ? soundObject.play(true) : soundObject.play()
       } else if ('stop' in line) {
@@ -525,14 +520,13 @@ export class Core {
   }
 
   async getSoundObject(line) {
-    outputLog('getSoundObject', 'debug', line)
     const name = line.name || line.src.split('/').pop()
     let resource
 
     // ファイルの存在確認
     if (!(await this.checkResourceExists(line.src))) {
       console.error(`Sound file not found: ${line.src}`)
-      outputLog(`Sound file not found: ${line.src}`, 'error')
+
       // エラーメッセージを表示
       await this.textHandler(`エラー: 音声ファイルが見つかりません: ${line.src}`)
       // 空のサウンドオブジェクトを返す
@@ -541,12 +535,10 @@ export class Core {
 
     // 既にインスタンスがある場合は、それを使う
     if (Object.hasOwn(this.usedSounds, name)) {
-      outputLog(`getSoundObject:usedSounds ${name} exists`, 'debug', this.usedSounds)
       const targetResource = this.usedSounds[name]
       const soundObject = targetResource ? targetResource.audio : new SoundObject()
       resource = await soundObject.setAudioAsync(line.src)
     } else {
-      outputLog(`new SoundObject ${name}`, 'debug')
       resource = await new SoundObject().setAudioAsync(line.src)
     }
     return resource
@@ -590,7 +582,7 @@ export class Core {
     await this.loadScene(line.to)
     // 画面を表示する
     await this.loadScreen(this.sceneConfig)
-     // BGMを再生する
+    // BGMを再生する
     this.soundHandler({
       mode: 'bgm',
       src: this.sceneConfig.bgm,
@@ -663,7 +655,6 @@ export class Core {
   }
 
   async dialogHandler(scenarioObject) {
-    outputLog('call', 'debug', scenarioObject)
     let result = null
     if (!scenarioObject || !scenarioObject.content) {
       throw new Error('Invalid scenario object for dialog handler.')
@@ -679,8 +670,8 @@ export class Core {
       isDialog: true,
       skipBackground: true,
       skipBgm: true,
-      fallbackTemplate: getDefaultDialogTemplate
-    });
+      fallbackTemplate: getDefaultDialogTemplate,
+    })
     // ダイアログ用のコンテナを取得
     const dialogContainer = document.querySelector('#dialogContainer')
     if (!dialogContainer) {
@@ -690,7 +681,7 @@ export class Core {
       if (content.type === 'prompt') {
         let prompt = content
         // プロンプトの内容を設定
-        outputLog('dialogHandler:content', 'debug', prompt)
+
         // ムスタッシュ構文があるときは、変数の展開
         const promptElement = dialogContainer.querySelector('.dialog-prompt')
         if (promptElement) {
@@ -699,15 +690,14 @@ export class Core {
       } else if (content.type === 'actions') {
         // ボタンの追加
         let actions = content.content
-        outputLog('dialogHandler:actions', 'debug', actions)
+
         const buttonContainer = dialogContainer.querySelector('.dialog-buttons')
         actions.forEach((action) => {
-          outputLog('dialogHandler:action', 'debug', action)
           // ムスタッシュ構文があるときは、変数の展開
           action.label = this.expandVariable(action.label)
           // テンプレートのボタン取得
           let button = buttonContainer.querySelector(`#dialog-button-${action.id}`)
-          outputLog('dialogHandler:button', 'debug', button || 'not found')
+
           if (!button) {
             // 無い場合は、新しいボタンを作成
             button = document.createElement('button')
@@ -721,7 +711,7 @@ export class Core {
             // 選択されたアクションを処理
             this.scenarioManager.addScenario(action.content)
             result = action.id // 選択されたアクションのIDを保存
-            outputLog('dialogHandler:result', 'debug', result)
+
             // ダイアログを閉じる
             dialogContainer.close()
           })
@@ -735,7 +725,6 @@ export class Core {
         resolve(result)
       })
     })
-
   }
 
   setBackground(image) {
@@ -837,7 +826,6 @@ export class Core {
   }
 
   async saveHandler(line) {
-    outputLog('call', 'debug', line)
     const slot = line.slot || 'auto'
     const name = line.name || `セーブ${slot}`
 
@@ -875,7 +863,6 @@ export class Core {
     }
 
     this.store.set(`save_${slot}`, saveData)
-    outputLog('Game saved', 'info', saveData)
 
     if (line.message !== false) {
       await this.textHandler(`ゲームをセーブしました: ${name}`)
@@ -883,13 +870,12 @@ export class Core {
   }
 
   async loadHandler(line) {
-    outputLog('loadHandler', 'debug', line)
     const slot = line.slot || 'auto'
 
     const saveDataRaw = this.store.get ? this.store.get(`save_${slot}`) : this.store[`save_${slot}`]
     if (!saveDataRaw) {
       const errorMsg = `セーブデータが見つかりません: スロット${slot}`
-      outputLog(errorMsg, 'error')
+
       if (line.message !== false) {
         await this.textHandler(errorMsg)
       }
@@ -947,13 +933,13 @@ export class Core {
       }
 
       this.drawer.show(this.displayedImages)
-      outputLog('Game loaded', 'info', saveData)
+
       if (line.message !== false) {
         await this.textHandler(`ゲームをロードしました: ${saveData.name}`)
       }
     } catch (error) {
       const errorMsg = `ロードに失敗しました: ${error.message}`
-      outputLog(errorMsg, 'error', error)
+
       if (line.message !== false) {
         await this.textHandler(errorMsg)
       }
@@ -961,10 +947,12 @@ export class Core {
   }
 
   getSaveData() {
-    const saveKeys = Object.keys(this.store).filter(key => key.startsWith('save_'))
-    return saveKeys.map(key => this.store[key]).sort((a, b) => {
-      return new Date(b.timestamp) - new Date(a.timestamp)
-    })
+    const saveKeys = Object.keys(this.store).filter((key) => key.startsWith('save_'))
+    return saveKeys
+      .map((key) => this.store[key])
+      .sort((a, b) => {
+        return new Date(b.timestamp) - new Date(a.timestamp)
+      })
   }
 
   setSaveData(data) {
@@ -977,6 +965,5 @@ export class Core {
 
   deleteSave(slot) {
     delete this.store[`save_${slot}`]
-    outputLog(`Save deleted: slot ${slot}`, 'info')
   }
 }

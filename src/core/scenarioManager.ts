@@ -1,5 +1,4 @@
 import { ImageObject } from "../resource/ImageObject"
-import { outputLog } from "../utils/logger"
 export class ScenarioManager {
   private backlist: any
   private saveDataList: any
@@ -22,7 +21,6 @@ export class ScenarioManager {
   }
 
   setScenario (scenario: any, sceneName: string=''): void {
-    outputLog('call','debug', {scenario, sceneName})
     this.scenarioData = scenario
     this.progress.currentScene = sceneName
     this.progress.currentIndex = 0
@@ -39,7 +37,6 @@ export class ScenarioManager {
       // 現在の位置に挿入する
       this.scenarioData.splice(this.progress.currentIndex, 0, ..._scenario)
     }
-    outputLog('call','debug', this.scenarioData)
   }
 
   getScenario (): any {
@@ -47,7 +44,6 @@ export class ScenarioManager {
   }
 
   next(): any {
-   outputLog('call: index:','debug', this.progress.currentIndex)
    if(this.progress.currentIndex <= this.scenarioData.length) {
      const nextScenario = this.scenarioData[this.progress.currentIndex] 
      this.progress.currentIndex += 1
@@ -66,7 +62,6 @@ export class ScenarioManager {
   }
 
   setIndex(index: number): void {
-    outputLog('call index:','debug', index)
     this.progress.currentIndex = index
   }
 
