@@ -2,8 +2,9 @@ export class SoundObject {
   // 表示済みの画像を管理するクラス
   private audio: any = null
   private ctx: AudioContext = new AudioContext()
-  public source: AudioBufferSourceNode | null = this.ctx.createBufferSource()
   private isPlaying: boolean = false
+  public source: AudioBufferSourceNode | null = this.ctx.createBufferSource()
+  public src: string = ''
 
   constructor() {
     this.ctx = new AudioContext()
@@ -40,6 +41,7 @@ export class SoundObject {
     if (!src || src.length == 0) {
       return this
     }
+    this.src = src
     const arrayBuffer = await (await fetch(src)).arrayBuffer()
     this.audio = await this.ctx.decodeAudioData(arrayBuffer)
     return this
@@ -71,7 +73,7 @@ export class SoundObject {
   }
 
   stop(): void {
-    if (this.source && this.isPlaying) {
+    if (this.source) {
       this.source.stop()
       this.source.disconnect()
       this.source = null

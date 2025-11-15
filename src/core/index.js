@@ -88,7 +88,12 @@ export class Core {
 
     await this.textHandler('タップでスタート')
     // BGMを再生する
-    this.bgm.play(true)
+    this.soundHandler({
+      mode: 'bgm',
+      src: this.sceneConfig.bgm,
+      loop: true,
+      play: true,
+    })
     // シナリオを実行する
     while (this.scenarioManager.hasNext()) {
       await this.runScenario()
@@ -125,11 +130,10 @@ export class Core {
       isDialog = false, // ダイアログモードかどうか
       fallbackTemplate = null, // フォールバック用テンプレート
       skipBackground = false, // 背景画像の読み込みをスキップ
-      skipBgm = false, // BGMの読み込みをスキップ
     } = options
 
     outputLog('call', 'debug', { sceneConfig, options })
-    // シナリオの進行状況を保存
+    // 画面名を設定する。
     this.scenarioManager.progress.currentScene = sceneConfig.name
     this.scenarioManager.setSceneName(sceneConfig.name)
     // sceneConfig.templateを読み込んで、HTMLを表示する
@@ -138,7 +142,7 @@ export class Core {
       console.error(`Template file not found: ${sceneConfig.template}`)
       throw new Error(`Template file not found: ${sceneConfig.template}`)
     }
-    
+
     const htmlString = await (await fetch(sceneConfig.template)).text()
     // 読み込んだhtmlからIDにmainを持つdivタグとStyleタグ以下を取り出して、gameContainerに表示する
     let parser = new DOMParser()
@@ -198,15 +202,6 @@ export class Core {
         }
       }
       this.drawer.show(this.displayedImages)
-    }
-
-    if (!skipBgm) {
-      // BGMの存在確認
-      if (!(await this.checkResourceExists(sceneConfig.bgm))) {
-        throw new Error(`BGM file not found: ${sceneConfig.bgm}`)
-      } else {
-        this.bgm = await new SoundObject().setAudioAsync(sceneConfig.bgm)
-      }
     }
   }
 
@@ -331,7 +326,7 @@ export class Core {
   async sayHandler(line) {
     outputLog('call', 'debug', line)
     // say(name:string, pattern: string, voice: {playの引数},  ...text)
-    if (line.voice) await this.soundHandler({ path: line.voice, play: undefined })
+    if (line.voice) await this.soundHandler({ path: line.voice, play: true })
     await this.textHandler({ content: line.content, name: line.name, speed: line.speed || 25 })
     this.scenarioManager.setHistory(line)
   }
@@ -514,26 +509,26 @@ export class Core {
   }
 
   async soundHandler(line) {
-    outputLog('call', 'debug', line)
-    let soundObject = null
+    outputLog('soundHandler', 'debug', line)
+    const soundObject = await this.getSoundObject(line)
+
     if (line.mode === 'bgm') {
-      if (this.bgm.isPlaying) {
+      // BGMの場合、既存のBGMを停止して、新しいBGMをセットする
+      if( this.bgm && this.bgm.isPlaying) {
         this.bgm.stop()
       }
-      soundObject = await this.getSoundObject(line)
       this.bgm = soundObject
-    } else {
-      // soundObjectを作成
-      soundObject = await this.getSoundObject(line)
-      // playプロパティが存在する場合は、再生する
+      this.bgm.play(true)
+    }else {
+      if ('play' in line) {
+        'loop' in line ? soundObject.play(true) : soundObject.play()
+      } else if ('stop' in line) {
+        soundObject.stop()
+      } else if ('pause' in line) {
+        soundObject.pause()
+      }
     }
-    if ('play' in line) {
-      'loop' in line ? soundObject.play(true) : soundObject.play()
-    } else if ('stop' in line) {
-      soundObject.stop()
-    } else if ('pause' in line) {
-      soundObject.pause()
-    }
+
     // soundObjectを管理オブジェクトに追加
     const key = line.name || line.src.split('/').pop()
     this.usedSounds[key] = {
@@ -542,7 +537,7 @@ export class Core {
   }
 
   async getSoundObject(line) {
-    outputLog('call', 'debug', line)
+    outputLog('getSoundObject', 'debug', line)
     const name = line.name || line.src.split('/').pop()
     let resource
 
@@ -556,11 +551,14 @@ export class Core {
       return new SoundObject()
     }
 
+    // 既にインスタンスがある場合は、それを使う
     if (Object.hasOwn(this.usedSounds, name)) {
+      outputLog(`getSoundObject:usedSounds ${name} exists`, 'debug', this.usedSounds)
       const targetResource = this.usedSounds[name]
       const soundObject = targetResource ? targetResource.audio : new SoundObject()
       resource = await soundObject.setAudioAsync(line.src)
     } else {
+      outputLog(`new SoundObject ${name}`, 'debug')
       resource = await new SoundObject().setAudioAsync(line.src)
     }
     return resource
@@ -593,8 +591,12 @@ export class Core {
   async routeHandler(line) {
     outputLog('call', 'debug', line)
     if (this.bgm.isPlaying) {
-      this.bgm.stop()
-      this.bgm = null
+      // BGMを停止する
+      this.soundHandler({
+        mode: 'bgm',
+        src: this.sceneConfig.bgm,
+        stop: true,
+      })
     }
     this.newpageHandler()
     if (this.sceneFile.cleanUp) {
@@ -605,8 +607,13 @@ export class Core {
     await this.loadScene(line.to)
     // 画面を表示する
     await this.loadScreen(this.sceneConfig)
-    // BGMを再生する
-    this.bgm.play(true)
+     // BGMを再生する
+    this.soundHandler({
+      mode: 'bgm',
+      src: this.sceneConfig.bgm,
+      loop: true,
+      play: true,
+    })
   }
 
   // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？
@@ -702,15 +709,15 @@ export class Core {
       throw new Error('Dialog container not found.')
     }
     scenarioObject.content.forEach((content) => {
-      if(content.type === 'prompt') {
+      if (content.type === 'prompt') {
         let prompt = content
         // プロンプトの内容を設定
-      outputLog('dialogHandler:content', 'debug', prompt)
-      // ムスタッシュ構文があるときは、変数の展開
-      const promptElement = dialogContainer.querySelector('.dialog-prompt')
-      if (promptElement) {
-        promptElement.innerHTML = prompt.content.map((text) => this.expandVariable(text)).join('\n')
-      }
+        outputLog('dialogHandler:content', 'debug', prompt)
+        // ムスタッシュ構文があるときは、変数の展開
+        const promptElement = dialogContainer.querySelector('.dialog-prompt')
+        if (promptElement) {
+          promptElement.innerHTML = prompt.content.map((text) => this.expandVariable(text)).join('\n')
+        }
       } else if (content.type === 'actions') {
         // ボタンの追加
         let actions = content.content
@@ -856,7 +863,7 @@ export class Core {
     outputLog('call', 'debug', line)
     const slot = line.slot || 'auto'
     const name = line.name || `セーブ${slot}`
-    
+
     const saveData = {
       slot: slot,
       name: name,
@@ -892,16 +899,16 @@ export class Core {
 
     this.store.set(`save_${slot}`, saveData)
     outputLog('Game saved', 'info', saveData)
-    
+
     if (line.message !== false) {
       await this.textHandler(`ゲームをセーブしました: ${name}`)
     }
   }
 
   async loadHandler(line) {
-    outputLog('call', 'debug', line)
+    outputLog('loadHandler', 'debug', line)
     const slot = line.slot || 'auto'
-    
+
     const saveDataRaw = this.store.get ? this.store.get(`save_${slot}`) : this.store[`save_${slot}`]
     if (!saveDataRaw) {
       const errorMsg = `セーブデータが見つかりません: スロット${slot}`
@@ -920,18 +927,18 @@ export class Core {
       if (!sceneName) {
         throw new Error('Scene name not found in save data')
       }
-      
+
       // シーンとプログレスを復元
       await this.loadScene(sceneName)
-      await this.loadScreen(saveData.sceneConfig, { skipBackground: true })
-      
-      // ScenarioManagerの状態を復元
+      await this.loadScreen(saveData.sceneConfig, { skipBackground: true, skipBgm: true })
+
+      // 読んだところまで復元
       this.scenarioManager.setSceneName(saveData.scenarioManager.sceneName)
       this.scenarioManager.setIndex(saveData.scenarioManager.currentIndex)
       this.scenarioManager.setHistory(saveData.scenarioManager.history || [])
       this.scenarioManager.progress = { ...this.scenarioManager.progress, ...saveData.scenarioManager.progress }
 
-      // 画像の復元
+      // 画面の復元
       this.displayedImages = {}
       if (saveData.backgroundImage) {
         const background = await new ImageObject().setImageAsync(saveData.backgroundImage)
@@ -959,16 +966,11 @@ export class Core {
 
       // BGMの復元
       if (saveData.bgmSrc) {
-        this.bgm = await new SoundObject().setAudioAsync(saveData.bgmSrc)
-        if (this.bgm && !this.bgm.isPlaying) {
-          this.bgm.play(true)
-        }
+        this.soundHandler({ mode: 'bgm', src: saveData.bgmSrc, loop: true, play: true })
       }
 
       this.drawer.show(this.displayedImages)
-
       outputLog('Game loaded', 'info', saveData)
-      
       if (line.message !== false) {
         await this.textHandler(`ゲームをロードしました: ${saveData.name}`)
       }
