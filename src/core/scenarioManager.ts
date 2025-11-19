@@ -29,7 +29,8 @@ export class ScenarioManager {
   addScenario (scenario: any, index: number): void {
     // 区別にsub=trueを追加
     const _scenario =  scenario.map((item: any) => ({ ...item, sub: true }))
-    ('call','debug', {scenario, index})
+    // この行を消すと動く
+    // ('call','debug', {scenario, index})
     // index指定がある場合はその値に挿入する
     if(index) {
       this.scenarioData.splice(index, 0, ..._scenario)
