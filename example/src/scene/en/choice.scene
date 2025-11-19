@@ -17,7 +17,7 @@
     <say name="Narrator">Choices can lead to different outcomes and story branches.</say>
     <choice>
       <item label="Return to Title" onSelect="title">
-        <route scene="title" />
+        <route to="title" />
       </item>
     </choice>
   </scenario>

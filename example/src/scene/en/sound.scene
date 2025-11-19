@@ -11,7 +11,7 @@
     <choice>
       <item label="Return to Title" onSelect="title">
         <sound src="nc366476_Virtual_Voyage.mp3" stop />
-        <route scene="title" />
+        <route to="title" />
       </item>
     </choice>
   </scenario>

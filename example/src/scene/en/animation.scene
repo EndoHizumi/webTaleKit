@@ -13,7 +13,7 @@
     <say name="Dancer">Animations can make your story more dynamic!</say>
     <choice>
       <item label="Return to Title" onSelect="title">
-        <route scene="title" />
+        <route to="title" />
       </item>
     </choice>
   </scenario>

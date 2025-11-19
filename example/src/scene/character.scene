@@ -9,9 +9,9 @@
     <say name="ガイド">このように、滑らかに動くこともできます。</say>
     <hide name="ゲスト" transition="fade" />
     <say name="ガイド">必要がなくなったキャラクターは非表示にすることもできますね。</say>
-    <choice>
+    <choice prompt="">
       <item label="タイトルに戻る" onSelect="title">
-        <route scene="title" />
+        <route to="title" />
       </item>
     </choice>
   </scenario>
