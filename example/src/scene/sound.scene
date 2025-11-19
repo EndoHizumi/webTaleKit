@@ -1,12 +1,15 @@
 <scene>
   <scenario>
     <say name="ナレーター">このシーンでは音声機能をデモンストレーションします。</say>
-    <sound mode="bgm" src="./src/resource/bgm/calm_music.wav" play loop />
+    <sound mode="bgm" src="./src/resource/bgm/calm_music.wav"/>
     <say name="ナレーター">今、バックグラウンドミュージックが流れ始めました。これはループ再生することができます。</say>
-    <sound mode="bgm" src="./src/resource/se/doorbell.mp3" play />
-    <say name="ナレーター">今のは効果音です。一度だけ、あるいは繰り返し再生することができます。</say>
-    <sound name="calm_music.mp3" stop />
-    <sound src="./src/resource/bgm/nc366476_Virtual_Voyage.mp3" play loop />
+    <sound mode="se" src="./src/resource/se/doorbell.mp3" play />
+    <say name="ナレーター">今のは効果音です。</say>
+    <sound mode="se" src="./src/resource/se/doorbell.mp3" play loop/>
+    <say name="ナレーター">今度は効果音を繰り返し再生しています。次に進むと、止まります。</say>
+    <sound name="doorbell.mp3" stop />
+    <say name="ナレーター">効果音を停止しました。</say>
+    <sound mode="bgm" src="./src/resource/bgm/nc366476_Virtual_Voyage.mp3" />
     <say name="ナレーター">このように、バックグラウンドミュージックをスムーズに切り替えることもできます。</say>
     <choice>
       <item label="タイトルに戻る" onSelect="title">
