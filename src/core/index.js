@@ -505,11 +505,13 @@ export class Core {
     } else {
       if ('play' in line) {
         'loop' in line ? soundObject.play(true) : soundObject.play()
-      } else if ('stop' in line) {
-        soundObject.stop()
-      } else if ('pause' in line) {
-        soundObject.pause()
       }
+    }
+
+    if ('stop' in line) {
+      soundObject.stop()
+    } else if ('pause' in line) {
+      soundObject.pause()
     }
 
     // soundObjectを管理オブジェクトに追加
@@ -524,13 +526,15 @@ export class Core {
     let resource
 
     // ファイルの存在確認
-    if (!(await this.checkResourceExists(line.src))) {
-      console.error(`Sound file not found: ${line.src}`)
-
-      // エラーメッセージを表示
-      await this.textHandler(`エラー: 音声ファイルが見つかりません: ${line.src}`)
-      // 空のサウンドオブジェクトを返す
-      return new SoundObject()
+    if(line.src){
+      if (!(await this.checkResourceExists(line.src))) {
+        console.error(`Sound file not found: ${line.src}`)
+  
+        // エラーメッセージを表示
+        await this.textHandler(`エラー: 音声ファイルが見つかりません: ${line.src}`)
+        // 空のサウンドオブジェクトを返す
+        return new SoundObject()
+      }
     }
 
     // 既にインスタンスがある場合は、それを使う
