@@ -23,7 +23,7 @@
     <show src="./src/resource/chara/scientist.png" name="Scientist" pos="center:bottom" />
     <choice>
       <item label="Return to Title" onSelect="title">
-        <route scene="title" />
+        <route to="title" />
       </item>
     </choice>
   </scenario>
