@@ -8,7 +8,7 @@
     <say name="Character">Characters can have names and portraits.</say>
     <choice>
       <item label="Return to Title" onSelect="title">
-        <route scene="title" />
+        <route to="title" />
       </item>
     </choice>
   </scenario>

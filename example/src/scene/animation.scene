@@ -13,7 +13,7 @@
     <say name="ダンサー">アニメーションを使えば、ストーリーをより動的に演出できます！</say>
     <choice>
       <item label="タイトルに戻る" onSelect="title">
-        <route scene="title" />
+        <route to="title" />
       </item>
     </choice>
   </scenario>
