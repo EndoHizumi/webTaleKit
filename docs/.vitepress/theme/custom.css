@@ -1,0 +1,21 @@
+/* ヒーローセクションのロゴを大きくする */
+.VPImage.image-src {
+  max-width: 500px !important;
+  max-height: 500px !important;
+}
+
+/* より大きな画面では更に大きく */
+@media (min-width: 960px) {
+  .VPImage.image-src {
+    max-width: 600px !important;
+    max-height: 600px !important;
+  }
+}
+
+/* 超大きな画面では最大サイズ */
+@media (min-width: 1440px) {
+  .VPImage.image-src {
+    max-width: 700px !important;
+    max-height: 700px !important;
+  }
+}

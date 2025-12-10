@@ -4,7 +4,9 @@
       "Bash(python:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run docs:dev:*)"
     ],
     "deny": [],
     "ask": []
