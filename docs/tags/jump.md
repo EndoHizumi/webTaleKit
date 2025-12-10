@@ -200,10 +200,10 @@ function skipToEnd() {
 
 ## 関連タグ
 
-- [choice](/api/tags/choice) - 選択肢の表示
-- [route](/api/tags/route) - 別のシーンに移動
-- [if](/api/tags/if) - 条件分岐
-- [call](/api/tags/call) - JavaScript関数を呼び出し
+- [choice](/tags/choice) - 選択肢の表示
+- [route](/tags/route) - 別のシーンに移動
+- [if](/tags/if) - 条件分岐
+- [call](/tags/call) - JavaScript関数を呼び出し
 
 ## 注意事項
 

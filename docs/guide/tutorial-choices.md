@@ -213,5 +213,5 @@
 ## 次のステップ
 
 - [制御構文](/api/control) - if文やジャンプの詳細
-- [choiceタグリファレンス](/api/tags/choice) - 全ての属性とオプション
-- [jumpタグリファレンス](/api/tags/jump) - ジャンプの使い方
+- [choiceタグリファレンス](/tags/choice) - 全ての属性とオプション
+- [jumpタグリファレンス](/tags/jump) - ジャンプの使い方

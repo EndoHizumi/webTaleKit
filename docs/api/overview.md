@@ -24,23 +24,23 @@ WebTaleScriptは、HTMLに似たマークアップ言語で、ゲームの進行
 
 | タグ | 説明 |
 |------|------|
-| [text](/api/tags/text) | 地の文（ナレーション）を表示 |
-| [say](/api/tags/say) | キャラクターのセリフを表示 |
+| [text](/tags/text) | 地の文（ナレーション）を表示 |
+| [say](/tags/say) | キャラクターのセリフを表示 |
 | newpage | メッセージをクリアして新しいページを開始 |
 
 ### 画像操作
 
 | タグ | 説明 |
 |------|------|
-| [show](/api/tags/show) | 画像やキャラクターを表示 |
-| [hide](/api/tags/hide) | 画像やキャラクターを非表示 |
-| [moveTo](/api/tags/moveto) | 画像を移動（アニメーション） |
+| [show](/tags/show) | 画像やキャラクターを表示 |
+| [hide](/tags/hide) | 画像やキャラクターを非表示 |
+| [moveTo](/tags/moveto) | 画像を移動（アニメーション） |
 
 ### 音声
 
 | タグ | 説明 |
 |------|------|
-| [sound](/api/tags/sound) | 音声を再生・停止 |
+| [sound](/tags/sound) | 音声を再生・停止 |
 | bgm | BGM用のsoundエイリアス |
 | se | 効果音用のsoundエイリアス |
 | voice | ボイス用のsoundエイリアス |
@@ -49,16 +49,16 @@ WebTaleScriptは、HTMLに似たマークアップ言語で、ゲームの進行
 
 | タグ | 説明 |
 |------|------|
-| [choice](/api/tags/choice) | 選択肢を表示 |
+| [choice](/tags/choice) | 選択肢を表示 |
 
 ### 制御構文
 
 | タグ | 説明 |
 |------|------|
-| [jump](/api/tags/jump) | 指定した行にジャンプ |
-| [if](/api/tags/if) | 条件分岐 |
-| [route](/api/tags/route) | 別のシーンに移動 |
-| [call](/api/tags/call) | JavaScript関数を呼び出し |
+| [jump](/tags/jump) | 指定した行にジャンプ |
+| [if](/tags/if) | 条件分岐 |
+| [route](/tags/route) | 別のシーンに移動 |
+| [call](/tags/call) | JavaScript関数を呼び出し |
 
 ## 属性
 

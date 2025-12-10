@@ -221,9 +221,9 @@ export const voice = [
 
 ## 関連タグ
 
-- [text](/api/tags/text) - 地の文を表示
-- [show](/api/tags/show) - キャラクターを表示
-- [sound](/api/tags/sound) - 音声を再生
+- [text](/tags/text) - 地の文を表示
+- [show](/tags/show) - キャラクターを表示
+- [sound](/tags/sound) - 音声を再生
 
 ## 注意事項
 

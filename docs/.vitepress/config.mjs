@@ -10,6 +10,7 @@ export default defineConfig({
       { text: 'ホーム', link: '/' },
       { text: 'ガイド', link: '/guide/getting-started' },
       { text: 'API', link: '/api/overview' },
+      { text: 'タグ', link: '/tags/' },
       { text: 'GitHub', link: 'https://github.com/EndoHizumi/webTaleKit' }
     ],
     sidebar: {
@@ -50,20 +51,23 @@ export default defineConfig({
             { text: '選択肢', link: '/api/choice' },
             { text: '制御構文', link: '/api/control' }
           ]
-        },
+        }
+      ],
+      '/tags/': [
         {
           text: 'タグリファレンス',
           items: [
-            { text: 'text', link: '/api/tags/text' },
-            { text: 'say', link: '/api/tags/say' },
-            { text: 'show', link: '/api/tags/show' },
-            { text: 'hide', link: '/api/tags/hide' },
-            { text: 'choice', link: '/api/tags/choice' },
-            { text: 'sound', link: '/api/tags/sound' },
-            { text: 'jump', link: '/api/tags/jump' },
-            { text: 'if', link: '/api/tags/if' },
-            { text: 'moveTo', link: '/api/tags/moveto' },
-            { text: 'route', link: '/api/tags/route' }
+            { text: '概要', link: '/tags/' },
+            { text: 'text', link: '/tags/text' },
+            { text: 'say', link: '/tags/say' },
+            { text: 'show', link: '/tags/show' },
+            { text: 'hide', link: '/tags/hide' },
+            { text: 'choice', link: '/tags/choice' },
+            { text: 'sound', link: '/tags/sound' },
+            { text: 'jump', link: '/tags/jump' },
+            { text: 'if', link: '/tags/if' },
+            { text: 'moveTo', link: '/tags/moveto' },
+            { text: 'route', link: '/tags/route' }
           ]
         }
       ]

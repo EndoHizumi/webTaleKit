@@ -223,9 +223,9 @@ heroImage.move(400, 100);    // 移動
 
 ## 関連タグ
 
-- [hide](/api/tags/hide) - 画像を非表示にする
-- [moveTo](/api/tags/moveto) - 画像を移動する
-- [say](/api/tags/say) - キャラクターのセリフを表示（自動的にキャラクターも表示）
+- [hide](/tags/hide) - 画像を非表示にする
+- [moveTo](/tags/moveto) - 画像を移動する
+- [say](/tags/say) - キャラクターのセリフを表示（自動的にキャラクターも表示）
 
 ## 注意事項
 

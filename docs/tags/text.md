@@ -213,9 +213,9 @@ let money = 1000;
 
 ## 関連タグ
 
-- [say](/api/tags/say) - キャラクターのセリフを表示
+- [say](/tags/say) - キャラクターのセリフを表示
 - [newpage](#) - メッセージをクリア
-- [choice](/api/tags/choice) - 選択肢を表示
+- [choice](/tags/choice) - 選択肢を表示
 
 ## 注意事項
 

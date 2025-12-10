@@ -21,7 +21,7 @@ webTaleKitでは、以下の制御構文を使ってシナリオの流れを制�
 <jump index="10" />
 ```
 
-[jump タグの詳細 →](/api/tags/jump)
+[jump タグの詳細 →](/tags/jump)
 
 ### 基本的な使い方
 
@@ -372,11 +372,11 @@ function getFlag(flagName) {
 
 ## 関連タグ
 
-- [jump](/api/tags/jump) - シナリオの行移動
-- [if](/api/tags/if) - 条件分岐
-- [route](/api/tags/route) - シーンの移動
-- [call](/api/tags/call) - 関数呼び出し
-- [choice](/api/tags/choice) - 選択肢
+- [jump](/tags/jump) - シナリオの行移動
+- [if](/tags/if) - 条件分岐
+- [route](/tags/route) - シーンの移動
+- [call](/tags/call) - 関数呼び出し
+- [choice](/tags/choice) - 選択肢
 
 ## 次のステップ
 

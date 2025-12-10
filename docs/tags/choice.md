@@ -223,10 +223,10 @@
 
 ## 関連タグ
 
-- [jump](/api/tags/jump) - シナリオの行移動
-- [route](/api/tags/route) - シーンの移動
-- [if](/api/tags/if) - 条件分岐
-- [call](/api/tags/call) - 関数呼び出し
+- [jump](/tags/jump) - シナリオの行移動
+- [route](/tags/route) - シーンの移動
+- [if](/tags/if) - 条件分岐
+- [call](/tags/call) - 関数呼び出し
 
 ## 注意事項
 

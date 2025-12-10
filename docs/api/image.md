@@ -26,7 +26,7 @@ webTaleKitでは、以下のような画像操作が可能です：
 <show path="chara/protagonist.png" name="hero" left="300" top="100" />
 ```
 
-[show タグの詳細 →](/api/tags/show)
+[show タグの詳細 →](/tags/show)
 
 ### hide タグ
 
@@ -242,10 +242,10 @@ export const chara = [
 
 ## 関連タグ
 
-- [show](/api/tags/show) - 画像を表示
-- [hide](/api/tags/hide) - 画像を非表示
-- [moveTo](/api/tags/moveto) - 画像を移動
-- [say](/api/tags/say) - キャラクターのセリフを表示（自動表示予定）
+- [show](/tags/show) - 画像を表示
+- [hide](/tags/hide) - 画像を非表示
+- [moveTo](/tags/moveto) - 画像を移動
+- [say](/tags/say) - キャラクターのセリフを表示（自動表示予定）
 
 ## 次のステップ
 

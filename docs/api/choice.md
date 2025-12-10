@@ -23,7 +23,7 @@
 </choice>
 ```
 
-[choice タグの詳細 →](/api/tags/choice)
+[choice タグの詳細 →](/tags/choice)
 
 ## 主な機能
 
@@ -237,10 +237,10 @@
 
 ## 関連タグ
 
-- [choice](/api/tags/choice) - 選択肢の詳細仕様
-- [jump](/api/tags/jump) - シナリオの行移動
-- [route](/api/tags/route) - シーンの移動
-- [if](/api/tags/if) - 条件分岐
+- [choice](/tags/choice) - 選択肢の詳細仕様
+- [jump](/tags/jump) - シナリオの行移動
+- [route](/tags/route) - シーンの移動
+- [if](/tags/if) - 条件分岐
 
 ## 次のステップ
 

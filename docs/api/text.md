@@ -26,7 +26,7 @@ webTaleKitでは、以下の方法でテキストを表示できます：
 夏の陽気が残る9月の初旬
 ```
 
-[text タグの詳細 →](/api/tags/text)
+[text タグの詳細 →](/tags/text)
 
 ### say タグ
 
@@ -45,7 +45,7 @@ webTaleKitでは、以下の方法でテキストを表示できます：
 </say>
 ```
 
-[say タグの詳細 →](/api/tags/say)
+[say タグの詳細 →](/tags/say)
 
 ## テキスト表示の制御
 
@@ -177,9 +177,9 @@ let money = 1000;
 
 ## 関連タグ
 
-- [text](/api/tags/text) - 地の文を表示
-- [say](/api/tags/say) - キャラクターのセリフを表示
-- [choice](/api/tags/choice) - 選択肢を表示
+- [text](/tags/text) - 地の文を表示
+- [say](/tags/say) - キャラクターのセリフを表示
+- [choice](/tags/choice) - 選択肢を表示
 
 ## 次のステップ
 
