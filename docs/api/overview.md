@@ -13,9 +13,9 @@ WebTaleScriptは、HTMLに似たマークアップ言語で、ゲームの進行
   <!-- ここにゲームの進行を記述 -->
 </scenario>
 
-<logic>
+<script>
   // ここにJavaScriptで設定や変数を定義
-</logic>
+</script>
 ```
 
 ## 主な機能カテゴリ
@@ -82,7 +82,7 @@ WebTaleScriptは、HTMLに似たマークアップ言語で、ゲームの進行
 
 ## シーン設定（sceneConfig）
 
-`<logic>` セクションで、シーン全体の設定を定義できます：
+`<script>` セクションで、シーン全体の設定を定義できます：
 
 ```javascript
 const sceneConfig = {
@@ -120,14 +120,14 @@ export const chara = [
 ### 変数の定義
 
 ```html
-<logic>
+<script>
 const playerName = "太郎";
 let score = 0;
 
 function addScore(points) {
   score += points;
 }
-</logic>
+</script>
 ```
 
 ### 変数の参照
@@ -152,18 +152,18 @@ Mustache記法（`{{変数名}}`）で変数を参照できます：
   <text>スコアが増えました！</text>
 </scenario>
 
-<logic>
+<script>
 let score = 0;
 
 function addScore(points) {
   score += points;
 }
-</logic>
+</script>
 ```
 
 ### コアAPIへのアクセス
 
-`<logic>` セクション内で、エンジンのAPIにアクセスできます：
+`<script>` セクション内で、エンジンのAPIにアクセスできます：
 
 ```javascript
 // 背景を直接変更

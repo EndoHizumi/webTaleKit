@@ -11,16 +11,16 @@
   <!-- ゲームの進行を記述 -->
 </scenario>
 
-<logic>
+<script>
   // 設定や変数を定義
-</logic>
+</script>
 ```
 
 ### scenarioセクション
 
 WebTaleScript（WTS）というマークアップ言語でゲームの進行を記述します。
 
-### logicセクション
+### scriptセクション
 
 JavaScriptでシーンの設定や変数を定義します。
 
@@ -93,7 +93,7 @@ JavaScriptでシーンの設定や変数を定義します。
 
 ## シーンの設定
 
-`<logic>` セクションで、シーンの背景やBGMを設定できます：
+`<script>` セクションで、シーンの背景やBGMを設定できます：
 
 ```javascript
 const sceneConfig = {
@@ -142,9 +142,9 @@ const sceneConfig = {
   <text>{{playerName}}は目を覚ました。</text>
 </scenario>
 
-<logic>
+<script>
 const playerName = "太郎";
-</logic>
+</script>
 ```
 
 変数は `{{変数名}}` の形式で参照できます（mustache記法）。

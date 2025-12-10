@@ -39,9 +39,9 @@ src/scene/
   <!-- ゲームの進行をWTSで記述 -->
 </scenario>
 
-<logic>
+<script>
   // JavaScriptで設定や変数を定義
-</logic>
+</script>
 ```
 
 ### screen/ - UIファイル

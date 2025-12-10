@@ -138,10 +138,10 @@ Mustache記法（`{{変数名}}`）で変数を埋め込めます：
   <text>所持金: {{money}}円</text>
 </scenario>
 
-<logic>
+<script>
 const playerName = "太郎";
 let money = 1000;
-</logic>
+</script>
 ```
 
 ## 条件付き表示

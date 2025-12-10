@@ -82,7 +82,7 @@ WebTaleScript(以下:WTS)という名称で、HTMLに似たマークアップ言
 WTSは、対応するJSに変換される。
 タグ名と要素はエンジンのインターフェースで定義しているメソッド名と引数名と同じ名前である。
 シーンファイルとは、WebTaleScript(WTS)とJavaScriptの両方でゲームの進行制御を記述するためのファイルである。
-scenarioとLogicの二つのセクションがあり、ゲーム進行制御をscenarioセクションはWTSで、Logicセクションは、scenarioセクションで使う処理や背景のデータ、変数の定義をJavaScriptで記述する。
+scenarioとscriptの二つのセクションがあり、ゲーム進行制御をscenarioセクションはWTSで、scriptセクションは、scenarioセクションで使う処理や背景のデータ、変数の定義をJavaScriptで記述する。
 
 ```vue
 %% WebTaleScriptのサンプル %%
@@ -119,11 +119,11 @@ scenarioとLogicの二つのセクションがあり、ゲーム進行制御をs
  name="燈火">「さよなら･･･」</
 >
 </scenario>
-<logic>
+<script>
 const sceneConfig = {
   background: '屋上.jpg'
 }
-</logic>
+</script>
 ```
 
 ```Javascript
@@ -265,7 +265,7 @@ say(name:string, pattern: string, voice: string, ...text)
 
 - メソッド呼び出し
   - call(name: string)
-    - overview: logicセクションで宣言したメソッドを呼び出す。
+    - overview: scriptセクションで宣言したメソッドを呼び出す。
     - name: 呼び出すメソッドの名称を記載する
     - restriction: 変数や関数の定義は実行後に消えるため、ほかのタグから呼び出せない。
 

@@ -65,12 +65,12 @@ npm run play
   </choice>
 </scenario>
 
-<logic>
+<script>
 const sceneConfig = {
   background: '屋上.jpg',
   bgm: 'title_theme.mp3'
 }
-</logic>
+</script>
 ```
 
 ## コミュニティ
