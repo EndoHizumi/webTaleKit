@@ -16,12 +16,27 @@
 
 ## 属性
 
+### 基本属性
+
 | 属性 | 型 | 必須 | デフォルト | 説明 |
 |------|-----|------|-----------|------|
-| speed | number | × | 0.5 | テキストの表示間隔（秒単位） |
+| speed | number | × | 25 | テキストの表示速度（ミリ秒単位） |
 | wait | boolean | × | true | クリック待ちをするかどうか |
 | clear | boolean | × | true | 前のメッセージを消すかどうか |
+| name | string | × | - | 話者名（設定すると名前欄に表示） |
+| time | number | × | - | 表示後の自動待機時間（ミリ秒） |
 | if | string | × | - | 条件式（trueの場合のみ実行） |
+
+### HTTP属性（任意のタグで使用可能）
+
+| 属性 | 型 | 必須 | 説明 |
+|------|-----|------|------|
+| get | string | × | GETリクエストのURL |
+| post | string | × | POSTリクエストのURL |
+| put | string | × | PUTリクエストのURL |
+| delete | string | × | DELETEリクエストのURL |
+
+**注意**: `get`, `post`, `put`, `delete` のいずれか1つを指定します。
 
 ## 基本的な使い方
 
@@ -152,6 +167,73 @@ let money = 1000;
 <text if="hasKey">鍵を持っている。</text>
 <text if="!hasKey">鍵を持っていない。</text>
 ```
+
+## HTTPリクエストの使用
+
+`text`タグに`get`/`post`/`put`/`delete`属性を付けることで、REST APIを呼び出してレスポンスを表示できます。
+
+### 基本的な使い方
+
+```html
+<text get="https://api.example.com/data">
+  <progress>データを読み込み中...</progress>
+  <header>
+    <Content-Type>application/json</Content-Type>
+    <Authorization>Bearer token</Authorization>
+  </header>
+  <data>
+    <query>example</query>
+  </data>
+  <then>データの読み込みが完了しました。</then>
+  <error>データの読み込みに失敗しました。</error>
+</text>
+```
+
+### 子要素
+
+| 要素 | 説明 |
+|------|------|
+| header | HTTPヘッダー（子要素としてヘッダー名と値を指定） |
+| data | リクエストボディ（子要素としてキーと値を指定） |
+| progress | リクエスト中に表示するテキスト |
+| then | リクエスト成功時に追加表示する内容 |
+| error | リクエスト失敗時に追加表示する内容 |
+
+### レスポンスデータの利用
+
+HTTPリクエストが成功すると、レスポンスのJSONデータが `res` 変数に格納されます：
+
+```html
+<text get="https://api.example.com/user">
+  <progress>ユーザー情報を取得中...</progress>
+  <then>
+    ようこそ、{{res.name}}さん！
+    あなたのスコアは{{res.score}}点です。
+  </then>
+  <error>ユーザー情報の取得に失敗しました。</error>
+</text>
+```
+
+### POSTリクエストの例
+
+```html
+<text post="https://api.example.com/login">
+  <header>
+    <Content-Type>application/json</Content-Type>
+  </header>
+  <data>
+    <username>{{username}}</username>
+    <password>{{password}}</password>
+  </data>
+  <progress>ログイン中...</progress>
+  <then>ログインに成功しました！</then>
+  <error>ログインに失敗しました。</error>
+</text>
+```
+
+::: warning 注意
+HTTP機能は全てのタグで使用できるグローバル機能です。内部的には`httpHandler`が各タグの実行前に処理を行います。
+:::
 
 ## 実用例
 

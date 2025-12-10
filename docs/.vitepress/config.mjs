@@ -57,17 +57,50 @@ export default defineConfig({
         {
           text: 'タグリファレンス',
           items: [
-            { text: '概要', link: '/tags/' },
+            { text: '概要', link: '/tags/' }
+          ]
+        },
+        {
+          text: 'テキスト・セリフ',
+          items: [
             { text: 'text', link: '/tags/text' },
-            { text: 'say', link: '/tags/say' },
+            { text: 'say', link: '/tags/say' }
+          ]
+        },
+        {
+          text: '画像操作',
+          items: [
             { text: 'show', link: '/tags/show' },
             { text: 'hide', link: '/tags/hide' },
+            { text: 'moveTo', link: '/tags/moveto' }
+          ]
+        },
+        {
+          text: '音声',
+          items: [
+            { text: 'sound', link: '/tags/sound' }
+          ]
+        },
+        {
+          text: '選択肢・ダイアログ',
+          items: [
             { text: 'choice', link: '/tags/choice' },
-            { text: 'sound', link: '/tags/sound' },
+            { text: 'dialog', link: '/tags/dialog' }
+          ]
+        },
+        {
+          text: '制御構文',
+          items: [
             { text: 'jump', link: '/tags/jump' },
             { text: 'if', link: '/tags/if' },
-            { text: 'moveTo', link: '/tags/moveto' },
             { text: 'route', link: '/tags/route' }
+          ]
+        },
+        {
+          text: 'セーブ・ロード',
+          items: [
+            { text: 'save', link: '/tags/save' },
+            { text: 'load', link: '/tags/load' }
           ]
         }
       ]
