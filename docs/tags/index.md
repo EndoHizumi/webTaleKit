@@ -33,6 +33,7 @@ WebTaleScript (WTS) では、HTMLライクなタグを使ってシナリオを�
 - [jump](/tags/jump) - シナリオの指定行にジャンプ
 - [if](/tags/if) - 条件分岐
 - [route](/tags/route) - 別のシーンに移動
+- [call](/tags/call) - JavaScriptコードを実行
 
 ### セーブ・ロード
 

@@ -5,6 +5,9 @@ export default defineConfig({
   description: 'TypeScriptベースのビジュアルノベルゲームエンジン',
   lang: 'ja-JP',
   base: '/webTaleKit/',
+  ignoreDeadLinks: [
+    /^http:\/\/localhost/,
+  ],
   themeConfig: {
     logo: '/logo.jpg',
     nav: [
@@ -94,7 +97,8 @@ export default defineConfig({
           items: [
             { text: 'jump', link: '/tags/jump' },
             { text: 'if', link: '/tags/if' },
-            { text: 'route', link: '/tags/route' }
+            { text: 'route', link: '/tags/route' },
+            { text: 'call', link: '/tags/call' }
           ]
         },
         {
