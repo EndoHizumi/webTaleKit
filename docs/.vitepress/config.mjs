@@ -4,6 +4,7 @@ export default defineConfig({
   title: 'webTaleKit',
   description: 'TypeScriptベースのビジュアルノベルゲームエンジン',
   lang: 'ja-JP',
+  base: '/webTaleKit/',
   themeConfig: {
     logo: '/logo.jpg',
     nav: [
