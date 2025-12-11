@@ -42,7 +42,7 @@ npm install
 npm run docs:dev
 ```
 
-ブラウザで [http://localhost:5173](http://localhost:5173) にアクセスすると、ドキュメントサイトが表示されます。
+ブラウザで http://localhost:5173 にアクセスすると、ドキュメントサイトが表示されます。
 
 ### ビルド
 
