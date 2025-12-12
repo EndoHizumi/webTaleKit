@@ -4,6 +4,7 @@ import { ImageObject } from '../resource/ImageObject'
 import { ResourceManager } from './resourceManager'
 import { SoundObject } from '../resource/soundObject'
 import engineConfig from '../../engineConfig.json'
+import packageJson from '../../package.json'
 import { sleep } from '../utils/waitUtil'
 import { getDefaultDialogTemplate } from '../utils/fallbackTemplate'
 import { generateStore } from '../utils/store'
@@ -834,6 +835,8 @@ export class Core {
     const name = line.name || `セーブ${slot}`
 
     const saveData = {
+      version: packageJson.version,
+      engineVersion: packageJson.version.split('.').slice(0, 2).join('.') + '.x',
       slot: slot,
       name: name,
       timestamp: new Date().toISOString(),
@@ -888,6 +891,22 @@ export class Core {
 
     // ディープコピーで循環参照を回避
     const saveData = JSON.parse(JSON.stringify(saveDataRaw))
+
+    // バージョンチェック
+    if (saveData.version) {
+      const currentVersion = packageJson.version
+      const savedVersion = saveData.version
+
+      if (savedVersion !== currentVersion) {
+        console.warn(`セーブデータのバージョン (${savedVersion}) が現在のエンジンバージョン (${currentVersion}) と異なります`)
+
+        if (line.message !== false) {
+          await this.textHandler(`警告: セーブデータのバージョンが異なります (${savedVersion} → ${currentVersion})`)
+        }
+      }
+    } else {
+      console.warn('セーブデータにバージョン情報がありません（v0.2.12以前のデータ）')
+    }
 
     try {
       const sceneName = saveData.scenarioManager.sceneName || saveData.sceneConfig.name
