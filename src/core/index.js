@@ -7,9 +7,12 @@ import engineConfig from '../../engineConfig.json'
 import { sleep } from '../utils/waitUtil'
 import { getDefaultDialogTemplate } from '../utils/fallbackTemplate'
 import { generateStore } from '../utils/store'
+import { EventEmitter } from '../utils/eventEmitter'
 
-export class Core {
+export class Core extends EventEmitter {
   constructor() {
+    super()
+
     // プロパティの初期化
     this.bgm = null
     this.isAuto = false
@@ -245,6 +248,9 @@ export class Core {
       scenarioObject.content = scenarioObject.content.concat(scenarioObject.then || scenarioObject.error)
     }
 
+    // イベント発行: テキスト表示開始
+    this.emit('text:display:start', { content: scenarioObject.content.join('') })
+
     // 名前が設定されている場合は、名前を表示する
     if (scenarioObject.name) {
       this.drawer.drawName(scenarioObject.name)
@@ -274,6 +280,9 @@ export class Core {
     await this.waitHandler({ wait: scenarioObject.time })
     this.drawer.isSkip = false
     this.scenarioManager.setHistory(scenarioObject.content)
+
+    // イベント発行: テキスト表示終了
+    this.emit('text:display:end', { content: scenarioObject.content.join('') })
   }
 
   expandVariable(text) {
@@ -833,6 +842,9 @@ export class Core {
     const slot = line.slot || 'auto'
     const name = line.name || `セーブ${slot}`
 
+    // イベント発行: セーブ開始
+    this.emit('save:start', { slot })
+
     const saveData = {
       slot: slot,
       name: name,
@@ -868,6 +880,9 @@ export class Core {
 
     this.store.set(`save_${slot}`, saveData)
 
+    // イベント発行: セーブ完了
+    this.emit('save:completed', { slot, name })
+
     if (line.message !== false) {
       await this.textHandler(`ゲームをセーブしました: ${name}`)
     }
@@ -875,6 +890,9 @@ export class Core {
 
   async loadHandler(line) {
     const slot = line.slot || 'auto'
+
+    // イベント発行: ロード開始
+    this.emit('load:start', { slot })
 
     const saveDataRaw = this.store.get ? this.store.get(`save_${slot}`) : this.store[`save_${slot}`]
     if (!saveDataRaw) {
@@ -938,10 +956,16 @@ export class Core {
 
       this.drawer.show(this.displayedImages)
 
+      // イベント発行: ロード完了
+      this.emit('load:completed', { slot })
+
       if (line.message !== false) {
         await this.textHandler(`ゲームをロードしました: ${saveData.name}`)
       }
     } catch (error) {
+      // イベント発行: ロードエラー
+      this.emit('load:error', { slot, error })
+
       const errorMsg = `ロードに失敗しました: ${error.message}`
 
       if (line.message !== false) {
