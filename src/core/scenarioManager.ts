@@ -21,7 +21,8 @@ export class ScenarioManager {
   }
 
   setScenario (scenario: any, sceneName: string=''): void {
-    this.scenarioData = scenario
+    // Create a deep copy to prevent mutations from affecting the original scenario
+    this.scenarioData = scenario.map((item: any) => ({ ...item }))
     this.progress.currentScene = sceneName
     this.progress.currentIndex = 0
   }

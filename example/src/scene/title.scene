@@ -37,6 +37,9 @@
       <item label="セーブ・ロードテスト" onSelect="save_load_test">
         <route to="save-load-test" />
       </item>
+      <item label="Route後の選択肢テスト" onSelect="route_choice_test">
+        <route to="route-choice-test" />
+      </item>
     </choice>
   </scenario>
 

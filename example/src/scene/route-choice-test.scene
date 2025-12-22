@@ -1,0 +1,30 @@
+<scene>
+  <scenario>
+    <say name="ナレーター">これは選択後にrouteで戻るテストです。</say>
+    <choice prompt="最初の質問：好きな食べ物は？">
+      <item label="寿司" onSelect="sushi">
+        <say name="ナレーター">寿司を選びました！美味しいですよね。</say>
+      </item>
+      <item label="ラーメン" onSelect="ramen">
+        <say name="ナレーター">ラーメンを選びました！温まりますね。</say>
+      </item>
+    </choice>
+    <say name="ナレーター">選択が終わりました。次の画面に進みます。</say>
+    <choice prompt="もう一度テストしますか？">
+      <item label="はい、このシーンに戻る" onSelect="retry">
+        <route to="route-choice-test" />
+      </item>
+      <item label="いいえ、タイトルに戻る" onSelect="end">
+        <route to="title" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'route-choice-test',
+      background: './src/resource/background/crossroad.jpg',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>
