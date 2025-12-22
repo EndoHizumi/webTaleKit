@@ -586,7 +586,7 @@ export class Core {
     // Support both 'to' and 'scene' attributes for backwards compatibility
     const sceneName = line.to || line.scene
     if (!sceneName) {
-      throw new Error('route command requires either "to" or "scene" attribute to specify the destination scene')
+      throw new Error('Route command requires "to" attribute to specify the destination scene ("scene" attribute is deprecated but supported for backwards compatibility)')
     }
     await this.loadScene(sceneName)
     // 画面を表示する
