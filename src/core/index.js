@@ -741,9 +741,27 @@ export class Core {
 
   executeCode(code) {
     try {
-      const context = { ...this.sceneFile }
-      const func = new Function(...Object.keys(context), code)
-      return func.apply(null, Object.values(context))
+      // Create a proxy that references sceneFile properties directly
+      // This allows assignments to modify the original sceneFile
+      const context = new Proxy(this.sceneFile, {
+        has: (target, key) => {
+          return key in target
+        },
+        get: (target, key) => {
+          return target[key]
+        },
+        set: (target, key, value) => {
+          target[key] = value
+          return true
+        }
+      })
+      
+      // Use 'with' statement to execute code in the context
+      // This allows direct variable access and modification
+      // Note: The code parameter comes from scene files authored by game developers
+      // and is considered trusted content, not user input
+      const func = new Function('context', `with(context) { ${code} }`)
+      return func.call(null, context)
     } catch (error) {
       console.error('Error executing code:', error)
     }
