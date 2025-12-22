@@ -130,6 +130,24 @@ export class Drawer {
     const interactiveView = document.querySelector('#interactiveView') as HTMLElement
     if (choices.position == 'auto' || choices.position === undefined) {
       interactiveView.className = 'auto'
+      
+      // 選択肢の数に応じて高さを調整
+      const choiceCount = choices.content.length
+      const choiceHeight = 50 // 1つの選択肢の高さ（px）
+      const maxVisibleChoices = 8 // 同時に表示する最大選択肢数
+      
+      if (choiceCount > maxVisibleChoices) {
+        // 多数の選択肢がある場合、スクロール可能にする
+        interactiveView.style.overflowY = 'auto'
+        interactiveView.style.overflowX = 'hidden'
+        interactiveView.style.maxHeight = `${maxVisibleChoices * choiceHeight}px`
+        interactiveView.style.flexWrap = 'nowrap'
+      } else {
+        // 少数の選択肢の場合、通常通り表示
+        interactiveView.style.overflowY = 'visible'
+        interactiveView.style.maxHeight = 'none'
+        interactiveView.style.flexWrap = 'wrap'
+      }
     } else {
       interactiveView.className = 'manual'
     }
