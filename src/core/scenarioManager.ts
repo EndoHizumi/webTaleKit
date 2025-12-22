@@ -6,6 +6,8 @@ export class ScenarioManager {
   private ctx: any
   private background: ImageObject = new ImageObject()
   private scenarioData: any
+  private addedScenarios: Array<{index: number, scenarios: any[]}> = []
+  private originalScenarioLength: number = 0
 
   constructor () {
     this.backlist = []
@@ -24,6 +26,8 @@ export class ScenarioManager {
     this.scenarioData = scenario
     this.progress.currentScene = sceneName
     this.progress.currentIndex = 0
+    this.addedScenarios = []
+    this.originalScenarioLength = scenario ? scenario.length : 0
   }
 
   addScenario (scenario: any, index: number): void {
@@ -32,12 +36,19 @@ export class ScenarioManager {
     // この行を消すと動く
     // ('call','debug', {scenario, index})
     // index指定がある場合はその値に挿入する
+    const insertIndex = index || this.progress.currentIndex
     if(index) {
       this.scenarioData.splice(index, 0, ..._scenario)
     } else {
       // 現在の位置に挿入する
       this.scenarioData.splice(this.progress.currentIndex, 0, ..._scenario)
     }
+    
+    // Track the added scenarios for save/load
+    this.addedScenarios.push({
+      index: insertIndex,
+      scenarios: _scenario
+    })
   }
 
   getScenario (): any {
@@ -92,5 +103,33 @@ export class ScenarioManager {
 
   getBackground():ImageObject{
     return this.background;
+  }
+
+  getAddedScenarios(): Array<{index: number, scenarios: any[]}> {
+    return this.addedScenarios
+  }
+
+  setAddedScenarios(addedScenarios: Array<{index: number, scenarios: any[]}>): void {
+    this.addedScenarios = addedScenarios
+  }
+
+  getOriginalScenarioLength(): number {
+    return this.originalScenarioLength
+  }
+
+  setOriginalScenarioLength(length: number): void {
+    this.originalScenarioLength = length
+  }
+
+  restoreAddedScenarios(addedScenarios: Array<{index: number, scenarios: any[]}>): void {
+    // Sort by index in descending order to insert from the end
+    // This prevents index shifts during insertion
+    const sortedAdditions = [...addedScenarios].sort((a, b) => b.index - a.index)
+    
+    for (const addition of sortedAdditions) {
+      this.scenarioData.splice(addition.index, 0, ...addition.scenarios)
+    }
+    
+    this.addedScenarios = addedScenarios
   }
 }

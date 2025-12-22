@@ -834,6 +834,7 @@ export class Core {
     const name = line.name || `セーブ${slot}`
 
     const saveData = {
+      version: '1.0.0', // Save data format version
       slot: slot,
       name: name,
       timestamp: new Date().toISOString(),
@@ -842,6 +843,8 @@ export class Core {
         sceneName: this.scenarioManager.getSceneName() || this.sceneConfig.name,
         currentIndex: this.scenarioManager.getIndex(),
         history: this.scenarioManager.getHistory ? [...this.scenarioManager.getHistory()] : [],
+        addedScenarios: this.scenarioManager.getAddedScenarios ? this.scenarioManager.getAddedScenarios() : [],
+        originalScenarioLength: this.scenarioManager.getOriginalScenarioLength ? this.scenarioManager.getOriginalScenarioLength() : 0,
       },
       sceneConfig: this.sceneConfig,
       displayedImages: Object.keys(this.displayedImages).reduce((acc, key) => {
@@ -889,6 +892,13 @@ export class Core {
     // ディープコピーで循環参照を回避
     const saveData = JSON.parse(JSON.stringify(saveDataRaw))
 
+    // Migration: Handle old save data without version
+    if (!saveData.version) {
+      saveData.version = '0.0.0' // Mark as legacy save data
+      saveData.scenarioManager.addedScenarios = []
+      saveData.scenarioManager.originalScenarioLength = 0
+    }
+
     try {
       const sceneName = saveData.scenarioManager.sceneName || saveData.sceneConfig.name
       if (!sceneName) {
@@ -901,6 +911,19 @@ export class Core {
 
       // 読んだところまで復元
       this.scenarioManager.setSceneName(saveData.scenarioManager.sceneName)
+      
+      // Restore dynamically added scenarios before setting index
+      if (saveData.scenarioManager.addedScenarios && saveData.scenarioManager.addedScenarios.length > 0) {
+        if (this.scenarioManager.restoreAddedScenarios) {
+          this.scenarioManager.restoreAddedScenarios(saveData.scenarioManager.addedScenarios)
+        }
+      }
+      
+      // Set original scenario length if available
+      if (saveData.scenarioManager.originalScenarioLength && this.scenarioManager.setOriginalScenarioLength) {
+        this.scenarioManager.setOriginalScenarioLength(saveData.scenarioManager.originalScenarioLength)
+      }
+      
       this.scenarioManager.setIndex(saveData.scenarioManager.currentIndex)
       this.scenarioManager.setHistory(saveData.scenarioManager.history || [])
       this.scenarioManager.progress = { ...this.scenarioManager.progress, ...saveData.scenarioManager.progress }
