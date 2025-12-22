@@ -179,12 +179,14 @@ export class Core {
       }
       this.gameContainer.innerHTML = mainDiv.innerHTML
       this.drawer.setScreen(this.gameContainer, engineConfig.resolution)
+      // Styleタグを取り出して、headタグに追加する
+      const styleElement = doc.head.getElementsByTagName('style')[0]
+      if (styleElement) {
+        document.head.appendChild(styleElement)
+      }
     } else {
       this.gameContainer.appendChild(mainDiv)
     }
-    // Styleタグを取り出して、headタグに追加する
-    const styleElement = doc.head.getElementsByTagName('style')[0]
-    document.head.appendChild(styleElement)
 
     if (!skipBackground) {
       console.info(`background: ${await this.checkResourceExists(sceneConfig.background)}`)
