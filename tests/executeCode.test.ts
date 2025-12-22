@@ -1,7 +1,14 @@
 import { describe, it, expect, beforeEach } from '@jest/globals'
 
+interface MockSceneFile {
+  hoge: number
+  fuga: number
+  sceneConfig: { name: string }
+  [key: string]: any
+}
+
 describe('executeCode with call handler', () => {
-  let mockSceneFile: any
+  let mockSceneFile: MockSceneFile
   let executeCode: (code: string) => any
 
   beforeEach(() => {
@@ -18,11 +25,16 @@ describe('executeCode with call handler', () => {
           has: (target, key) => {
             return key in target
           },
-          get: (target, key) => {
-            return target[key]
+          get: (target, key: string | symbol) => {
+            if (typeof key === 'string') {
+              return target[key]
+            }
+            return undefined
           },
-          set: (target, key, value) => {
-            target[key] = value
+          set: (target, key: string | symbol, value) => {
+            if (typeof key === 'string') {
+              target[key] = value
+            }
             return true
           }
         })

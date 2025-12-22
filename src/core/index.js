@@ -758,6 +758,8 @@ export class Core {
       
       // Use 'with' statement to execute code in the context
       // This allows direct variable access and modification
+      // Note: The code parameter comes from scene files authored by game developers
+      // and is considered trusted content, not user input
       const func = new Function('context', `with(context) { ${code} }`)
       return func.call(null, context)
     } catch (error) {
