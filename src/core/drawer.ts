@@ -128,23 +128,24 @@ export class Drawer {
 
     // 選択肢ボタンの配置を設定する
     const interactiveView = document.querySelector('#interactiveView') as HTMLElement
+    const CHOICE_HEIGHT = 50 // 1つの選択肢の高さ（px） - button.style.heightと一致させる必要がある
+    const MAX_VISIBLE_CHOICES = 8 // 同時に表示する最大選択肢数
+
     if (choices.position == 'auto' || choices.position === undefined) {
       interactiveView.className = 'auto'
       
       // 選択肢の数に応じて高さを調整
       const choiceCount = choices.content.length
-      const choiceHeight = 50 // 1つの選択肢の高さ（px）
-      const maxVisibleChoices = 8 // 同時に表示する最大選択肢数
       
-      if (choiceCount > maxVisibleChoices) {
+      if (choiceCount > MAX_VISIBLE_CHOICES) {
         // 多数の選択肢がある場合、スクロール可能にする
         interactiveView.style.overflowY = 'auto'
         interactiveView.style.overflowX = 'hidden'
-        interactiveView.style.maxHeight = `${maxVisibleChoices * choiceHeight}px`
+        interactiveView.style.maxHeight = `${MAX_VISIBLE_CHOICES * CHOICE_HEIGHT}px`
         interactiveView.style.flexWrap = 'nowrap'
       } else {
         // 少数の選択肢の場合、通常通り表示
-        interactiveView.style.overflowY = 'visible'
+        interactiveView.style.overflowY = 'initial'
         interactiveView.style.maxHeight = 'none'
         interactiveView.style.flexWrap = 'wrap'
       }
