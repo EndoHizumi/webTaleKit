@@ -36,8 +36,9 @@ export class ScenarioManager {
     // この行を消すと動く
     // ('call','debug', {scenario, index})
     // index指定がある場合はその値に挿入する
-    const insertIndex = index || this.progress.currentIndex
-    if(index) {
+    // Use nullish coalescing to handle index=0 correctly
+    const insertIndex = index ?? this.progress.currentIndex
+    if(index != null) {
       this.scenarioData.splice(index, 0, ..._scenario)
     } else {
       // 現在の位置に挿入する
@@ -130,6 +131,7 @@ export class ScenarioManager {
       this.scenarioData.splice(addition.index, 0, ...addition.scenarios)
     }
     
+    // Preserve the original chronological order of additions in the instance variable
     this.addedScenarios = addedScenarios
   }
 }

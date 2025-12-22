@@ -29,7 +29,8 @@ describe('ScenarioManager', () => {
         { type: 'text', text: 'Added Line 2' },
       ];
       
-      scenarioManager.addScenario(addedScenario, 0);
+      // Don't pass index to use current position
+      scenarioManager.addScenario(addedScenario, null as any);
       
       // Check that added scenarios are tracked
       const tracked = scenarioManager.getAddedScenarios();
@@ -151,7 +152,7 @@ describe('ScenarioManager', () => {
       ];
       
       scenarioManager.setScenario(initialScenario, 'test-scene');
-      scenarioManager.addScenario([{ type: 'text', text: 'Added' }], 0);
+      scenarioManager.addScenario([{ type: 'text', text: 'Added' }], null as any);
       
       expect(scenarioManager.getAddedScenarios().length).toBe(1);
       
@@ -162,6 +163,28 @@ describe('ScenarioManager', () => {
       // Added scenarios should be reset
       expect(scenarioManager.getAddedScenarios().length).toBe(0);
       expect(scenarioManager.getOriginalScenarioLength()).toBe(1);
+    });
+
+    it('should handle explicit index=0 correctly', () => {
+      const initialScenario = [
+        { type: 'text', text: 'Line 1' },
+        { type: 'text', text: 'Line 2' },
+      ];
+      
+      scenarioManager.setScenario(initialScenario, 'test-scene');
+      
+      // Explicitly add at index 0 (beginning)
+      scenarioManager.addScenario([{ type: 'text', text: 'Prepended' }], 0);
+      
+      const tracked = scenarioManager.getAddedScenarios();
+      expect(tracked.length).toBe(1);
+      expect(tracked[0].index).toBe(0);
+      
+      const scenario = scenarioManager.getScenario();
+      expect(scenario.length).toBe(3);
+      expect(scenario[0].text).toBe('Prepended');
+      expect(scenario[1].text).toBe('Line 1');
+      expect(scenario[2].text).toBe('Line 2');
     });
   });
 });
