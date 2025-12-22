@@ -569,7 +569,7 @@ export class Core {
   }
 
   async routeHandler(line) {
-    if (this.bgm.isPlaying) {
+    if (this.bgm && this.bgm.isPlaying) {
       // BGMを停止する
       this.soundHandler({
         mode: 'bgm',
@@ -583,7 +583,12 @@ export class Core {
       this.sceneFile.cleanUp()
     }
     // sceneファイルを読み込む
-    await this.loadScene(line.to)
+    // Support both 'to' and 'scene' attributes for backwards compatibility
+    const sceneName = line.to || line.scene
+    if (!sceneName) {
+      throw new Error('route command requires either "to" or "scene" attribute to specify the destination scene')
+    }
+    await this.loadScene(sceneName)
     // 画面を表示する
     await this.loadScreen(this.sceneConfig)
     // BGMを再生する
