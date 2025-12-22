@@ -10,8 +10,8 @@ describe('ScenarioManager', () => {
     scenarioManager = new ScenarioManager()
   })
 
-  describe('setScenario with deep copy', () => {
-    test('should create a deep copy of scenario array to prevent mutations', () => {
+  describe('setScenario with shallow copy', () => {
+    test('should create a shallow copy of scenario array to prevent mutations', () => {
       // Create a test scenario
       const originalScenario = [
         { type: 'text', content: ['Hello'] },
