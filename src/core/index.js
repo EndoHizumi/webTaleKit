@@ -119,16 +119,6 @@ export class Core {
     }
   }
 
-  // ファイルの存在確認を行う関数
-  async checkResourceExists(url) {
-    try {
-      const response = await fetch(url, { method: 'HEAD' })
-      return response.ok
-    } catch (error) {
-      return false
-    }
-  }
-
   async loadScreen(sceneConfig, options = {}) {
     const {
       isDialog = false, // ダイアログモードかどうか
