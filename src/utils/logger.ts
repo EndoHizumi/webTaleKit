@@ -27,7 +27,13 @@ export async function logError(error: Error, additionalInfo?: string): Promise<v
   try {
     const stackframes = await StackTrace.fromError(error);
     const stackString = stackframes
-      .map(sf => `    at ${sf.functionName} (${sf.fileName}:${sf.lineNumber}:${sf.columnNumber})`)
+      .map(sf => {
+        const functionName = sf.functionName || '<anonymous>';
+        const fileName = sf.fileName || '<unknown>';
+        const lineNumber = sf.lineNumber || 0;
+        const columnNumber = sf.columnNumber || 0;
+        return `    at ${functionName} (${fileName}:${lineNumber}:${columnNumber})`;
+      })
       .join('\n');
     
     const errorMessage = [

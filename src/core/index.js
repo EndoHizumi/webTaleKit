@@ -229,7 +229,7 @@ export class Core {
       await boundFunction(scenarioObject)
     } catch (error) {
       // エラーをログに記録（スタックトレース付き）
-      await logError(error, `Error in runScenario: ${error.message}`)
+      await logError(error, 'Error in runScenario')
       
       // エラーをアラートで表示
       alert(`システムエラーが発生しました:\n${error.message}`)
