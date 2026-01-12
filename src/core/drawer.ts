@@ -70,16 +70,23 @@ export class Drawer {
       this.messageText.appendChild(containerElement)
       element = containerElement
     }
+
+    // パフォーマンス最適化: テキストノードを使用してDOM再構築を回避
+    const textNode = document.createTextNode('')
+    element.appendChild(textNode)
+
+    let displayedLength = 0
     for (const char of text) {
       //prettier-ignore
       setTimeout(() => { this.readySkip = true, wait });
       // 100ミリ秒待ってから、スキップボタンが押されたら即座に表示
       if (!this.isSkip) {
-        element.innerHTML += char
+        textNode.textContent += char
+        displayedLength++
         await sleep(wait)
       } else {
         if (this.readySkip) {
-          element.innerHTML += text.slice(element.textContent!.length)
+          textNode.textContent += text.slice(displayedLength)
           this.readySkip = false
           this.isSkip = false
           break
@@ -90,8 +97,9 @@ export class Drawer {
   }
 
   async drawLineBreak() {
-    // メッセージテキストに改行を追加する
-    this.messageText.innerHTML += '<br>'
+    // パフォーマンス最適化: createElement を使用
+    const br = document.createElement('br')
+    this.messageText.appendChild(br)
   } 
 
   clearText() {
