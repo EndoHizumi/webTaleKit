@@ -336,8 +336,17 @@ export class Drawer {
     // 幅と高さのうち、小さい方のスケールを選択（アスペクト比を維持）
     const scale = Math.min(scaleX, scaleY)
 
-    // ターゲット要素にスケールを適用
-    targetElement.style.transform = `scale(${scale})`
+    // スケール後のサイズを計算
+    const scaledWidth = originalWidth * scale
+    const scaledHeight = originalHeight * scale
+
+    // 中央配置のための位置を計算
+    const offsetX = (viewportWidth - scaledWidth) / 2
+    const offsetY = (viewportHeight - scaledHeight) / 2
+
+    // ターゲット要素にスケールと位置を適用
+    targetElement.style.transformOrigin = 'top left'
+    targetElement.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`
   }
 
   setVisibility(name: string, isVisible: boolean) {
