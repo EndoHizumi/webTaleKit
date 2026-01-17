@@ -5,25 +5,25 @@
     <say name="Narrator">Please select a feature to explore:</say>
     <choice>
       <item label="Text Display" onSelect="text">
-        <route scene="text" />
+        <route to="text" />
       </item>
       <item label="Character Display" onSelect="character">
-        <route scene="character" />
+        <route to="character" />
       </item>
       <item label="Background Changes" onSelect="background">
-        <route scene="background" />
+        <route to="background" />
       </item>
       <item label="Sound Effects" onSelect="sound">
-        <route scene="sound" />
+        <route to="sound" />
       </item>
       <item label="Choices and Branching" onSelect="choice">
-        <route scene="choice" />
+        <route to="choice" />
       </item>
       <item label="Animations" onSelect="animation">
-        <route scene="animation" />
+        <route to="animation" />
       </item>
       <item label="Special Effects" onSelect="effects">
-        <route scene="effects" />
+        <route to="effects" />
       </item>
     </choice>
   </scenario>
