@@ -32,6 +32,6 @@
       template: './src/screen/title.html'
     }
     
-    export let hoge = 0
+    export let hoge = 2;
   </script>
 </scene>
