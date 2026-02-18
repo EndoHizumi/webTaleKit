@@ -1,0 +1,29 @@
+<scene>
+  <scenario>
+    <say name="ミューズ">Chapter 2: <b>キャラクター表示</b>を学びましょう。</say>
+    <say name="ナレーター">ミューズが画面の中央に現れた。</say>
+    <show src="./src/resource/chara/guide.png" name="ミューズ" pos="center:middle" />
+    <say name="ミューズ">まず、キャラクターを画面に表示する基本です。今、私は画面の中央にいますね。</say>
+    <say name="ミューズ">位置を変えることもできます。左に移動してみましょう。</say>
+    <moveTo name="ミューズ" x="-300" y="0" duration="2" />
+    <say name="ミューズ">moveToコマンドで、滑らかに移動できました。</say>
+    <say name="ミューズ">もう一人、呼んでみましょうか。</say>
+    <show src="./src/resource/chara/guest.png" name="アシスタント" pos="right:middle" transition="fade" />
+    <say name="アシスタント">呼ばれて飛び出てきました！ 複数のキャラクターを同時に表示できるんですね。</say>
+    <say name="ミューズ">そうです。キャラクターの表示・非表示、移動、フェードイン・アウトが自由に使えます。</say>
+    <say name="アシスタント">では、私はここで失礼しますね。</say>
+    <hide name="アシスタント" transition="fade" />
+    <say name="ミューズ">hideコマンドでキャラクターを退場させました。</say>
+    <say name="ミューズ">次は、プレイヤーの選択によってストーリーが変わる<b>分岐</b>を体験しましょう。</say>
+    <hide name="ミューズ" />
+    <route to="chapter3" />
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'chapter2',
+      background: './src/resource/background/stage.jpg',
+      template: './src/screen/main.html'
+    }
+  </script>
+</scene>

@@ -1,0 +1,30 @@
+<scene>
+  <scenario>
+    <show src="./src/resource/chara/guide.png" name="ミューズ" pos="right:middle" />
+    <say name="ミューズ">Route B: <b>変数と条件分岐</b>について説明します。</say>
+    <say name="ミューズ">callコマンドで変数を設定し、ifで条件判定ができます。</say>
+    <text>まず、変数testValに値を設定します。</text>
+    <call method="testVal = 1" />
+    <text>testValの現在値: {{testVal}}</text>
+    <text if="testVal==1">この文章はtestVal==1の場合のみ表示されます。（見えていますね！）</text>
+    <text if="testVal==2">この文章はtestVal==2の場合のみ表示されます。（見えないはず）</text>
+    <say name="ミューズ">では、testValを2に変更してみましょう。</say>
+    <call method="testVal = 2" />
+    <text>testValの現在値: {{testVal}}</text>
+    <text if="testVal==1">この文章はtestVal==1の場合のみ表示されます。（見えないはず）</text>
+    <text if="testVal==2">この文章はtestVal==2の場合のみ表示されます。（見えていますね！）</text>
+    <say name="ミューズ">if属性を使えば、変数の値に応じて表示するテキストを切り替えられます。</say>
+    <say name="ミューズ">では、合流地点に進みましょう。</say>
+    <route to="chapter3_merge" />
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'chapter3_variable',
+      background: './src/resource/background/beach.jpg',
+      template: './src/screen/main.html'
+    }
+
+    export let testVal = 0;
+  </script>
+</scene>

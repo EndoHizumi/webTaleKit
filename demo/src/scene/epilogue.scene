@@ -1,0 +1,36 @@
+<scene>
+  <scenario>
+    <sound mode="bgm" src="./src/resource/bgm/calm_music.wav" />
+    <show src="./src/resource/chara/guide.png" name="ミューズ" pos="center:middle" />
+    <say name="ミューズ">ここまでの旅、お疲れ様でした。</say>
+    <say name="ミューズ">テキスト演出、キャラクター表示、選択肢と分岐、サウンド制御、ビジュアルエフェクト......</say>
+    <say name="ミューズ"><ruby text="ウェブテールキット">WebTaleKit</ruby>の主要な機能を一通り体験していただきました。</say>
+    <say name="主人公">なるほど、これだけの機能があれば、いろんな物語が作れそうだ。</say>
+    <say name="ミューズ">ええ。あとはあなたの想像力次第です。</say>
+    <say name="ミューズ">最後に、この冒険の締めくくりとして、エンディングを選んでください。</say>
+    <choice prompt="どのエンディングを迎えますか？">
+      <item label="開発者の道 - コードと共に歩む" onSelect="developer">
+        <call method="endingType = 'developer'" />
+        <route to="ending" />
+      </item>
+      <item label="物語の道 - 新たな世界を紡ぐ" onSelect="storyteller">
+        <call method="endingType = 'storyteller'" />
+        <route to="ending" />
+      </item>
+      <item label="探求の道 - さらなる可能性を求めて" onSelect="explorer">
+        <call method="endingType = 'explorer'" />
+        <route to="ending" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'epilogue',
+      background: './src/resource/background/sunset.jpg',
+      template: './src/screen/main.html'
+    }
+
+    export let endingType = '';
+  </script>
+</scene>

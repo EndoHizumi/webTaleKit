@@ -1,0 +1,35 @@
+<scene>
+  <scenario>
+    <say name="ミューズ">Chapter 1: <b>テキスト演出</b>の世界へようこそ。</say>
+    <show src="./src/resource/chara/guide.png" name="ミューズ" pos="right:middle" />
+    <say name="ミューズ">ビジュアルノベルで最も重要なのは、テキストの見せ方です。</say>
+    <say name="ミューズ">まず、テキストの<b>表示速度</b>を変えてみましょう。</say>
+    <text speed="10">これは高速表示です。一気に文字が流れていきます。</text>
+    <text speed="150">こ、ち、ら、は......ゆっくり表示。一文字ずつ、じっくりと。</text>
+    <say name="ミューズ">次は<b>文字装飾</b>です。</say>
+    <text>
+      <color value="#569cd6">青い文字</color>で技術的な説明をしたり、
+      <color value="#ce9178">オレンジ</color>で強調したり、
+      <color value="#4ec9b0">緑</color>でキーワードを示したり。
+    </text>
+    <text>
+      もちろん、<b>太字</b>や<i>斜体</i>も使えます。
+    </text>
+    <say name="ミューズ"><ruby text="ウェブテールキット">WebTaleKit</ruby>では、<ruby text="ルビ">振り仮名</ruby>も簡単に付けられます。</say>
+    <text>
+      改行も<br>自由自在に<br>制御できます。
+    </text>
+    <say name="ミューズ">テキスト中に一時停止を入れることもできます。</say>
+    <text>3、2、1、<wait time="1000" />...はい！ 今、少し間が空きましたね。</text>
+    <say name="ミューズ">これがテキスト演出の基本です。では、次に進みましょう。</say>
+    <route to="chapter2" />
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'chapter1',
+      background: './src/resource/background/library.jpg',
+      template: './src/screen/main.html'
+    }
+  </script>
+</scene>

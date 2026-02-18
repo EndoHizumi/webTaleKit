@@ -1,0 +1,31 @@
+<scene>
+  <scenario>
+    <say name="ミューズ">Chapter 4: <b>サウンド制御</b>の時間です。</say>
+    <show src="./src/resource/chara/guide.png" name="ミューズ" pos="right:middle" />
+    <say name="ミューズ">ビジュアルノベルに音楽は欠かせません。まず、BGMを再生してみましょう。</say>
+    <sound mode="bgm" src="./src/resource/bgm/calm_music.wav" />
+    <say name="ミューズ">穏やかなBGMが流れ始めました。soundコマンドのmode="bgm"で再生できます。</say>
+    <say name="ミューズ">次は効果音です。</say>
+    <sound mode="se" src="./src/resource/se/doorbell.mp3" play />
+    <say name="ミューズ">今の音が聞こえましたか？ mode="se"で効果音を鳴らせます。</say>
+    <say name="ミューズ">BGMを別の曲に切り替えてみましょう。</say>
+    <sound mode="bgm" src="./src/resource/bgm/nc366476_Virtual_Voyage.mp3" />
+    <say name="ミューズ">BGMが切り替わりました。ゲームのシーンに合わせて音楽を変えられます。</say>
+    <say name="ミューズ">効果音はループ再生もできます。</say>
+    <sound mode="se" src="./src/resource/se/doorbell.mp3" play loop />
+    <say name="ミューズ">ループ中の効果音は、stopで停止できます。</say>
+    <sound name="doorbell.mp3" stop />
+    <say name="ミューズ">止まりましたね。サウンド制御の基本は以上です。</say>
+    <say name="ミューズ">次は<b>ビジュアルエフェクト</b>を見てみましょう。</say>
+    <hide name="ミューズ" />
+    <route to="chapter5" />
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'chapter4',
+      background: './src/resource/background/music_room.jpg',
+      template: './src/screen/main.html'
+    }
+  </script>
+</scene>

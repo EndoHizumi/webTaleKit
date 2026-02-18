@@ -1,0 +1,32 @@
+<scene>
+  <scenario>
+    <show src="./src/resource/chara/guide.png" name="ミューズ" pos="center:middle" />
+    <say name="ミューズ">お帰りなさい。ここが合流地点です。</say>
+    <say name="ミューズ">どちらのルートを通っても、ここに辿り着けるようになっています。</say>
+    <say name="ミューズ">ここでもif属性のデモをしてみましょう。</say>
+    <text>変数mergeTestを設定します。</text>
+    <call method="mergeTest = 'hello'" />
+    <text>mergeTestの値: {{mergeTest}}</text>
+    <if condition="mergeTest == 'hello'">
+      <then>
+        <say name="ミューズ">if/then/else構文も使えます。今、then側が実行されています。</say>
+      </then>
+      <else>
+        <say name="ミューズ">こちらはelse側です。</say>
+      </else>
+    </if>
+    <say name="ミューズ">選択肢と変数管理の基本は以上です。次は<b>サウンド制御</b>に進みましょう。</say>
+    <hide name="ミューズ" />
+    <route to="chapter4" />
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'chapter3_merge',
+      background: './src/resource/background/city.jpg',
+      template: './src/screen/main.html'
+    }
+
+    export let mergeTest = '';
+  </script>
+</scene>

@@ -1,0 +1,36 @@
+<scene>
+  <scenario>
+    <show src="./src/resource/chara/guide.png" name="ミューズ" pos="right:middle" />
+    <say name="ミューズ">Route A: <b>選択肢機能</b>の詳細です。</say>
+    <say name="ミューズ">選択肢は、プレイヤーに複数の選択を提示できます。</say>
+    <say name="ミューズ">2択だけでなく、4択まで自由に設定できますよ。試してみましょう。</say>
+    <choice prompt="好きなプログラミング言語は？">
+      <item label="TypeScript" onSelect="ts">
+        <say name="ミューズ">TypeScript！ WebTaleKitの開発にも使われていますね。型安全は正義です。</say>
+      </item>
+      <item label="Python" onSelect="py">
+        <say name="ミューズ">Python！ シンプルで美しい言語ですね。AIの分野でも大活躍です。</say>
+      </item>
+      <item label="Rust" onSelect="rs">
+        <say name="ミューズ">Rust！ 安全性とパフォーマンスの両立。挑戦的な選択ですね。</say>
+      </item>
+      <item label="その他" onSelect="other">
+        <say name="ミューズ">独自の道を行くタイプですね。どんな言語にも良さがあります。</say>
+      </item>
+    </choice>
+    <say name="ミューズ">このように、選択肢の中にそれぞれ異なる応答を書くことができます。</say>
+    <say name="ミューズ">では、合流地点に進みましょう。</say>
+    <call method="choiceFirst = true" />
+    <route to="chapter3_merge" />
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'chapter3_choice',
+      background: './src/resource/background/forest.jpg',
+      template: './src/screen/main.html'
+    }
+
+    export let choiceFirst = false;
+  </script>
+</scene>

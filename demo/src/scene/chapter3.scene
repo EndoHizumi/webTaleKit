@@ -1,0 +1,24 @@
+<scene>
+  <scenario>
+    <say name="ミューズ">Chapter 3: <b>選択肢と分岐</b>の仕組みです。</say>
+    <show src="./src/resource/chara/guide.png" name="ミューズ" pos="center:middle" />
+    <say name="ミューズ">ビジュアルノベルの醍醐味は、プレイヤーが物語を選べることですね。</say>
+    <say name="ミューズ">ここで2つのルートに分かれます。どちらを先に体験しますか？</say>
+    <choice prompt="どちらのルートを選びますか？">
+      <item label="選択肢機能を体験する" onSelect="choiceRoute">
+        <route to="chapter3_choice" />
+      </item>
+      <item label="変数・条件分岐を体験する" onSelect="variableRoute">
+        <route to="chapter3_variable" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'chapter3',
+      background: './src/resource/background/crossroad.jpg',
+      template: './src/screen/main.html'
+    }
+  </script>
+</scene>

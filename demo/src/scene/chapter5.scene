@@ -1,0 +1,40 @@
+<scene>
+  <scenario>
+    <say name="ミューズ">Chapter 5: <b>ビジュアルエフェクト</b>の実演です。</say>
+    <show src="./src/resource/chara/guide.png" name="ミューズ" pos="center:middle" />
+    <say name="ミューズ">画像にフィルター効果を適用できます。まず、セピア調にしてみましょう。</say>
+    <show mode="cg" src="./src/resource/background/laboratory.jpg" sepia="80" />
+    <say name="ミューズ">背景がセピア調になりました。ノスタルジックな雰囲気ですね。</say>
+    <say name="ミューズ">次はモノクロです。</say>
+    <show mode="cg" src="./src/resource/background/laboratory.jpg" mono="100" />
+    <say name="ミューズ">白黒の世界。回想シーンなどに使えそうですね。</say>
+    <say name="ミューズ">ぼかし効果もあります。</say>
+    <show mode="cg" src="./src/resource/background/laboratory.jpg" blur="5" />
+    <say name="ミューズ">背景をぼかして、キャラクターに注目させる演出です。</say>
+    <say name="ミューズ">元に戻しましょう。</say>
+    <show mode="cg" src="./src/resource/background/laboratory.jpg" />
+    <show src="./src/resource/chara/guide.png" name="ミューズ" pos="center:middle" />
+    <say name="ミューズ">キャラクターにもフィルターを適用できますよ。</say>
+    <show src="./src/resource/chara/guide.png" name="ミューズ" pos="center:middle" sepia="80" />
+    <say name="ミューズ">私がセピア調に......なんだか古い写真みたいですね。</say>
+    <show src="./src/resource/chara/guide.png" name="ミューズ" pos="center:middle" />
+    <say name="ミューズ">アニメーションも組み合わせてみましょう。</say>
+    <show src="./src/resource/chara/dancer.png" name="ダンサー" pos="left:middle" />
+    <say name="ダンサー">動きのデモンストレーションです！</say>
+    <moveTo name="ダンサー" x="200" y="0" duration="2" />
+    <moveTo name="ダンサー" x="-200" y="0" duration="2" />
+    <say name="ミューズ">moveToで滑らかなアニメーションが実現できます。</say>
+    <hide name="ダンサー" />
+    <say name="ミューズ">エフェクトの紹介は以上です。いよいよ最終章に進みましょう。</say>
+    <hide name="ミューズ" />
+    <route to="epilogue" />
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'chapter5',
+      background: './src/resource/background/laboratory.jpg',
+      template: './src/screen/main.html'
+    }
+  </script>
+</scene>

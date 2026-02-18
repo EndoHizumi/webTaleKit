@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初音の調べ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap');
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Noto Sans JP', 'Consolas', 'Courier New', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #1e1e1e;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 1280px;
+            height: 720px;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #interactiveView {
+            position: absolute;
+            width: 100%;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-content: center;
+            top: 0px;
+            z-index: 10;
+        }
+
+        /* VSCode-style Name Box */
+        #nameView {
+            user-select: none;
+            position: absolute;
+            top: -8px;
+            left: 16px;
+            width: auto;
+            max-width: 300px;
+            height: auto;
+            color: #569cd6;
+            padding: 4px 16px;
+            box-sizing: border-box;
+            font-weight: bold;
+            font-size: 16px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            letter-spacing: 0.5px;
+        }
+
+        /* VSCode-style Message Window */
+        #messageWindow {
+            user-select: none;
+            position: absolute;
+            bottom: 36px;
+            left: 0;
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(
+                180deg,
+                rgba(30, 30, 30, 0.92) 0%,
+                rgba(37, 37, 38, 0.95) 100%
+            );
+            border-top: 1px solid #007acc;
+            color: #d4d4d4;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        p#messageView {
+            padding-left: 30px;
+            padding-top: 28px;
+            padding-right: 30px;
+            font-size: 16px;
+            line-height: 1.7;
+            letter-spacing: 0.3px;
+            margin: 0;
+        }
+
+        /* VSCode-style Bottom Bar */
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 36px;
+            background-color: #007acc;
+            color: #fff;
+            font-size: 12px;
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+
+        .control-item {
+            text-decoration: none;
+            color: #fff;
+            padding: 0 8px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.15s;
+            font-size: 12px;
+        }
+
+        .control-item:hover {
+            background-color: rgba(255, 255, 255, 0.12);
+        }
+
+        /* Wait indicator */
+        #waitCircle {
+            position: absolute;
+            right: 16px;
+            bottom: 46px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="main">
+        <div id="interactiveView"></div>
+        <div id="messageWindow">
+            <p id="nameView"></p>
+            <p id="messageView"></p>
+            <img id="waitCircle" src="./src/resource/system/wait.gif" style="visibility: hidden;" width="20px"
+                height="20px">
+        </div>
+        <div class="controls">
+            <a href="#" class="control-item">skip</a>
+            <a href="#" class="control-item">auto</a>
+            <a href="#" class="control-item">save</a>
+            <a href="#" class="control-item">load</a>
+            <a href="#" class="control-item">q.save</a>
+            <a href="#" class="control-item">q.load</a>
+            <a href="#" class="control-item">log</a>
+            <a href="#" class="control-item">config</a>
+            <a href="#" class="control-item">title</a>
+            <a href="#" class="control-item">close</a>
+        </div>
+    </div>
+</body>
+
+</html>

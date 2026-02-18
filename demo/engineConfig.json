@@ -1,0 +1,10 @@
+{
+  "title": "初音の調べ",
+  "description": "WebTaleKit Sample Game - 初音の調べ (HATSUNE no Shirabe)",
+  "resolution": {
+    "width": 1280,
+    "height": 720
+  },
+  "fullScreen": "false",
+  "url": ""
+}

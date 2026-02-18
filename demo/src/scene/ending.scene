@@ -1,0 +1,53 @@
+<scene>
+  <scenario>
+    <show src="./src/resource/chara/guide.png" name="ミューズ" pos="center:middle" />
+
+    <if condition="endingType == 'developer'">
+      <then>
+        <say name="ナレーター">─── Ending A: 開発者の道 ───</say>
+        <say name="主人公">よし、このエンジンを使って、もっとすごいゲームを作ろう。</say>
+        <say name="ミューズ">あなたのコードが、誰かの物語を動かす日が来るでしょう。</say>
+        <say name="ミューズ">ソースコードはあなたの手の中に。さあ、創造を始めましょう。</say>
+      </then>
+      <else>
+        <if condition="endingType == 'storyteller'">
+          <then>
+            <say name="ナレーター">─── Ending B: 物語の道 ───</say>
+            <say name="主人公">技術は手段だ。大切なのは、伝えたい物語があること。</say>
+            <say name="ミューズ">その通りです。どんな技術も、物語があってこそ輝きます。</say>
+            <say name="ミューズ">あなただけの物語を、この世界に紡いでください。</say>
+          </then>
+          <else>
+            <say name="ナレーター">─── Ending C: 探求の道 ───</say>
+            <say name="主人公">まだまだ知らない機能がありそうだ。もっと深く探ってみよう。</say>
+            <say name="ミューズ">素晴らしい好奇心ですね。APIやプラグインの世界も待っていますよ。</say>
+            <say name="ミューズ">探求に終わりはありません。新しい発見を楽しんでください。</say>
+          </else>
+        </if>
+      </else>
+    </if>
+
+    <say name="ミューズ">それでは、また会える日を楽しみにしています。</say>
+    <text>───────────────────────────</text>
+    <text>「<ruby text="はつね">初音</ruby>の<ruby text="しらべ">調べ</ruby>」  Fin.</text>
+    <text>───────────────────────────</text>
+    <text>Powered by WebTaleKit</text>
+    <hide name="ミューズ" />
+    <choice prompt="">
+      <item label="タイトルに戻る" onSelect="title">
+        <route to="title" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'ending',
+      background: './src/resource/background/title_bg.png',
+      bgm: './src/resource/bgm/title_theme.mp3',
+      template: './src/screen/main.html'
+    }
+
+    export let endingType = 'explorer';
+  </script>
+</scene>

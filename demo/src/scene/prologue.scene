@@ -1,0 +1,29 @@
+<scene>
+  <scenario>
+    <say name="ナレーター">深夜のオフィス。モニターの青白い光だけが部屋を照らしている。</say>
+    <sound mode="bgm" src="./src/resource/bgm/calm_music.wav" />
+    <say name="ナレーター">一人のプログラマーが、キーボードに向かっていた。</say>
+    <text speed="10">カタカタカタ......カタカタ......</text>
+    <say name="主人公">よし、<ruby text="ウェブテールキット">WebTaleKit</ruby>のサンプルゲームを作るか。</say>
+    <say name="主人公">でも、どんなストーリーにすればいいんだろう。</say>
+    <text>
+      <wait time="1000" />...ふと、画面がちらついた。
+    </text>
+    <show src="./src/resource/chara/guide.png" name="ミューズ" pos="center:middle" />
+    <say name="？？？">こんばんは。あなたが、このエンジンの作り手ですね。</say>
+    <say name="主人公">えっ!? 誰だ!?</say>
+    <say name="？？？">私はミューズ。物語の案内人です。</say>
+    <say name="ミューズ">あなたがこのエンジンで何ができるのか、一緒に見ていきましょう。</say>
+    <say name="主人公">な、なんだかよくわからないけど......面白そうだ。</say>
+    <say name="ミューズ">では、まずは<b>テキスト表示</b>の機能から始めましょうか。</say>
+    <route to="chapter1" />
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'prologue',
+      background: './src/resource/background/living_room.jpg',
+      template: './src/screen/main.html'
+    }
+  </script>
+</scene>
