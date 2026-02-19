@@ -293,6 +293,7 @@ export class Drawer {
         this.drawCanvas(img, pos, size, reverse)
       }
     }
+    this.adjustScale(this.gameScreen)
   }
 
   moveTo(name: string, displayedImages: any, pos: { x: number; y: number }, durning: number) {
