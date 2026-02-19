@@ -22,8 +22,9 @@
   <script>
     export const sceneConfig = {
       name: 'prologue',
-      background: './src/resource/background/living_room.jpg',
-      template: './src/screen/main.html'
+      background: './src/resource/background/pcroom.jpg',
+      template: './src/screen/main.html',
+      bgm: './src/resource/bgm/calm_music.wav'
     }
   </script>
 </scene>
