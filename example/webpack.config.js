@@ -19,6 +19,9 @@ module.exports = {
       util: false,
       assert: false,
     },
+    alias: {
+      'webtalekit-alpha': path.resolve(__dirname, '..'),
+    },
   },
   externals: {
     webtalekit: 'commonjs webtalekit',
@@ -60,7 +63,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\\.ts$/,
+        test: /\.ts$/,
         use: 'ts-loader',
         exclude: /node_modules/,
       },
