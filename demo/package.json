@@ -13,7 +13,7 @@
     "console-browserify": "^1.2.0",
     "html-webpack-plugin": "^5.6.0",
     "storejs": "^2.1.0",
-    "webtalekit-alpha": "^0.2.13"
+    "webtalekit-alpha": "0.2.11"
   },
   "devDependencies": {
     "filemanager-webpack-plugin": "^8.0.0",
