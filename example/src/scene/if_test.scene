@@ -1,25 +1,52 @@
 <scene>
   <scenario>
-    <text>ifグローバル属性のテストです。</text>
-    <text>変数hogeの値を設定します。</text>
+    <text>【callタグ機能テスト】</text>
+    <text>callタグとifグローバル属性の動作を確認します。</text>
     
+    <text>―――――――――――――――――――――</text>
+    <text>■初期状態</text>
+    <text>変数hogeの初期値: {{hoge}}</text>
+    <text>変数countの初期値: {{count}}</text>
+    
+    <text>―――――――――――――――――――――</text>
+    <text>■テスト1: 値の代入</text>
+    <text>callタグで hoge = 1 を実行します。</text>
     <call method="hoge = 1" />
+    <text>実行後のhogeの値: {{hoge}}</text>
+    <text if="hoge==1">✓ hoge==1 の条件で表示（正常）</text>
+    <text if="hoge==2">✗ hoge==2 の条件で表示（エラー：表示されてはいけません）</text>
     
-    <text>現在のhogeの値: {{hoge}}</text>
-    
-    <text if="hoge==1">この文章はhoge==1の場合に表示されます。</text>
-    <text if="hoge==2">この文章はhoge==2の場合に表示されます。</text>
-    
-    <text>hogeの値を2に変更します。</text>
-    
+    <text>―――――――――――――――――――――</text>
+    <text>■テスト2: 値の変更</text>
+    <text>callタグで hoge = 2 を実行します。</text>
     <call method="hoge = 2" />
+    <text>実行後のhogeの値: {{hoge}}</text>
+    <text if="hoge==1">✗ hoge==1 の条件で表示（エラー：表示されてはいけません）</text>
+    <text if="hoge==2">✓ hoge==2 の条件で表示（正常）</text>
     
-    <text>現在のhogeの値: {{hoge}}</text>
+    <text>―――――――――――――――――――――</text>
+    <text>■テスト3: 計算式</text>
+    <text>callタグで count = count + 1 を実行します。</text>
+    <call method="count = count + 1" />
+    <text>実行後のcountの値: {{count}}</text>
+    <text if="count==1">✓ count==1 の条件で表示（正常）</text>
     
-    <text if="hoge==1">この文章はhoge==1の場合に表示されます。</text>
-    <text if="hoge==2">この文章はhoge==2の場合に表示されます。</text>
+    <text>もう一度実行します。</text>
+    <call method="count = count + 1" />
+    <text>実行後のcountの値: {{count}}</text>
+    <text if="count==2">✓ count==2 の条件で表示（正常）</text>
     
-    <text>ifグローバル属性のテストが完了しました。</text>
+    <text>―――――――――――――――――――――</text>
+    <text>■テスト4: 複雑な式</text>
+    <text>callタグで result = hoge * count を実行します。</text>
+    <call method="result = hoge * count" />
+    <text>実行後のresultの値: {{result}}</text>
+    <text>（{{hoge}} × {{count}} = {{result}}）</text>
+    <text if="result==4">✓ result==4 の条件で表示（正常）</text>
+    
+    <text>―――――――――――――――――――――</text>
+    <text>【テスト完了】</text>
+    <text>callタグとifグローバル属性が正常に動作しています！</text>
     
     <route to="title" />
   </scenario>
@@ -33,5 +60,7 @@
     }
     
     export let hoge = 2;
+    export let count = 0;
+    export let result = 0;
   </script>
 </scene>
