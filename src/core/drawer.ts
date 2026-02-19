@@ -70,16 +70,23 @@ export class Drawer {
       this.messageText.appendChild(containerElement)
       element = containerElement
     }
+
+    // パフォーマンス最適化: テキストノードを使用してDOM再構築を回避
+    const textNode = document.createTextNode('')
+    element.appendChild(textNode)
+
+    let displayedLength = 0
     for (const char of text) {
       //prettier-ignore
       setTimeout(() => { this.readySkip = true, wait });
       // 100ミリ秒待ってから、スキップボタンが押されたら即座に表示
       if (!this.isSkip) {
-        element.innerHTML += char
+        textNode.textContent += char
+        displayedLength++
         await sleep(wait)
       } else {
         if (this.readySkip) {
-          element.innerHTML += text.slice(element.textContent!.length)
+          textNode.textContent += text.slice(displayedLength)
           this.readySkip = false
           this.isSkip = false
           break
@@ -90,8 +97,9 @@ export class Drawer {
   }
 
   async drawLineBreak() {
-    // メッセージテキストに改行を追加する
-    this.messageText.innerHTML += '<br>'
+    // パフォーマンス最適化: createElement を使用
+    const br = document.createElement('br')
+    this.messageText.appendChild(br)
   } 
 
   clearText() {
@@ -350,8 +358,17 @@ export class Drawer {
     // 幅と高さのうち、小さい方のスケールを選択（アスペクト比を維持）
     const scale = Math.min(scaleX, scaleY)
 
-    // ターゲット要素にスケールを適用
-    targetElement.style.transform = `scale(${scale})`
+    // スケール後のサイズを計算
+    const scaledWidth = originalWidth * scale
+    const scaledHeight = originalHeight * scale
+
+    // 中央配置のための位置を計算
+    const offsetX = (viewportWidth - scaledWidth) / 2
+    const offsetY = (viewportHeight - scaledHeight) / 2
+
+    // ターゲット要素にスケールと位置を適用
+    targetElement.style.transformOrigin = 'top left'
+    targetElement.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`
   }
 
   setVisibility(name: string, isVisible: boolean) {
