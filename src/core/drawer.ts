@@ -129,30 +129,32 @@ export class Drawer {
     // 選択肢ボタンの配置を設定する
     const interactiveView = document.querySelector('#interactiveView') as HTMLElement
     const CHOICE_HEIGHT = 50 // 1つの選択肢の高さ（px） - button.style.heightと一致させる必要がある
-    const MAX_VISIBLE_CHOICES = 8 // 同時に表示する最大選択肢数
+    const TWO_COLUMN_THRESHOLD = 6 // 2列レイアウトに切り替える選択肢の数
 
     if (choices.position == 'auto' || choices.position === undefined) {
       interactiveView.className = 'auto'
       
-      // 選択肢の数に応じて高さを調整
+      // 選択肢の数に応じてレイアウトを調整
       const choiceCount = choices.content.length
       
-      if (choiceCount > MAX_VISIBLE_CHOICES) {
-        // 多数の選択肢がある場合、スクロール可能にする
-        interactiveView.style.overflowY = 'auto'
-        interactiveView.style.overflowX = 'hidden'
-        interactiveView.style.maxHeight = `${MAX_VISIBLE_CHOICES * CHOICE_HEIGHT}px`
-        interactiveView.style.flexWrap = 'nowrap'
+      if (choiceCount >= TWO_COLUMN_THRESHOLD) {
+        // 6つ以上の選択肢がある場合、2列レイアウトに切り替え
+        interactiveView.style.flexWrap = 'wrap'
+        interactiveView.style.columnGap = '20px' // 列間の余白を減らす
+        interactiveView.style.alignContent = 'center'
       } else {
         // 少数の選択肢の場合、通常通り表示
-        interactiveView.style.overflowY = 'initial'
-        interactiveView.style.maxHeight = 'none'
         interactiveView.style.flexWrap = 'wrap'
+        interactiveView.style.columnGap = ''
+        interactiveView.style.alignContent = 'center'
       }
     } else {
       interactiveView.className = 'manual'
     }
     // 選択肢を表示
+    const choiceCount = choices.content.length
+    const useTwoColumns = choiceCount >= TWO_COLUMN_THRESHOLD
+    
     for (const choice of choices.content) {
       const defaultImage =
         choice.default !== undefined ? choice.default : './src/resource/system/systemPicture/02_button/button.png'
@@ -168,7 +170,8 @@ export class Drawer {
         button.style.left = choice.position?.x || 0
       }
       button.style.color = choice.color !== undefined ? choice.color.default : 'black'
-      button.style.width = '100%'
+      // 2列レイアウトの場合は幅を調整
+      button.style.width = useTwoColumns ? 'calc(50% - 10px)' : '100%'
       button.style.height = '50px'
       button.style.backgroundImage = `url(${defaultImage})`
       button.style.textAlign = 'center'
