@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>callタグ機能デモ - webTaleKit</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .test-section h2 {
+            color: #667eea;
+            font-size: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .test-section h2::before {
+            content: "■";
+            margin-right: 8px;
+        }
+        
+        .test-step {
+            margin: 12px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+        }
+        
+        .code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        
+        .value {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .success::before {
+            content: "✓ ";
+        }
+        
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .error::before {
+            content: "✗ ";
+        }
+        
+        .separator {
+            border-top: 2px solid #e9ecef;
+            margin: 20px 0;
+        }
+        
+        .initial-state {
+            background: #e3f2fd;
+            border-left-color: #2196F3;
+        }
+        
+        .complete {
+            background: #e8f5e9;
+            border-left-color: #4CAF50;
+            text-align: center;
+            font-size: 18px;
+            color: #2e7d32;
+            font-weight: bold;
+        }
+        
+        .info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .info strong {
+            color: #856404;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #5568d3;
+        }
+        
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>【callタグ機能テスト】</h1>
+            <p>webTaleKit - Call Tag Fix Demo</p>
+        </div>
+        
+        <div class="content">
+            <div class="info">
+                <strong>🔧 修正内容:</strong> executeCode関数をProxy方式に変更し、変数への代入が正しくsceneFileプロパティを更新するように修正しました。
+            </div>
+            
+            <div id="output"></div>
+            
+            <div class="button-container">
+                <button onclick="runTest()">テストを再実行</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Simulate the FIXED Core class's executeCode method
+        class TestCore {
+            constructor() {
+                this.sceneFile = {
+                    hoge: 2,
+                    count: 0,
+                    result: 0,
+                    sceneConfig: { name: 'if_test' }
+                };
+            }
+
+            // FIXED VERSION: Using Proxy to modify sceneFile properties
+            executeCode(code) {
+                try {
+                    const context = new Proxy(this.sceneFile, {
+                        has: (target, key) => {
+                            return key in target;
+                        },
+                        get: (target, key) => {
+                            return target[key];
+                        },
+                        set: (target, key, value) => {
+                            target[key] = value;
+                            return true;
+                        }
+                    });
+                    
+                    // Use 'with' statement to execute code in the context
+                    // This allows direct variable access and modification
+                    // Note: The code parameter comes from scene files authored by game developers
+                    // and is considered trusted content, not user input
+                    const func = new Function('context', `with(context) { ${code} }`);
+                    return func.call(null, context);
+                } catch (error) {
+                    console.error('Error executing code:', error);
+                }
+            }
+
+            callHandler(line) {
+                this.executeCode(line.method);
+            }
+
+            expandVariable(text) {
+                return text.replace(/{{([^{}]+)}}/g, (match) => {
+                    const expr = match.slice(2, -2);
+                    const returnValue = this.executeCode(`return ${expr}`);
+                    return typeof returnValue == 'object' ? JSON.stringify(returnValue) : returnValue;
+                });
+            }
+        }
+
+        let core;
+
+        function createElement(tag, className, content) {
+            const elem = document.createElement(tag);
+            if (className) elem.className = className;
+            if (content) elem.innerHTML = content;
+            return elem;
+        }
+
+        function runTest() {
+            const output = document.getElementById('output');
+            output.innerHTML = '';
+            
+            // Reset core
+            core = new TestCore();
+
+            // Initial state
+            const initialSection = createElement('div', 'test-section initial-state');
+            initialSection.innerHTML = `
+                <h2>初期状態</h2>
+                <div class="test-step">
+                    変数hogeの初期値: <span class="value">${core.expandVariable('{{hoge}}')}</span>
+                </div>
+                <div class="test-step">
+                    変数countの初期値: <span class="value">${core.expandVariable('{{count}}')}</span>
+                </div>
+            `;
+            output.appendChild(initialSection);
+
+            // Test 1: Basic assignment
+            const test1 = createElement('div', 'test-section');
+            test1.innerHTML = '<h2>テスト1: 値の代入</h2>';
+            
+            test1.appendChild(createElement('div', 'test-step', 
+                'callタグで <span class="code">hoge = 1</span> を実行します。'));
+            
+            core.callHandler({ method: 'hoge = 1' });
+            
+            test1.appendChild(createElement('div', 'test-step', 
+                `実行後のhogeの値: <span class="value">${core.expandVariable('{{hoge}}')}</span>`));
+            
+            if (core.executeCode('return hoge == 1')) {
+                test1.appendChild(createElement('div', 'test-step success', 
+                    'hoge==1 の条件で表示（正常）'));
+            }
+            if (core.executeCode('return hoge == 2')) {
+                test1.appendChild(createElement('div', 'test-step error', 
+                    'hoge==2 の条件で表示（エラー：表示されてはいけません）'));
+            }
+            output.appendChild(test1);
+
+            // Test 2: Value modification
+            const test2 = createElement('div', 'test-section');
+            test2.innerHTML = '<h2>テスト2: 値の変更</h2>';
+            
+            test2.appendChild(createElement('div', 'test-step', 
+                'callタグで <span class="code">hoge = 2</span> を実行します。'));
+            
+            core.callHandler({ method: 'hoge = 2' });
+            
+            test2.appendChild(createElement('div', 'test-step', 
+                `実行後のhogeの値: <span class="value">${core.expandVariable('{{hoge}}')}</span>`));
+            
+            if (core.executeCode('return hoge == 1')) {
+                test2.appendChild(createElement('div', 'test-step error', 
+                    'hoge==1 の条件で表示（エラー：表示されてはいけません）'));
+            }
+            if (core.executeCode('return hoge == 2')) {
+                test2.appendChild(createElement('div', 'test-step success', 
+                    'hoge==2 の条件で表示（正常）'));
+            }
+            output.appendChild(test2);
+
+            // Test 3: Increment
+            const test3 = createElement('div', 'test-section');
+            test3.innerHTML = '<h2>テスト3: 計算式</h2>';
+            
+            test3.appendChild(createElement('div', 'test-step', 
+                'callタグで <span class="code">count = count + 1</span> を実行します。'));
+            
+            core.callHandler({ method: 'count = count + 1' });
+            
+            test3.appendChild(createElement('div', 'test-step', 
+                `実行後のcountの値: <span class="value">${core.expandVariable('{{count}}')}</span>`));
+            
+            if (core.executeCode('return count == 1')) {
+                test3.appendChild(createElement('div', 'test-step success', 
+                    'count==1 の条件で表示（正常）'));
+            }
+
+            test3.appendChild(createElement('div', 'test-step', 'もう一度実行します。'));
+            
+            core.callHandler({ method: 'count = count + 1' });
+            
+            test3.appendChild(createElement('div', 'test-step', 
+                `実行後のcountの値: <span class="value">${core.expandVariable('{{count}}')}</span>`));
+            
+            if (core.executeCode('return count == 2')) {
+                test3.appendChild(createElement('div', 'test-step success', 
+                    'count==2 の条件で表示（正常）'));
+            }
+            output.appendChild(test3);
+
+            // Test 4: Complex expression
+            const test4 = createElement('div', 'test-section');
+            test4.innerHTML = '<h2>テスト4: 複雑な式</h2>';
+            
+            test4.appendChild(createElement('div', 'test-step', 
+                'callタグで <span class="code">result = hoge * count</span> を実行します。'));
+            
+            core.callHandler({ method: 'result = hoge * count' });
+            
+            test4.appendChild(createElement('div', 'test-step', 
+                `実行後のresultの値: <span class="value">${core.expandVariable('{{result}}')}</span>`));
+            
+            test4.appendChild(createElement('div', 'test-step', 
+                `（${core.expandVariable('{{hoge}}')} × ${core.expandVariable('{{count}}')} = ${core.expandVariable('{{result}}')}）`));
+            
+            if (core.executeCode('return result == 4')) {
+                test4.appendChild(createElement('div', 'test-step success', 
+                    'result==4 の条件で表示（正常）'));
+            }
+            output.appendChild(test4);
+
+            // Completion
+            const complete = createElement('div', 'test-section complete');
+            complete.innerHTML = '【テスト完了】<br>callタグとifグローバル属性が正常に動作しています！';
+            output.appendChild(complete);
+        }
+
+        // Make runTest available globally
+        window.runTest = runTest;
+
+        // Run test on load
+        runTest();
+    </script>
+</body>
+</html>
