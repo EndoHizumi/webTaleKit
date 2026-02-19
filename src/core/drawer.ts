@@ -70,16 +70,23 @@ export class Drawer {
       this.messageText.appendChild(containerElement)
       element = containerElement
     }
+
+    // パフォーマンス最適化: テキストノードを使用してDOM再構築を回避
+    const textNode = document.createTextNode('')
+    element.appendChild(textNode)
+
+    let displayedLength = 0
     for (const char of text) {
       //prettier-ignore
       setTimeout(() => { this.readySkip = true, wait });
       // 100ミリ秒待ってから、スキップボタンが押されたら即座に表示
       if (!this.isSkip) {
-        element.innerHTML += char
+        textNode.textContent += char
+        displayedLength++
         await sleep(wait)
       } else {
         if (this.readySkip) {
-          element.innerHTML += text.slice(element.textContent!.length)
+          textNode.textContent += text.slice(displayedLength)
           this.readySkip = false
           this.isSkip = false
           break
@@ -90,8 +97,9 @@ export class Drawer {
   }
 
   async drawLineBreak() {
-    // メッセージテキストに改行を追加する
-    this.messageText.innerHTML += '<br>'
+    // パフォーマンス最適化: createElement を使用
+    const br = document.createElement('br')
+    this.messageText.appendChild(br)
   } 
 
   clearText() {
@@ -128,12 +136,33 @@ export class Drawer {
 
     // 選択肢ボタンの配置を設定する
     const interactiveView = document.querySelector('#interactiveView') as HTMLElement
+    const CHOICE_HEIGHT = 50 // 1つの選択肢の高さ（px） - button.style.heightと一致させる必要がある
+    const TWO_COLUMN_THRESHOLD = 6 // 2列レイアウトに切り替える選択肢の数
+
     if (choices.position == 'auto' || choices.position === undefined) {
       interactiveView.className = 'auto'
+      
+      // 選択肢の数に応じてレイアウトを調整
+      const choiceCount = choices.content.length
+      
+      if (choiceCount >= TWO_COLUMN_THRESHOLD) {
+        // 6つ以上の選択肢がある場合、2列レイアウトに切り替え
+        interactiveView.style.flexWrap = 'wrap'
+        interactiveView.style.columnGap = '20px' // 列間の余白を減らす
+        interactiveView.style.alignContent = 'center'
+      } else {
+        // 少数の選択肢の場合、通常通り表示
+        interactiveView.style.flexWrap = 'wrap'
+        interactiveView.style.columnGap = ''
+        interactiveView.style.alignContent = 'center'
+      }
     } else {
       interactiveView.className = 'manual'
     }
     // 選択肢を表示
+    const choiceCount = choices.content.length
+    const useTwoColumns = choiceCount >= TWO_COLUMN_THRESHOLD
+    
     for (const choice of choices.content) {
       const defaultImage =
         choice.default !== undefined ? choice.default : './src/resource/system/systemPicture/02_button/button.png'
@@ -149,7 +178,8 @@ export class Drawer {
         button.style.left = choice.position?.x || 0
       }
       button.style.color = choice.color !== undefined ? choice.color.default : 'black'
-      button.style.width = '100%'
+      // 2列レイアウトの場合は幅を調整
+      button.style.width = useTwoColumns ? 'calc(50% - 10px)' : '100%'
       button.style.height = '50px'
       button.style.backgroundImage = `url(${defaultImage})`
       button.style.textAlign = 'center'
@@ -263,6 +293,7 @@ export class Drawer {
         this.drawCanvas(img, pos, size, reverse)
       }
     }
+    this.adjustScale(this.gameScreen)
   }
 
   moveTo(name: string, displayedImages: any, pos: { x: number; y: number }, durning: number) {
@@ -328,8 +359,17 @@ export class Drawer {
     // 幅と高さのうち、小さい方のスケールを選択（アスペクト比を維持）
     const scale = Math.min(scaleX, scaleY)
 
-    // ターゲット要素にスケールを適用
-    targetElement.style.transform = `scale(${scale})`
+    // スケール後のサイズを計算
+    const scaledWidth = originalWidth * scale
+    const scaledHeight = originalHeight * scale
+
+    // 中央配置のための位置を計算
+    const offsetX = (viewportWidth - scaledWidth) / 2
+    const offsetY = (viewportHeight - scaledHeight) / 2
+
+    // ターゲット要素にスケールと位置を適用
+    targetElement.style.transformOrigin = 'top left'
+    targetElement.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`
   }
 
   setVisibility(name: string, isVisible: boolean) {
