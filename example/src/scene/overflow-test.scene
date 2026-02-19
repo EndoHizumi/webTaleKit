@@ -1,0 +1,45 @@
+<scene>
+  <scenario>
+    <say name="ナレーター">このシーンでは選択肢が6つ以上の場合をテストします。</say>
+    <choice prompt="8つの選択肢から選んでください：">
+      <item label="選択肢1" onSelect="choice1">
+        <say name="ナレーター">選択肢1を選びました。</say>
+      </item>
+      <item label="選択肢2" onSelect="choice2">
+        <say name="ナレーター">選択肢2を選びました。</say>
+      </item>
+      <item label="選択肢3" onSelect="choice3">
+        <say name="ナレーター">選択肢3を選びました。</say>
+      </item>
+      <item label="選択肢4" onSelect="choice4">
+        <say name="ナレーター">選択肢4を選びました。</say>
+      </item>
+      <item label="選択肢5" onSelect="choice5">
+        <say name="ナレーター">選択肢5を選びました。</say>
+      </item>
+      <item label="選択肢6" onSelect="choice6">
+        <say name="ナレーター">選択肢6を選びました。</say>
+      </item>
+      <item label="選択肢7" onSelect="choice7">
+        <say name="ナレーター">選択肢7を選びました。</say>
+      </item>
+      <item label="選択肢8" onSelect="choice8">
+        <say name="ナレーター">選択肢8を選びました。</say>
+      </item>
+    </choice>
+    <say name="ナレーター">テスト完了です。</say>
+    <choice prompt="">
+      <item label="タイトルに戻る" onSelect="end">
+        <route to="title" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'overflow_test',
+      background: './src/resource/background/crossroad.jpg',
+      template: './src/screen/title.html'
+    }
+  </script>
+</scene>

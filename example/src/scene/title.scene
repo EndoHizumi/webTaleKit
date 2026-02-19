@@ -37,6 +37,9 @@
       <item label="セーブ・ロードテスト" onSelect="save_load_test">
         <route to="save-load-test" />
       </item>
+      <item label="選択肢オーバーフローテスト" onSelect="overflow_test">
+        <route to="overflow-test" />
+      </item>
     </choice>
   </scenario>
 

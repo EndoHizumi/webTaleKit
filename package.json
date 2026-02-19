@@ -1,11 +1,12 @@
 {
   "name": "webtalekit-alpha",
-  "version": "0.2.12",
+  "version": "0.2.13",
   "description": "Web知識でノベルゲーを作ることを目指したやつ",
   "main": "./src/index.js",
   "scripts": {
     "lint": "eslint . --ext .ts --ext .js",
     "test": "jest",
+    "setup": "npm install && cd example && npm install",
     "dev": "npm run build && cd example && npm run dev",
     "build": "rimraf ./dist/ && tsc && cp -r package.json README.md engineConfig.json parser/ dist/ && cp src/core/index.js  dist/src/core/",
     "docs:dev": "vitepress dev docs",
