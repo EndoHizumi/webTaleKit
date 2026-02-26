@@ -8,6 +8,7 @@
 
 - [Overview](#overview)
 - [Demo](#demo)
+- [Documentation](#documentation)
 - [Setup Instructions](#setup-instructions)
 - [Testing Instructions](#testing-instructions)
 - [Quick Start](#quick-start)
@@ -39,6 +40,10 @@ Future updates will include a GUI editor using VS Code extensions and AI integra
 Use any browser you like - Firefox, Chrome, or Edge!
 <https://test-game-chi.vercel.app/>
 ![Demo Game Screen](image.png)
+
+## Documentation
+
+📖 **Online Documentation**: <https://endohizumi.github.io/webTaleKit/>
 
 ## Setup Instructions
 
