@@ -15,6 +15,8 @@ export default defineConfig({
       { text: 'ガイド', link: '/guide/getting-started' },
       { text: 'API', link: '/api/overview' },
       { text: 'タグ', link: '/tags/' },
+      { text: 'サンプル', link: '/examples' },
+      { text: '用語集', link: '/glossary' },
       { text: 'GitHub', link: 'https://github.com/EndoHizumi/webTaleKit' }
     ],
     sidebar: {
