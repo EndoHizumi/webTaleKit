@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>webTaleKit ドキュメント</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #87CEEB 0%, #4169E1 50%, #1E90FF 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            text-align: center;
+        }
+        .hero {
+            margin-bottom: 50px;
+        }
+        .logo {
+            font-size: 3.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .tagline {
+            font-size: 1.3em;
+            color: #555;
+            margin-bottom: 30px;
+            font-weight: 300;
+        }
+        .description {
+            font-size: 1.1em;
+            color: #666;
+            line-height: 1.8;
+            max-width: 700px;
+            margin: 0 auto 40px;
+        }
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        .doc-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            border: 2px solid transparent;
+        }
+        .doc-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+        .card-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            display: block;
+        }
+        .card-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .card-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .card-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+        .card-features li {
+            color: #777;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+        .card-features li:before {
+            content: "✓";
+            color: #4CAF50;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        .github-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+        .github-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        .github-description {
+            color: #666;
+            margin-bottom: 25px;
+        }
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #24292e;
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(36, 41, 46, 0.3);
+        }
+        .github-link:hover {
+            background: #444;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(36, 41, 46, 0.4);
+        }
+        .github-icon {
+            font-size: 1.2em;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+            color: #888;
+            font-size: 0.9em;
+        }
+        .version-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 30px 20px;
+            }
+            .logo {
+                font-size: 2.5em;
+            }
+            .tagline {
+                font-size: 1.1em;
+            }
+            .cards-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .doc-card {
+                padding: 25px;
+            }
+        }
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 2em;
+            }
+            .container {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <div class="version-badge">v1.0.0</div>
+            <h1 class="logo">webTaleKit</h1>
+            <p class="tagline">TypeScript/JavaScript ビジュアルノベル エンジン</p>
+            <p class="description">
+                webTaleKitは、HTML、CSS、JavaScriptを使用してインタラクティブストーリーを作成できる現代的なビジュアルノベルエンジンです。
+                柔軟なUI設計、シナリオ制御、自動スケーリング機能を提供し、Web上で美しいビジュアルノベルゲームを構築できます。
+            </p>
+        </div>
+
+        <div class="cards-container">
+            <a href="tag-reference.html" class="doc-card">
+                <span class="card-icon">📚</span>
+                <h2 class="card-title">タグリファレンス</h2>
+                <p class="card-description">
+                    .sceneファイルで使用できるすべてのタグの詳細な仕様とサンプルコードを掲載しています。
+                </p>
+                <ul class="card-features">
+                    <li>全14個のタグの詳細仕様</li>
+                    <li>実用的なサンプルコード</li>
+                    <li>マークアップタグの説明</li>
+                    <li>HTTPリクエスト機能</li>
+                    <li>条件分岐とジャンプ機能</li>
+                    <li>音声・画像制御</li>
+                </ul>
+            </a>
+
+            <a href="ui-template-guide.html" class="doc-card">
+                <span class="card-icon">🎨</span>
+                <h2 class="card-title">UI・テンプレート設計ガイド</h2>
+                <p class="card-description">
+                    カスタムUIテンプレートの作成方法とベストプラクティスを詳しく解説しています。
+                </p>
+                <ul class="card-features">
+                    <li>シーンテンプレートの設計</li>
+                    <li>ダイアログテンプレートの作成</li>
+                    <li>必須HTML要素の説明</li>
+                    <li>レスポンシブ対応</li>
+                    <li>カスタムコンポーネント</li>
+                    <li>CSSベストプラクティス</li>
+                </ul>
+            </a>
+
+            <a href="glossary.html" class="doc-card">
+                <span class="card-icon">📖</span>
+                <h2 class="card-title">用語集</h2>
+                <p class="card-description">
+                    webTaleKitの開発で使用される技術用語や概念の詳細な説明とサンプルを掲載しています。
+                </p>
+                <ul class="card-features">
+                    <li>システムアーキテクチャ</li>
+                    <li>スクリプト・言語仕様</li>
+                    <li>リソース管理</li>
+                    <li>UI・表示システム</li>
+                    <li>音声システム</li>
+                    <li>開発・ビルド</li>
+                </ul>
+            </a>
+        </div>
+
+        <div class="github-section">
+            <h2 class="github-title">🚀 プロジェクトに参加しよう</h2>
+            <p class="github-description">
+                webTaleKitはオープンソースプロジェクトです。GitHub上でソースコードを確認したり、
+                Issues報告、機能提案、プルリクエストなどでプロジェクトに貢献できます。
+            </p>
+            <a href="https://github.com/EndoHizumi/webTaleKit" class="github-link" target="_blank" rel="noopener noreferrer">
+                <span class="github-icon">⭐</span>
+                GitHub で見る
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>© 2024 webTaleKit Project. TypeScript/JavaScript ビジュアルノベルエンジン</p>
+            <p>MIT License | 作成者: EndoHizumi</p>
+        </div>
+    </div>
+
+    <script>
+        // カードのホバーエフェクト強化
+        document.querySelectorAll('.doc-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px) scale(1.02)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+
+        // GitHub リンクのクリック追跡（オプション）
+        document.querySelector('.github-link').addEventListener('click', function() {
+            // アナリティクスイベントなどを追加可能
+            console.log('GitHub link clicked');
+        });
+
+        // スムーズスクロール（必要に応じて）
+        document.documentElement.style.scrollBehavior = 'smooth';
+    </script>
+</body>
+</html>

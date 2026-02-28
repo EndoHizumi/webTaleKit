@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>webTaleKit UI・テンプレート設計ガイド</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #87CEEB 0%, #4169E1 50%, #1E90FF 100%);
+            color: #333;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .main-layout {
+            display: flex;
+            gap: 20px;
+        }
+        .sidebar {
+            flex: 0 0 280px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        .content {
+            flex: 1;
+            min-width: 0;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .intro {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 5px solid #3498db;
+        }
+        .nav {
+            background: #34495e;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .nav h3 {
+            color: white;
+            margin: 0 0 15px 0;
+            font-size: 1.2em;
+            border-bottom: 1px solid #4a5f7a;
+            padding-bottom: 10px;
+        }
+        .nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .nav li {
+            background: transparent;
+            border-radius: 5px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .nav li:hover {
+            border-left-color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+        }
+        .nav a {
+            color: #ecf0f1;
+            text-decoration: none;
+            padding: 8px 15px;
+            display: block;
+            transition: color 0.3s;
+            font-size: 0.95em;
+        }
+        .nav a:hover {
+            color: #3498db;
+        }
+        .section {
+            background: white;
+            margin-bottom: 25px;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid #e74c3c;
+        }
+        .section-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        .section-description {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            color: #555;
+        }
+        .attributes {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .attributes h4 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #bdc3c7;
+            padding-bottom: 5px;
+        }
+        .attr-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        .attr-item {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 3px solid #3498db;
+        }
+        .attr-name {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        .attr-type {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+        .examples {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .examples h4 {
+            margin-top: 0;
+            color: #3498db;
+            border-bottom: 1px solid #34495e;
+            padding-bottom: 5px;
+        }
+        .code-block {
+            background: #34495e;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow-x: auto;
+            border-left: 3px solid #3498db;
+        }
+        .code-block pre {
+            margin: 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        .usage-notes {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        .usage-notes h4 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #3498db;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50px;
+            text-decoration: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+        .back-to-top:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        .file-structure {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        .highlight {
+            background: #e3f2fd;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        @media (max-width: 1024px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                flex: none;
+                position: static;
+                max-height: none;
+                margin-bottom: 20px;
+            }
+            .nav ul {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .nav li {
+                background: #3498db;
+                border-left: none;
+            }
+            .nav a {
+                color: white;
+                padding: 8px 15px;
+            }
+            .nav a:hover {
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+            }
+        }
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            .attr-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>webTaleKit UI・テンプレート設計ガイド</h1>
+        
+        <div class="intro">
+            <h2>概要</h2>
+            <p>webTaleKitでは、HTMLテンプレートを使用してゲームUIをカスタマイズできます。このガイドでは、テンプレートファイルの作成方法、必要なHTML要素、CSSスタイリング、そしてダイアログシステムの設計について詳しく説明します。</p>
+            <p>適切なテンプレート設計により、独自のビジュアルノベルUIを構築できます。</p>
+        </div>
+
+        <div class="main-layout">
+            <aside class="sidebar">
+                <nav class="nav">
+                    <h3>目次</h3>
+                    <ul>
+                        <li><a href="#template-overview">テンプレート概要</a></li>
+                        <li><a href="#required-elements">必須HTML要素</a></li>
+                        <li><a href="#scene-templates">シーンテンプレート</a></li>
+                        <li><a href="#dialog-templates">ダイアログテンプレート</a></li>
+                        <li><a href="#css-styling">CSSスタイリング</a></li>
+                        <li><a href="#responsive-design">レスポンシブ対応</a></li>
+                        <li><a href="#custom-components">カスタムコンポーネント</a></li>
+                        <li><a href="#best-practices">ベストプラクティス</a></li>
+                    </ul>
+                </nav>
+            </aside>
+            <main class="content">
+
+        <section id="template-overview" class="section">
+            <div class="section-title">テンプレート概要</div>
+            <div class="section-description">
+                webTaleKitのテンプレートシステムは、HTMLとCSSを使用してゲームUIを定義します。テンプレートは主に2つのタイプがあります。
+            </div>
+            
+            <div class="attributes">
+                <h4>テンプレートタイプ</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">シーンテンプレート</div>
+                        <div class="attr-type">ゲーム画面用</div>
+                        <div>メインゲーム画面のレイアウトを定義します。テキスト表示、キャラクター配置、UI要素などを含みます。</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">ダイアログテンプレート</div>
+                        <div class="attr-type">モーダル用</div>
+                        <div>ダイアログボックスのデザインを定義します。メニュー、設定画面、確認ダイアログなどに使用されます。</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="file-structure">
+example/src/screen/
+├── title.html          # メインシーンテンプレート
+├── incoming.html       # カスタムダイアログテンプレート
+└── template.html       # ベーステンプレート
+            </div>
+
+            <div class="usage-notes">
+                <h4>重要事項</h4>
+                <ul>
+                    <li>テンプレートファイルは<span class="highlight">src/screen/</span>ディレクトリに配置します</li>
+                    <li>各シーンで異なるテンプレートを指定できます</li>
+                    <li>ダイアログは独自のテンプレートを使用可能です</li>
+                    <li>テンプレート内のスタイルはページ全体に適用されます</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="required-elements" class="section">
+            <div class="section-title">必須HTML要素</div>
+            <div class="section-description">
+                webTaleKitが正常に動作するために、テンプレートには特定のID/クラスを持つHTML要素が必要です。
+            </div>
+            
+            <div class="attributes">
+                <h4>シーンテンプレート必須要素</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">#main</div>
+                        <div class="attr-type">メインコンテナ</div>
+                        <div>ゲーム画面全体を包含するコンテナ要素。エンジンがこの内容をgameContainerに読み込みます。</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">#nameView</div>
+                        <div class="attr-type">キャラクター名表示</div>
+                        <div>話者の名前を表示する要素。sayタグのname属性の内容が表示されます。</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">#messageView</div>
+                        <div class="attr-type">テキスト表示領域</div>
+                        <div>ゲームのメインテキストが表示される領域。textタグやsayタグの内容が表示されます。</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">#interactiveView</div>
+                        <div class="attr-type">選択肢表示領域</div>
+                        <div>choiceタグで定義された選択肢ボタンが表示される領域。通常は非表示です。</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">#waitCircle</div>
+                        <div class="attr-type">待機インジケーター</div>
+                        <div>クリック待ちの際に表示されるアニメーション要素。</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">#messageWindow</div>
+                        <div class="attr-type">メッセージウィンドウ</div>
+                        <div>テキスト表示部分を包含するウィンドウ要素。</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>シーンテンプレート基本構造</h4>
+                <div class="code-block">
+                    <pre>&lt;!DOCTYPE html&gt;
+&lt;html lang="ja"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;style&gt;
+        /* スタイル定義 */
+        #main {
+            width: 1280px;
+            height: 720px;
+            position: relative;
+            background: black;
+        }
+        #messageWindow {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        #nameView {
+            color: #ffffff;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        #messageView {
+            color: #ffffff;
+            line-height: 1.6;
+            min-height: 80px;
+        }
+        #interactiveView {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            visibility: hidden;
+        }
+        #waitCircle {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="main"&gt;
+        &lt;div id="interactiveView"&gt;&lt;/div&gt;
+        &lt;div id="messageWindow"&gt;
+            &lt;div id="nameView"&gt;&lt;/div&gt;
+            &lt;div id="messageView"&gt;&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div id="waitCircle"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="scene-templates" class="section">
+            <div class="section-title">シーンテンプレート</div>
+            <div class="section-description">
+                シーンテンプレートは各シーンで使用されるメインのUI定義です。sceneConfig内のtemplateプロパティで指定します。
+            </div>
+            
+            <div class="attributes">
+                <h4>設定方法</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">sceneConfig.template</div>
+                        <div class="attr-type">テンプレートパス指定</div>
+                        <div>使用するテンプレートファイルのパスを指定します。</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>シーンでのテンプレート指定</h4>
+                <div class="code-block">
+                    <pre>&lt;script&gt;
+export const sceneConfig = {
+  name: 'title',
+  background: './src/resource/background/title_bg.png',
+  template: './src/screen/title.html',  // テンプレート指定
+  bgm: './src/resource/bgm/title_theme.mp3'
+}
+&lt;/script&gt;</pre>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>カスタムテンプレート例</h4>
+                <div class="code-block">
+                    <pre>&lt;!-- ダークテーマのテンプレート --&gt;
+&lt;style&gt;
+    #main {
+        width: 1280px;
+        height: 720px;
+        position: relative;
+        background: linear-gradient(135deg, #1a1a1a, #2d2d30);
+    }
+    #messageWindow {
+        position: absolute;
+        bottom: 30px;
+        left: 30px;
+        right: 30px;
+        background: linear-gradient(135deg, #2d2d30, #3e3e42);
+        border: 2px solid #007acc;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 10px 30px rgba(0, 122, 204, 0.3);
+    }
+    #nameView {
+        color: #00d4ff;
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 15px;
+        text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    }
+    #messageView {
+        color: #e0e0e0;
+        line-height: 1.8;
+        font-size: 16px;
+        min-height: 90px;
+    }
+    #interactiveView {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        visibility: hidden;
+    }
+    .choice {
+        background: linear-gradient(135deg, #007acc, #005a9e);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        margin: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 5px 15px rgba(0, 122, 204, 0.3);
+    }
+    .choice:hover {
+        background: linear-gradient(135deg, #00a0ff, #007acc);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 160, 255, 0.4);
+    }
+&lt;/style&gt;</pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="dialog-templates" class="section">
+            <div class="section-title">ダイアログテンプレート</div>
+            <div class="section-description">
+                ダイアログテンプレートは、dialogタグで使用されるモーダルダイアログのデザインを定義します。
+            </div>
+            
+            <div class="attributes">
+                <h4>ダイアログ必須要素</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">#dialogContainer</div>
+                        <div class="attr-type">ダイアログコンテナ</div>
+                        <div>ダイアログ全体を包含するコンテナ。HTML5のdialog要素を使用することを推奨。</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">.dialog-prompt</div>
+                        <div class="attr-type">プロンプト表示領域</div>
+                        <div>ダイアログのメッセージテキストが表示される領域。</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">.dialog-buttons</div>
+                        <div class="attr-type">ボタンコンテナ</div>
+                        <div>ダイアログのアクションボタンが配置される領域。</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>基本ダイアログテンプレート</h4>
+                <div class="code-block">
+                    <pre>&lt;!DOCTYPE html&gt;
+&lt;html lang="ja"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;style&gt;
+        #dialogContainer {
+            border: none;
+            border-radius: 10px;
+            padding: 0;
+            background: transparent;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        #dialogContainer::backdrop {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        .dialog-content {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            min-width: 400px;
+            max-width: 600px;
+        }
+        .dialog-prompt {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        .dialog-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+        .dialog-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .dialog-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;dialog id="dialogContainer"&gt;
+        &lt;div class="dialog-content"&gt;
+            &lt;div class="dialog-prompt"&gt;&lt;/div&gt;
+            &lt;div class="dialog-buttons"&gt;&lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/dialog&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>カスタムダイアログ（着信画面風）</h4>
+                <div class="code-block">
+                    <pre>&lt;style&gt;
+    #dialogContainer {
+        border: none;
+        border-radius: 20px;
+        padding: 0;
+        background: linear-gradient(135deg, #1a1a1a, #2d2d30);
+        color: white;
+        width: 350px;
+        height: 500px;
+    }
+    .phone-screen {
+        padding: 40px 30px;
+        text-align: center;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .caller-info {
+        margin-top: 50px;
+    }
+    .caller-name {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .caller-number {
+        font-size: 16px;
+        color: #888;
+        margin-bottom: 30px;
+    }
+    .avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: #007acc;
+        margin: 0 auto 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+    }
+    .call-actions {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 40px;
+    }
+    .call-button {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .accept { background: #4CAF50; }
+    .decline { background: #f44336; }
+    .call-button:hover {
+        transform: scale(1.1);
+    }
+&lt;/style&gt;
+
+&lt;dialog id="dialogContainer"&gt;
+    &lt;div class="phone-screen"&gt;
+        &lt;div class="caller-info"&gt;
+            &lt;div class="avatar"&gt;📞&lt;/div&gt;
+            &lt;div class="dialog-prompt caller-name"&gt;&lt;/div&gt;
+            &lt;div class="caller-number"&gt;着信中...&lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class="dialog-buttons call-actions"&gt;
+            &lt;!-- ボタンは動的に生成される --&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/dialog&gt;</pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="css-styling" class="section">
+            <div class="section-title">CSSスタイリング</div>
+            <div class="section-description">
+                webTaleKitでは、テンプレート内の&lt;style&gt;タグがページ全体に適用されます。エンジンが自動的にスタイルを管理します。
+            </div>
+            
+            <div class="attributes">
+                <h4>スタイル管理</h4>
+                <div class="attr-list">
+                    <div class="attr-item">
+                        <div class="attr-name">スタイル置換</div>
+                        <div class="attr-type">自動管理</div>
+                        <div>新しいシーンが読み込まれると、既存のスタイルタグは削除され、新しいテンプレートのスタイルが適用されます。</div>
+                    </div>
+                    <div class="attr-item">
+                        <div class="attr-name">スコープ</div>
+                        <div class="attr-type">グローバル</div>
+                        <div>テンプレート内のCSSはページ全体に適用されるため、適切なセレクタを使用してください。</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>推奨CSSパターン</h4>
+                <div class="code-block">
+                    <pre>/* ゲーム解像度設定 */
+#main {
+    width: 1280px;
+    height: 720px;
+    position: relative;
+    margin: 0 auto;
+    background: black;
+    overflow: hidden;
+}
+
+/* メッセージウィンドウ */
+#messageWindow {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+}
+
+/* テキストアニメーション */
+#messageView {
+    color: white;
+    line-height: 1.6;
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* 選択肢ボタン */
+.choice {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    margin: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.choice:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="responsive-design" class="section">
+            <div class="section-title">レスポンシブ対応</div>
+            <div class="section-description">
+                webTaleKitエンジンは自動的に画面サイズに合わせてスケーリングしますが、テンプレート側でもレスポンシブ対応を行うことで、より良いユーザー体験を提供できます。
+            </div>
+            
+            <div class="examples">
+                <h4>レスポンシブCSS例</h4>
+                <div class="code-block">
+                    <pre>/* モバイル対応 */
+@media (max-width: 768px) {
+    #messageWindow {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        padding: 15px;
+    }
+    
+    #nameView {
+        font-size: 14px;
+    }
+    
+    #messageView {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .choice {
+        padding: 12px 20px;
+        font-size: 14px;
+        margin: 8px;
+    }
+}
+
+/* タブレット対応 */
+@media (max-width: 1024px) and (min-width: 769px) {
+    #messageWindow {
+        bottom: 15px;
+        left: 15px;
+        right: 15px;
+        padding: 18px;
+    }
+    
+    .choice {
+        padding: 13px 25px;
+        font-size: 15px;
+    }
+}
+
+/* 高解像度対応 */
+@media (min-width: 1920px) {
+    #messageView {
+        font-size: 18px;
+    }
+    
+    #nameView {
+        font-size: 20px;
+    }
+}</pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="custom-components" class="section">
+            <div class="section-title">カスタムコンポーネント</div>
+            <div class="section-description">
+                テンプレート内で独自のUIコンポーネントを定義し、ゲーム体験を向上させることができます。
+            </div>
+            
+            <div class="examples">
+                <h4>ステータスバー付きテンプレート</h4>
+                <div class="code-block">
+                    <pre>&lt;style&gt;
+    #statusBar {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.7);
+        border-radius: 10px;
+        padding: 15px;
+        display: flex;
+        justify-content: space-between;
+        color: white;
+    }
+    
+    .status-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .hp-bar, .mp-bar {
+        width: 100px;
+        height: 8px;
+        background: #333;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .hp-fill { background: #4CAF50; height: 100%; }
+    .mp-fill { background: #2196F3; height: 100%; }
+&lt;/style&gt;
+
+&lt;div id="main"&gt;
+    &lt;div id="statusBar"&gt;
+        &lt;div class="status-item"&gt;
+            &lt;span&gt;HP&lt;/span&gt;
+            &lt;div class="hp-bar"&gt;
+                &lt;div class="hp-fill" style="width: 80%;"&gt;&lt;/div&gt;
+            &lt;/div&gt;
+            &lt;span&gt;80/100&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class="status-item"&gt;
+            &lt;span&gt;MP&lt;/span&gt;
+            &lt;div class="mp-bar"&gt;
+                &lt;div class="mp-fill" style="width: 60%;"&gt;&lt;/div&gt;
+            &lt;/div&gt;
+            &lt;span&gt;60/100&lt;/span&gt;
+        &lt;/div&gt;
+        &lt;div class="status-item"&gt;
+            &lt;span&gt;所持金: 1,500G&lt;/span&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;!-- 他の要素... --&gt;
+&lt;/div&gt;</pre>
+                </div>
+            </div>
+
+            <div class="examples">
+                <h4>サイドメニュー付きテンプレート</h4>
+                <div class="code-block">
+                    <pre>&lt;style&gt;
+    #sideMenu {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 60px;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 10px;
+        padding: 15px 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .menu-button {
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 8px;
+        background: #667eea;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .menu-button:hover {
+        background: #764ba2;
+        transform: scale(1.1);
+    }
+&lt;/style&gt;
+
+&lt;div id="sideMenu"&gt;
+    &lt;button class="menu-button" title="セーブ"&gt;💾&lt;/button&gt;
+    &lt;button class="menu-button" title="ロード"&gt;📁&lt;/button&gt;
+    &lt;button class="menu-button" title="設定"&gt;⚙️&lt;/button&gt;
+    &lt;button class="menu-button" title="ログ"&gt;📋&lt;/button&gt;
+&lt;/div&gt;</pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="best-practices" class="section">
+            <div class="section-title">ベストプラクティス</div>
+            <div class="section-description">
+                効果的なテンプレート設計のためのガイドライン。
+            </div>
+            
+            <div class="usage-notes">
+                <h4>パフォーマンス</h4>
+                <ul>
+                    <li>CSS Animationは適度に使用し、パフォーマンスに配慮する</li>
+                    <li>大きな画像はCSSではなくshowタグで表示する</li>
+                    <li>複雑なCSSセレクタは避け、シンプルに保つ</li>
+                </ul>
+            </div>
+
+            <div class="usage-notes">
+                <h4>メンテナンス性</h4>
+                <ul>
+                    <li>CSS変数を使用して色やサイズを統一する</li>
+                    <li>コメントを適切に記述する</li>
+                    <li>命名規則を統一する（BEMなど）</li>
+                    <li>共通コンポーネントは別ファイルに分離する</li>
+                </ul>
+            </div>
+
+            <div class="usage-notes">
+                <h4>ユーザビリティ</h4>
+                <ul>
+                    <li>テキストの可読性を確保する（コントラスト、フォントサイズ）</li>
+                    <li>ボタンのクリック領域を十分に確保する</li>
+                    <li>アニメーションは控えめにし、ユーザーの集中を妨げない</li>
+                    <li>重要な情報は見やすい位置に配置する</li>
+                </ul>
+            </div>
+
+            <div class="examples">
+                <h4>CSS変数を使用した設計例</h4>
+                <div class="code-block">
+                    <pre>:root {
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --text-color: #ffffff;
+    --bg-color: rgba(0, 0, 0, 0.8);
+    --border-radius: 10px;
+    --spacing-small: 10px;
+    --spacing-medium: 20px;
+    --spacing-large: 30px;
+}
+
+#messageWindow {
+    background: var(--bg-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-medium);
+    color: var(--text-color);
+}
+
+.choice {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: calc(var(--border-radius) * 0.8);
+    padding: var(--spacing-small) var(--spacing-medium);
+    color: var(--text-color);
+}</pre>
+                </div>
+            </div>
+        </section>
+
+            </main>
+        </div>
+    </div>
+
+    <a href="#top" class="back-to-top">↑ TOPへ</a>
+
+    <script>
+        // スムーススクロール
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // 戻るボタンの表示制御
+        window.addEventListener('scroll', function() {
+            const backToTop = document.querySelector('.back-to-top');
+            if (window.pageYOffset > 300) {
+                backToTop.style.display = 'block';
+            } else {
+                backToTop.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
