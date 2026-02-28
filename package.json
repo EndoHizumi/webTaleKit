@@ -6,6 +6,7 @@
   "scripts": {
     "lint": "eslint . --ext .ts --ext .js",
     "test": "jest",
+    "setup": "npm install && npm run build && cd dist && npm link && cd ../example && npm install && npm link webtalekit",
     "dev": "npm run build && cd example && npm run dev",
     "build": "rimraf ./dist/ && tsc && cp -r package.json README.md engineConfig.json parser/ dist/ && cp src/core/index.js  dist/src/core/"
   },
