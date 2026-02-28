@@ -1,6 +1,6 @@
 {
   "name": "webtalekit-alpha",
-  "version": "0.2.11",
+  "version": "0.2.13",
   "description": "Web知識でノベルゲーを作ることを目指したやつ",
   "main": "./src/index.js",
   "scripts": {
@@ -8,7 +8,10 @@
     "test": "jest",
     "setup": "npm install && npm run build && cd dist && npm link && cd ../example && npm install && npm link webtalekit",
     "dev": "npm run build && cd example && npm run dev",
-    "build": "rimraf ./dist/ && tsc && cp -r package.json README.md engineConfig.json parser/ dist/ && cp src/core/index.js  dist/src/core/"
+    "build": "rimraf ./dist/ && tsc && cp -r package.json README.md engineConfig.json parser/ dist/ && cp src/core/index.js  dist/src/core/",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "bin": {
     "wtc": "parser/cli.js"
@@ -45,6 +48,7 @@
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.2",
+    "vitepress": "^1.6.4",
     "webpack": "^5.90.3",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.2"

@@ -1,0 +1,48 @@
+<scene>
+    <scenario>
+        <!-- ジャンプで帰ってきた時に背景とBGMを再表示するための設定 -->
+        <show mode="bg" src="./src/resource/background/title_bg.png"></show>
+        <sound mode="bgm" src="./src/resource/bgm/title_theme.mp3"/>
+        <text>セーブ・ロード機能のテストです</text>
+        <say name="ナレーター">このシーンでは、セーブとロードの基本機能をテストします。</say>
+        <choice>
+            <item label="セーブテスト" onSelect="save_test">
+                <show mode="bg" src="./src/resource/background/stage.jpg"></show>
+                <sound mode="bgm" src="./src/resource/bgm/calm_music.wav" />
+                <save slot="test1" name="テストセーブ1" />
+                <text>ロードされたら、この文章が表示されます。</text>
+            </item>
+            <item label="オートセーブ" onSelect="auto_save">
+                <save />
+                <text>オートセーブが作成されました！</text>
+            </item>
+            <item label="ロードテスト" onSelect="load_test">
+                <text>
+                    セーブデータのロードのテストを行います。
+                    現在の背景とBGMが、セーブしたときの状態に戻るはずです。
+                </text>
+                <load slot="test1" />
+            </item>
+            <item label="オートロード" onSelect="auto_load">
+                <load />
+            </item>
+            <item label="サイレントセーブ" onSelect="silent_save">
+                <save slot="silent" name="サイレントセーブ" message="false" />
+                <text>メッセージなしでセーブしました</text>
+            </item>
+            <item label="タイトルに戻る" onSelect="title">
+                <route to="title" />
+            </item>
+        </choice>
+        <jump index="0" />
+    </scenario>
+
+    <script>
+        export const sceneConfig = {
+            name: 'save-load-test',
+            background:  './src/resource/background/title_bg.png',
+            bgm: './src/resource/bgm/title_theme.mp3',
+            template: './src/screen/title.html'
+        }
+    </script>
+</scene>
