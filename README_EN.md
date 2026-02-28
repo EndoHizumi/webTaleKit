@@ -257,6 +257,11 @@ Search Hashtag: #webTalekit
 - Play and stop BGM
 - Play and stop SE
 
+### Save & Load
+
+- Save functionality
+- Load functionality
+
 ### System Settings & UI
 
 - Display HTML-based screens
@@ -288,10 +293,6 @@ Search Hashtag: #webTalekit
 
 - Say tag features:
   - Auto-display character if not shown
-
-### Save & Load
-
-- Save & Load functionality
 
 ### Visual Effects
 
