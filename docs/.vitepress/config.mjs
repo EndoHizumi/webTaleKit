@@ -17,6 +17,13 @@ export default defineConfig({
       { text: 'タグ', link: '/tags/' },
       { text: 'サンプル', link: '/examples' },
       { text: '用語集', link: '/glossary' },
+      {
+        text: 'EN',
+        items: [
+          { text: 'Examples', link: '/en/examples' },
+          { text: 'Glossary', link: '/en/glossary' }
+        ]
+      },
       { text: 'GitHub', link: 'https://github.com/EndoHizumi/webTaleKit' }
     ],
     sidebar: {
@@ -108,6 +115,15 @@ export default defineConfig({
           items: [
             { text: 'save', link: '/tags/save' },
             { text: 'load', link: '/tags/load' }
+          ]
+        }
+      ],
+      '/en/': [
+        {
+          text: 'English',
+          items: [
+            { text: 'Examples', link: '/en/examples' },
+            { text: 'Glossary', link: '/en/glossary' }
           ]
         }
       ]
