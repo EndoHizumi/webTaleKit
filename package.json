@@ -22,6 +22,7 @@
     "html-inline": "^1.2.0",
     "html-minifier": "^4.0.0",
     "html-to-json-parser": "^2.0.1",
+    "pixi.js": "^7.4.3",
     "rimraf": "^6.0.1",
     "stacktrace-js": "^2.0.2",
     "storejs": "^2.1.0"
