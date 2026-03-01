@@ -178,7 +178,7 @@ export class Core {
         document.head.removeChild(styleTag)
       }
       this.gameContainer.innerHTML = mainDiv.innerHTML
-      this.drawer.setScreen(this.gameContainer, engineConfig.resolution)
+      await this.drawer.setScreen(this.gameContainer, engineConfig.resolution)
     } else {
       this.gameContainer.appendChild(mainDiv)
     }

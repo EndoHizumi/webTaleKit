@@ -1,3 +1,4 @@
+import * as PIXI from 'pixi.js'
 import { ImageObject } from '../resource/ImageObject'
 import { sleep } from '../utils/waitUtil'
 
@@ -10,11 +11,11 @@ export class Drawer {
   private nameView!: HTMLElement
   private messageText!: HTMLElement
   private interactiveView!: HTMLElement
-  private ctx!: CanvasRenderingContext2D
   private screenHtml!: HTMLElement
   private config: any
-  private fadeCanvas!: HTMLCanvasElement
-  private fadeCtx!: CanvasRenderingContext2D
+  private app!: PIXI.Application
+  private imageContainer!: PIXI.Container
+  private fadeContainer!: PIXI.Container
   isSkip: boolean = false
   readySkip: boolean = false
 
@@ -26,37 +27,35 @@ export class Drawer {
     this.adjustScale(this.gameScreen)
   }
 
-  setScreen(screenHtml: HTMLElement, resolution: { width: number; height: number }) {
+  async setScreen(screenHtml: HTMLElement, resolution: { width: number; height: number }) {
     this.screenHtml = screenHtml
     this.nameView = screenHtml.querySelector('#nameView') as HTMLElement
     this.messageText = screenHtml.querySelector('#messageView') as HTMLElement
     this.interactiveView = screenHtml.querySelector('#interactiveView') as HTMLElement
 
-    // canvasをDOMに追加する
-    const canvas = document.createElement('canvas')
-    canvas.width = resolution.width || 1280
-    canvas.height = resolution.height || 720
-    // canvasのコンテキストを取得する
-    this.gameScreen.appendChild(canvas)
-    this.ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-    // 黒で塗りつぶす
-    this.ctx.fillStyle = 'black'
-    this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+    const width = resolution.width || 1280
+    const height = resolution.height || 720
+
+    // Pixi.js Applicationを作成・初期化する
+    // v7では同期コンストラクタ (new PIXI.Application(options)) だったが、
+    // v8ではinit()が非同期に変更されたため、awaitが必要になった
+    this.app = new PIXI.Application()
+    await this.app.init({
+      width,
+      height,
+      backgroundColor: 0x000000,
+    })
+    // Pixi.jsのcanvasをDOMに追加する (v8ではapp.viewの代わりにapp.canvasを使う)
+    this.gameScreen.appendChild(this.app.canvas)
+
+    // 画像表示用コンテナとフェード用コンテナをステージに追加する
+    this.imageContainer = new PIXI.Container()
+    this.fadeContainer = new PIXI.Container()
+    this.app.stage.addChild(this.imageContainer)
+    this.app.stage.addChild(this.fadeContainer)
+
     // 初期ロード時にもスケールを調整
     this.adjustScale(this.gameScreen)
-
-    // フェード用キャンバスをDOMに追加する
-    this.fadeCanvas = document.createElement('canvas')
-    this.fadeCanvas.className = 'fadeCanvas'
-    this.fadeCanvas.style.position = 'absolute'
-    this.fadeCanvas.style.top = '0'
-    this.fadeCanvas.style.left = '0'
-    this.fadeCanvas.style.pointerEvents = 'none' // クリックイベントを通過させる
-    this.gameScreen.insertBefore(this.fadeCanvas, document.getElementById('messageWindow'))
-    this.fadeCtx = this.fadeCanvas.getContext('2d')!
-    // フェード用キャンバスのサイズを設定
-    this.fadeCanvas.width = resolution.width
-    this.fadeCanvas.height = resolution.height
   }
 
   drawName(name: string) {
@@ -239,32 +238,34 @@ export class Drawer {
         x: 0,
         y: 0,
       }
-      const size: { width: number; height: number } = option?.size || { width: this.fadeCanvas.width, height: this.fadeCanvas.height }
+      const size: { width: number; height: number } = option?.size || {
+        width: this.app.screen.width,
+        height: this.app.screen.height,
+      }
       const reverse: boolean = option?.look || false
+
+      // フェード用コンテナをクリアして、対象スプライトを追加する
+      this.fadeContainer.removeChildren()
+      if (img) {
+        this.drawCanvas(img, pos, size, reverse, this.fadeContainer)
+      } else {
+        const graphics = new PIXI.Graphics()
+        graphics.rect(0, 0, size.width, size.height)
+        graphics.fill({ color: 0x000000 })
+        this.fadeContainer.addChild(graphics)
+      }
 
       const animate = (currentTime: number) => {
         const elapsedTime = currentTime - startTime
         const progress = Math.abs(Math.min(elapsedTime / duration, 1))
         const currentAlpha = start + (end - start) * progress
 
-        this.fadeCtx.clearRect(0, 0, this.fadeCanvas.width, this.fadeCanvas.height)
-        this.fadeCtx.globalAlpha = currentAlpha
-        if (img) {
-          this.drawCanvas(
-            img,
-            pos,
-            size,
-            reverse,
-            this.fadeCtx,
-          )
-        } else {
-          this.fadeCtx.fillRect(0, 0, this.fadeCanvas.width, this.fadeCanvas.height)
-        }
+        this.fadeContainer.alpha = currentAlpha
 
         if (progress < 1) {
           requestAnimationFrame(animate)
         } else {
-          this.clear(this.fadeCtx)
+          this.fadeContainer.removeChildren()
           resolve()
         }
       }
@@ -274,7 +275,7 @@ export class Drawer {
   }
 
   show(displayedImages: any) {
-    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+    this.imageContainer.removeChildren()
     for (let key in displayedImages) {
       const img: ImageObject = displayedImages[key].image
       const pos: { x: number; y: number } = displayedImages[key].pos || {
@@ -327,20 +328,24 @@ export class Drawer {
     })
   }
 
-  clear(ctx?: CanvasRenderingContext2D) {
-    if (ctx === undefined) {
-      ctx = this.ctx
-    }
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
+  clear() {
+    this.imageContainer.removeChildren()
   }
 
-  drawCanvas(img: ImageObject, pos: any, size: any, reverse: any, ctx?: CanvasRenderingContext2D) {
-    if (ctx === undefined) {
-      ctx = this.ctx
+  drawCanvas(img: ImageObject, pos: any, size: any, reverse: any, container?: PIXI.Container) {
+    if (container === undefined) {
+      container = this.imageContainer
     }
     const canvas = img.draw(reverse).getCanvas()
-    // canvasから画像を取得して、this.ctxに描画
-    ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, pos.x, pos.y, canvas.width, canvas.height) //CanvasRenderingContext2D.drawImage: Passed-in canvas is empty
+    // ImageObjectのcanvasは描画のたびに更新されるため、CanvasSourceを使って
+    // 常に最新のcanvas内容からテクスチャを生成してスプライトとして描画する
+    // (v7のBaseTextureはv8で削除されたため、代わりにCanvasSourceを使用する)
+    const source = new PIXI.CanvasSource({ resource: canvas })
+    const texture = new PIXI.Texture({ source })
+    const sprite = new PIXI.Sprite(texture)
+    sprite.x = pos.x
+    sprite.y = pos.y
+    container.addChild(sprite)
   }
 
   adjustScale(targetElement: HTMLElement) {
