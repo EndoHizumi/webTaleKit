@@ -27,7 +27,7 @@ export class Drawer {
     this.adjustScale(this.gameScreen)
   }
 
-  setScreen(screenHtml: HTMLElement, resolution: { width: number; height: number }) {
+  async setScreen(screenHtml: HTMLElement, resolution: { width: number; height: number }) {
     this.screenHtml = screenHtml
     this.nameView = screenHtml.querySelector('#nameView') as HTMLElement
     this.messageText = screenHtml.querySelector('#messageView') as HTMLElement
@@ -36,14 +36,17 @@ export class Drawer {
     const width = resolution.width || 1280
     const height = resolution.height || 720
 
-    // Pixi.js Applicationを作成する
-    this.app = new PIXI.Application({
+    // Pixi.js Applicationを作成・初期化する
+    // v7では同期コンストラクタ (new PIXI.Application(options)) だったが、
+    // v8ではinit()が非同期に変更されたため、awaitが必要になった
+    this.app = new PIXI.Application()
+    await this.app.init({
       width,
       height,
       backgroundColor: 0x000000,
     })
-    // Pixi.jsのcanvasをDOMに追加する
-    this.gameScreen.appendChild(this.app.view as HTMLCanvasElement)
+    // Pixi.jsのcanvasをDOMに追加する (v8ではapp.viewの代わりにapp.canvasを使う)
+    this.gameScreen.appendChild(this.app.canvas)
 
     // 画像表示用コンテナとフェード用コンテナをステージに追加する
     this.imageContainer = new PIXI.Container()
@@ -247,9 +250,8 @@ export class Drawer {
         this.drawCanvas(img, pos, size, reverse, this.fadeContainer)
       } else {
         const graphics = new PIXI.Graphics()
-        graphics.beginFill(0x000000)
-        graphics.drawRect(0, 0, size.width, size.height)
-        graphics.endFill()
+        graphics.rect(0, 0, size.width, size.height)
+        graphics.fill({ color: 0x000000 })
         this.fadeContainer.addChild(graphics)
       }
 
@@ -335,10 +337,11 @@ export class Drawer {
       container = this.imageContainer
     }
     const canvas = img.draw(reverse).getCanvas()
-    // ImageObjectのcanvasは描画のたびに更新されるため、キャッシュを回避して
+    // ImageObjectのcanvasは描画のたびに更新されるため、CanvasSourceを使って
     // 常に最新のcanvas内容からテクスチャを生成してスプライトとして描画する
-    const baseTexture = new PIXI.BaseTexture(canvas)
-    const texture = new PIXI.Texture(baseTexture)
+    // (v7のBaseTextureはv8で削除されたため、代わりにCanvasSourceを使用する)
+    const source = new PIXI.CanvasSource({ resource: canvas })
+    const texture = new PIXI.Texture({ source })
     const sprite = new PIXI.Sprite(texture)
     sprite.x = pos.x
     sprite.y = pos.y
