@@ -1,5 +1,6 @@
 import { ImageObject } from '../resource/ImageObject'
 import { sleep } from '../utils/waitUtil'
+import { gsap } from 'gsap'
 
 /*
  drawerの目的
@@ -299,31 +300,20 @@ export class Drawer {
   moveTo(name: string, displayedImages: any, pos: { x: number; y: number }, durning: number) {
     return new Promise((resolve) => {
       const target = displayedImages[name]
-      const startPos = { x: target.pos.x, y: target.pos.y }
-      const dest = { x: startPos.x + Number(pos.x), y: startPos.y + Number(pos.y) }
-      const startTime = performance.now()
+      const dest = { x: target.pos.x + Number(pos.x), y: target.pos.y + Number(pos.y) }
 
-      const move = (currentTime: any) => {
-        const elapsedTime = (currentTime - startTime) / 1000 // 秒単位の経過時間
-        const progress = Math.min(elapsedTime / durning, 1) // 0から1の進捗
-
-        target.pos.x = startPos.x + (dest.x - startPos.x) * progress
-        target.pos.y = startPos.y + (dest.y - startPos.y) * progress
-
-        this.show(displayedImages)
-
-        if (progress < 1) {
-          window.requestAnimationFrame(move)
-        } else {
-          // 最終位置を正確に設定
-          target.pos.x = dest.x
-          target.pos.y = dest.y
+      gsap.to(target.pos, {
+        x: dest.x,
+        y: dest.y,
+        duration: durning,
+        ease: 'power2.out',
+        onUpdate: () => {
           this.show(displayedImages)
+        },
+        onComplete: () => {
           resolve(null)
-        }
-      }
-
-      window.requestAnimationFrame(move)
+        },
+      })
     })
   }
 
