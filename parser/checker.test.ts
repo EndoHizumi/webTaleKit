@@ -86,6 +86,70 @@ describe('checker', () => {
       ]
       expect(check(scenario)).toEqual([])
     })
+
+    test('inline text decoration tags inside text pass without errors', () => {
+      const scenario = [
+        {
+          type: 'text',
+          content: [
+            { type: 'color', value: 'red', content: ['Red text'] },
+            { type: 'ruby', text: 'ルビ', content: ['漢字'] },
+            { type: 'b', content: ['Bold'] },
+            { type: 'i', content: ['Italic'] },
+            { type: 'br', content: [] },
+          ],
+        },
+      ]
+      expect(check(scenario)).toEqual([])
+    })
+
+    test('inline text decoration tags inside say pass without errors', () => {
+      const scenario = [
+        {
+          type: 'say',
+          name: 'Narrator',
+          content: [
+            { type: 'color', value: 'blue', content: ['Blue'] },
+            { type: 'b', content: ['Bold'] },
+            { type: 'br', content: [] },
+          ],
+        },
+      ]
+      expect(check(scenario)).toEqual([])
+    })
+
+    test('then inside text (HTTP response) passes without errors', () => {
+      const scenario = [
+        {
+          type: 'text',
+          get: 'https://api.example.com/data',
+          content: [
+            { type: 'progress', content: ['Loading...'] },
+            { type: 'header', content: [] },
+            { type: 'data', content: [] },
+            { type: 'then', content: ['Success'] },
+            { type: 'error', content: ['Error'] },
+          ],
+        },
+      ]
+      expect(check(scenario)).toEqual([])
+    })
+
+    test('HTTP sub-tags inside call pass without errors', () => {
+      const scenario = [
+        {
+          type: 'call',
+          post: 'https://api.example.com/action',
+          content: [
+            { type: 'header', content: [] },
+            { type: 'data', content: [] },
+            { type: 'then', content: ['Done'] },
+            { type: 'error', content: ['Failed'] },
+          ],
+        },
+      ]
+      expect(check(scenario)).toEqual([])
+    })
   })
 
   describe('invalid parent-child relationships', () => {
@@ -166,6 +230,65 @@ describe('checker', () => {
       ]
       const errors = check(scenario)
       expect(errors).toHaveLength(3)
+    })
+
+    test('color at scenario root produces an error', () => {
+      const scenario = [{ type: 'color', value: 'red', content: ['Red'] }]
+      const errors = check(scenario)
+      expect(errors).toHaveLength(1)
+      expect(errors[0].node).toBe('color')
+      expect(errors[0].message).toContain('<text>')
+      expect(errors[0].message).toContain('<say>')
+    })
+
+    test('ruby at scenario root produces an error', () => {
+      const scenario = [{ type: 'ruby', text: 'ルビ', content: ['漢字'] }]
+      const errors = check(scenario)
+      expect(errors).toHaveLength(1)
+      expect(errors[0].node).toBe('ruby')
+      expect(errors[0].message).toContain('<text>')
+    })
+
+    test('b and i at scenario root produce errors', () => {
+      const scenario = [
+        { type: 'b', content: ['Bold'] },
+        { type: 'i', content: ['Italic'] },
+      ]
+      const errors = check(scenario)
+      expect(errors).toHaveLength(2)
+      expect(errors[0].node).toBe('b')
+      expect(errors[1].node).toBe('i')
+    })
+
+    test('br at scenario root produces an error', () => {
+      const scenario = [{ type: 'br', content: [] }]
+      const errors = check(scenario)
+      expect(errors).toHaveLength(1)
+      expect(errors[0].node).toBe('br')
+      expect(errors[0].message).toContain('<text>')
+    })
+
+    test('color inside choice (not text/say) produces an error', () => {
+      const scenario = [
+        {
+          type: 'choice',
+          content: [{ type: 'color', value: 'red', content: ['Red'] }],
+        },
+      ]
+      const errors = check(scenario)
+      expect(errors.some((e) => e.node === 'color')).toBe(true)
+    })
+
+    test('HTTP sub-tags at scenario root produce errors', () => {
+      const scenario = [
+        { type: 'header', content: [] },
+        { type: 'data', content: [] },
+        { type: 'error', content: ['Error'] },
+        { type: 'progress', content: ['Loading'] },
+      ]
+      const errors = check(scenario)
+      expect(errors).toHaveLength(4)
+      expect(errors.map((e) => e.node)).toEqual(['header', 'data', 'error', 'progress'])
     })
   })
 })

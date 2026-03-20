@@ -1,16 +1,40 @@
 'use strict'
 
 /**
+ * All top-level command types (from Core.commandList in core/index.js).
+ * HTTP sub-tags can appear as children of any of these commands.
+ */
+const TOP_LEVEL_COMMANDS = [
+  'text', 'choice', 'show', 'newpage', 'hide', 'jump', 'sound', 'say',
+  'if', 'call', 'moveto', 'route', 'wait', 'dialog', 'save', 'load',
+]
+
+/**
  * Defines which node types can only appear as children of specific parent types.
  * key: child node type, value: array of allowed parent node types
  */
 const ALLOWED_PARENTS = {
+  // choice structure
   item: ['choice'],
-  action: ['actions'],
-  then: ['if'],
-  else: ['if'],
+  // dialog structure
   prompt: ['dialog'],
   actions: ['dialog'],
+  action: ['actions'],
+  // if structure
+  else: ['if'],
+  // then is used both in <if> and as an HTTP response child of any top-level command
+  then: ['if', ...TOP_LEVEL_COMMANDS],
+  // inline text decoration tags (from drawer.ts createDecoratedElement and textHandler)
+  color: ['text', 'say'],
+  ruby: ['text', 'say'],
+  b: ['text', 'say'],
+  i: ['text', 'say'],
+  br: ['text', 'say'],
+  // HTTP sub-tags (from httpHandler) — valid inside any top-level command
+  header: TOP_LEVEL_COMMANDS,
+  data: TOP_LEVEL_COMMANDS,
+  error: TOP_LEVEL_COMMANDS,
+  progress: TOP_LEVEL_COMMANDS,
 }
 
 /**
