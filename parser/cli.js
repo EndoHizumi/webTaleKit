@@ -24,7 +24,12 @@ const exec = (targetScript) => {
       return
     }
     // パーサーを呼び出す。
-    const { scenario, script, lang } = await parse(data)
+    const { scenario, script, lang, errors } = await parse(data)
+    // 構文エラーがある場合、エラーを出力して終了する
+    if (errors && errors.length > 0) {
+      errors.forEach((err) => console.error(`Syntax Error in ${targetScript}: ${err.message}`))
+      process.exit(1)
+    }
     // jsディレクトリがない場合、作成する
     if (!fs.existsSync(outputPath)) {
       fs.mkdirSync(outputPath)

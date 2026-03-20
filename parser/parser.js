@@ -1,10 +1,12 @@
 const { HTMLToJSON } = require('html-to-json-parser')
 const { minify } = require('html-minifier')
+const { check } = require('./checker')
 
 module.exports = async (data) => {
   let scenario = []
   let script = []
   let lang = 'js'
+  const errors = []
 
   /**
    * 渡されたオブジェクトを展開する
@@ -41,13 +43,26 @@ module.exports = async (data) => {
   })
   // HTMLをJSONに変換
   const parseJson = await HTMLToJSON(html)
+  let scenarioCount = 0
   parseJson.content.forEach((element) => {
     if (element.type === 'scenario') {
+      scenarioCount++
+      if (scenarioCount > 1) {
+        errors.push({
+          type: 'duplicate_scenario',
+          message: 'Multiple <scenario> sections found. Only one <scenario> is allowed per scene file.',
+        })
+      }
       scenario = flattenAttributes(element.content)
     } else {
       script = element.content
       lang = element.attributes?.type
     }
   })
-  return { scenario, script, lang }
+
+  // Run syntax checker on the parsed scenario
+  const checkerErrors = check(scenario)
+  errors.push(...checkerErrors)
+
+  return { scenario, script, lang, errors }
 }
