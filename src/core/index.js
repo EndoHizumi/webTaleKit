@@ -18,6 +18,7 @@ export class Core {
     this.onNextHandler = null
     this.sceneFile = {}
     this.sceneConfig = {}
+    this.eventHandlers = {}
     this.commandList = {
       text: this.textHandler,
       choice: this.choiceHandler,
@@ -53,6 +54,25 @@ export class Core {
   setConfig(config) {
     // ゲームの設定情報をセットする
     engineConfig = config
+  }
+
+  on(event, handler) {
+    if (!this.eventHandlers[event]) {
+      this.eventHandlers[event] = []
+    }
+    this.eventHandlers[event].push(handler)
+    return this
+  }
+
+  off(event, handler) {
+    if (!this.eventHandlers[event]) return this
+    this.eventHandlers[event] = this.eventHandlers[event].filter((h) => h !== handler)
+    return this
+  }
+
+  emit(event, data) {
+    if (!this.eventHandlers[event]) return
+    this.eventHandlers[event].forEach((handler) => handler(data))
   }
 
   async start(initScene) {
@@ -255,10 +275,18 @@ export class Core {
     //prettier-ignore
     this.onNextHandler = () => { this.drawer.isSkip = true }
     this.drawer.clearText() // テキスト表示領域をクリア
+
+    this.emit('textstart', { content: scenarioObject.content, name: scenarioObject.name })
+
     // 表示する文章を1行ずつ表示する
     for (const text of scenarioObject.content) {
       if (typeof text === 'string') {
-        await this.drawer.drawText(this.expandVariable(text), scenarioObject.speed || 25)
+        await this.drawer.drawText(
+          this.expandVariable(text),
+          scenarioObject.speed || 25,
+          undefined,
+          (char, displayedText) => this.emit('textprogress', { char, displayedText }),
+        )
       } else {
         if (text.type === 'br' || text.type === 'wait') {
           if (text.type === 'br') this.drawer.drawLineBreak()
@@ -267,13 +295,20 @@ export class Core {
           }
         } else {
           const container = this.drawer.createDecoratedElement(text)
-          await this.drawer.drawText(this.expandVariable(text.content[0]), text.speed || 25, container)
+          await this.drawer.drawText(
+            this.expandVariable(text.content[0]),
+            text.speed || 25,
+            container,
+            (char, displayedText) => this.emit('textprogress', { char, displayedText }),
+          )
         }
       }
     }
     await this.waitHandler({ wait: scenarioObject.time })
     this.drawer.isSkip = false
     this.scenarioManager.setHistory(scenarioObject.content)
+
+    this.emit('textend', { content: scenarioObject.content, name: scenarioObject.name })
   }
 
   expandVariable(text) {
@@ -336,12 +371,14 @@ export class Core {
     line.content.forEach((choice) => {
       choice.label = this.expandVariable(choice.label)
     })
+    this.emit('choicestart', { choices: line.content })
     const { selectId, onSelect: selectHandler } = await this.drawer.drawChoices(line)
     if (selectHandler !== undefined) {
       this.scenarioManager.addScenario(selectHandler)
     }
     this.scenarioManager.setHistory({ line, ...selectId })
     document.querySelector('#interactiveView').style.visibility = 'hidden'
+    this.emit('choiceend', { selectId })
   }
 
   jumpHandler(line) {
@@ -825,6 +862,10 @@ export class Core {
         setSaveData: (data) => this.setSaveData(data),
         getSaveList: () => this.getSaveList(),
         deleteSave: (slot) => this.deleteSave(slot),
+      },
+      event: {
+        on: this.on.bind(this),
+        off: this.off.bind(this),
       },
     }
   }

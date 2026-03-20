@@ -63,7 +63,7 @@ export class Drawer {
     this.nameView.innerHTML = name
   }
 
-  async drawText(text: string, wait: number, containerElement?: HTMLElement) {
+  async drawText(text: string, wait: number, containerElement?: HTMLElement, onProgress?: (char: string, displayedText: string) => void) {
     let element: HTMLElement = this.messageText
     // テキストを表示するコンテナ要素を指定した場合は、その要素に追加する
     if (containerElement) {
@@ -83,10 +83,12 @@ export class Drawer {
       if (!this.isSkip) {
         textNode.textContent += char
         displayedLength++
+        if (onProgress) onProgress(char, textNode.textContent ?? '')
         await sleep(wait)
       } else {
         if (this.readySkip) {
           textNode.textContent += text.slice(displayedLength)
+          if (onProgress) onProgress(text.slice(displayedLength), textNode.textContent ?? '')
           this.readySkip = false
           this.isSkip = false
           break
