@@ -3,7 +3,7 @@ const parse = require('./parser.js')
 const fs = require('fs')
 const path = require('path')
 /**
- * WebTaleScript Parser CLI
+ * WebTaleScript パーサー CLI
  */
 
 const exec = (targetScript) => {

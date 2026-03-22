@@ -60,7 +60,7 @@ module.exports = async (data) => {
     }
   })
 
-  // Run syntax checker on the parsed scenario
+  // パース済みシナリオに対して構文チェッカーを実行する
   const checkerErrors = check(scenario)
   errors.push(...checkerErrors)
 
