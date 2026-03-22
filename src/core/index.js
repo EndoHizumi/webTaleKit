@@ -185,7 +185,18 @@ export class Core {
         document.head.appendChild(styleElement)
       }
     } else {
+      // ダイアログの場合、古いダイアログ用のスタイルを削除する
+      const oldDialogStyles = document.head.querySelectorAll('style[data-dialog-style]')
+      oldDialogStyles.forEach((styleTag) => {
+        document.head.removeChild(styleTag)
+      })
       this.gameContainer.appendChild(mainDiv)
+      // ダイアログ用のStyleタグを取り出して、マークを付けてheadタグに追加する
+      const styleElement = doc.head.getElementsByTagName('style')[0]
+      if (styleElement) {
+        styleElement.setAttribute('data-dialog-style', 'true')
+        document.head.appendChild(styleElement)
+      }
     }
 
     if (!skipBackground) {
