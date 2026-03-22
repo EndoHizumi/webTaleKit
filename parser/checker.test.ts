@@ -34,7 +34,7 @@ describe('checker', () => {
       const scenario = [
         {
           type: 'dialog',
-          id: 'test',
+          name: 'test',
           content: [
             { type: 'prompt', content: ['Question?'] },
             {
@@ -145,6 +145,85 @@ describe('checker', () => {
             { type: 'data', content: [] },
             { type: 'then', content: ['Done'] },
             { type: 'error', content: ['Failed'] },
+          ],
+        },
+      ]
+      expect(check(scenario)).toEqual([])
+    })
+
+    test('all known show attributes pass without warnings', () => {
+      const scenario = [
+        {
+          type: 'show',
+          src: './chara.png',
+          name: 'hero',
+          mode: 'chara',
+          x: 100,
+          y: 200,
+          width: 300,
+          height: 400,
+          pos: 'center:middle',
+          look: false,
+          entry: { time: 1, wait: false },
+          sepia: 0.5,
+          mono: false,
+          blur: 0,
+          opacity: 1,
+          transition: 'fade',
+          duration: 1000,
+          content: [],
+        },
+      ]
+      expect(check(scenario)).toEqual([])
+    })
+
+    test('all known sound attributes pass without warnings', () => {
+      const scenario = [
+        {
+          type: 'sound',
+          src: './bgm.mp3',
+          name: 'main',
+          mode: 'bgm',
+          play: true,
+          loop: true,
+          content: [],
+        },
+      ]
+      expect(check(scenario)).toEqual([])
+    })
+
+    test('save and load with known attributes pass without warnings', () => {
+      const scenario = [
+        { type: 'save', slot: '1', name: 'chapter1', message: true, content: [] },
+        { type: 'load', slot: '1', message: false, content: [] },
+      ]
+      expect(check(scenario)).toEqual([])
+    })
+
+    test('global attributes (if, get, post, put, delete) do not produce warnings', () => {
+      const scenario = [
+        { type: 'text', if: 'flag', get: 'https://api.example.com', content: ['ok'] },
+        { type: 'call', if: 'x > 0', method: 'doSomething()', content: [] },
+      ]
+      expect(check(scenario)).toEqual([])
+    })
+
+    test('item with all known attributes passes without warnings', () => {
+      const scenario = [
+        {
+          type: 'choice',
+          content: [
+            {
+              type: 'item',
+              label: 'Option A',
+              id: 1,
+              default: './btn.png',
+              hover: './btn_hover.png',
+              select: './btn_select.png',
+              color: { default: 'black', hover: 'white', select: 'red' },
+              position: { x: 100, y: 200 },
+              content: [],
+            },
           ],
         },
       ]
@@ -289,6 +368,124 @@ describe('checker', () => {
       const errors = check(scenario)
       expect(errors).toHaveLength(4)
       expect(errors.map((e) => e.node)).toEqual(['header', 'data', 'error', 'progress'])
+    })
+  })
+
+  describe('unknown attribute warnings', () => {
+    test('unknown attribute on text produces a warning', () => {
+      const scenario = [{ type: 'text', content: ['Hello'], unknownAttr: 'value' }]
+      const warnings = check(scenario).filter((r) => r.type === 'unknown_attribute')
+      expect(warnings).toHaveLength(1)
+      expect(warnings[0].node).toBe('text')
+      expect(warnings[0].attribute).toBe('unknownAttr')
+      expect(warnings[0].message).toContain('"unknownAttr"')
+      expect(warnings[0].message).toContain('will be ignored')
+    })
+
+    test('unknown attribute on show produces a warning', () => {
+      const scenario = [{ type: 'show', src: './bg.jpg', content: [], typo: 'yes' }]
+      const warnings = check(scenario).filter((r) => r.type === 'unknown_attribute')
+      expect(warnings).toHaveLength(1)
+      expect(warnings[0].node).toBe('show')
+      expect(warnings[0].attribute).toBe('typo')
+    })
+
+    test('unknown attribute on jump produces a warning', () => {
+      const scenario = [{ type: 'jump', index: 5, content: [], badAttr: true }]
+      const warnings = check(scenario).filter((r) => r.type === 'unknown_attribute')
+      expect(warnings).toHaveLength(1)
+      expect(warnings[0].node).toBe('jump')
+      expect(warnings[0].attribute).toBe('badAttr')
+    })
+
+    test('any attribute on newpage produces a warning', () => {
+      const scenario = [{ type: 'newpage', content: [], extra: 'ignored' }]
+      const warnings = check(scenario).filter((r) => r.type === 'unknown_attribute')
+      expect(warnings).toHaveLength(1)
+      expect(warnings[0].node).toBe('newpage')
+      expect(warnings[0].attribute).toBe('extra')
+    })
+
+    test('unknown attribute on item produces a warning', () => {
+      const scenario = [
+        {
+          type: 'choice',
+          content: [{ type: 'item', label: 'A', content: [], ghost: true }],
+        },
+      ]
+      const warnings = check(scenario).filter((r) => r.type === 'unknown_attribute')
+      expect(warnings).toHaveLength(1)
+      expect(warnings[0].node).toBe('item')
+      expect(warnings[0].attribute).toBe('ghost')
+    })
+
+    test('multiple unknown attributes on one node produce multiple warnings', () => {
+      const scenario = [{ type: 'route', to: 'next', content: [], foo: 1, bar: 2 }]
+      const warnings = check(scenario).filter((r) => r.type === 'unknown_attribute')
+      expect(warnings).toHaveLength(2)
+      expect(warnings.map((w) => w.attribute).sort()).toEqual(['bar', 'foo'])
+    })
+
+    test('unknown attribute on inline color tag produces a warning', () => {
+      const scenario = [
+        {
+          type: 'text',
+          content: [{ type: 'color', value: 'red', content: ['Red'], extra: true }],
+        },
+      ]
+      const warnings = check(scenario).filter((r) => r.type === 'unknown_attribute')
+      expect(warnings).toHaveLength(1)
+      expect(warnings[0].node).toBe('color')
+      expect(warnings[0].attribute).toBe('extra')
+    })
+
+    test('unknown attribute on HTTP sub-tag produces a warning', () => {
+      const scenario = [
+        {
+          type: 'text',
+          get: 'https://api.example.com',
+          content: [{ type: 'error', content: ['Fail'], retries: 3 }],
+        },
+      ]
+      const warnings = check(scenario).filter((r) => r.type === 'unknown_attribute')
+      expect(warnings).toHaveLength(1)
+      expect(warnings[0].node).toBe('error')
+      expect(warnings[0].attribute).toBe('retries')
+    })
+
+    test('global attributes never produce warnings', () => {
+      const scenario = [
+        {
+          type: 'say',
+          name: 'Alice',
+          if: 'flag',
+          get: 'https://api.example.com',
+          post: 'https://api.example.com',
+          put: 'https://api.example.com',
+          delete: 'https://api.example.com',
+          content: ['Hello'],
+        },
+      ]
+      const warnings = check(scenario).filter((r) => r.type === 'unknown_attribute')
+      expect(warnings).toHaveLength(0)
+    })
+
+    test('unknown node types do not produce attribute warnings', () => {
+      // Custom/unknown tag types should not be flagged
+      const scenario = [{ type: 'custom-tag', anything: 'value', content: [] }]
+      const warnings = check(scenario).filter((r) => r.type === 'unknown_attribute')
+      expect(warnings).toHaveLength(0)
+    })
+
+    test('warnings and errors can occur together', () => {
+      // item at root (error) with an unknown attribute (warning)
+      const scenario = [{ type: 'item', label: 'A', content: [], badAttr: true }]
+      const results = check(scenario)
+      const errors = results.filter((r) => r.type === 'invalid_parent')
+      const warnings = results.filter((r) => r.type === 'unknown_attribute')
+      expect(errors).toHaveLength(1)
+      expect(warnings).toHaveLength(1)
+      expect(warnings[0].attribute).toBe('badAttr')
     })
   })
 })
