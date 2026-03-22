@@ -1,4 +1,4 @@
-import { Core } from 'webtalekit-alpha/src/core/'
+import { Core } from 'webtalekit-alpha/dist/src/core/'
 import engineConfig from '../engineConfig.json'
 
 const game = new Core()

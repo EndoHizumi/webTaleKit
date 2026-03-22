@@ -60,7 +60,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\\.ts$/,
+        test: /\.ts$/,
         use: 'ts-loader',
         exclude: /node_modules/,
       },
