@@ -12,5 +12,13 @@
     "no-unexpected-multiline": "error",
     "no-unreachable": "error",
     "camelcase": ["error", { "properties": "always" }]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.test.ts"],
+      "env": {
+        "jest": true
+      }
+    }
+  ]
 }
