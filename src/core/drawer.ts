@@ -92,7 +92,6 @@ export class Drawer {
           break
         }
       }
-      await sleep(wait)
     }
   }
 
