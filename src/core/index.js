@@ -355,6 +355,7 @@ export class Core {
     }
     this.scenarioManager.setHistory({ line, ...selectId })
     document.querySelector('#interactiveView').style.visibility = 'hidden'
+    this.isNext = false
   }
 
   jumpHandler(line) {
@@ -371,8 +372,10 @@ export class Core {
       const scenarioList = scenario.slice(line.index, this.scenarioManager.getIndex())
       // sub=falseの行だけを取得
       const subFalseScenario = scenarioList.filter((line) => !line.sub)
+      // after に残っている sub=true の要素を除去（前回の選択肢の残骸を除去する）
+      const filteredAfter = noEditScenarioList.after.filter((item) => !item.sub)
       // scenarioManagerに追加
-      this.scenarioManager.setScenario([...noEditScenarioList.before, ...subFalseScenario, ...noEditScenarioList.after])
+      this.scenarioManager.setScenario([...noEditScenarioList.before, ...subFalseScenario, ...filteredAfter])
     }
     this.newpageHandler()
     this.scenarioManager.setIndex(Number(line.index))
