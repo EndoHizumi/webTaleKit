@@ -342,6 +342,7 @@ export class Core {
     }
     this.scenarioManager.setHistory({ line, ...selectId })
     document.querySelector('#interactiveView').style.visibility = 'hidden'
+    this.isNext = false
   }
 
   jumpHandler(line) {
