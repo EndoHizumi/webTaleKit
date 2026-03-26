@@ -3,12 +3,12 @@ import { Drawer } from './drawer'
 
 export class DefaultUIHandler {
   /**
-   * Register all DOM-related event handlers onto the given EventBus.
+   * 指定されたEventBusにDOM操作関連のイベントハンドラをすべて登録する。
    *
-   * @param eventBus     - The shared EventBus instance
-   * @param drawer       - The Drawer instance (canvas + text rendering)
-   * @param gameContainer - The root game container element
-   * @param resolution   - Engine resolution used to initialise the canvas
+   * @param eventBus      - 共有EventBusインスタンス
+   * @param drawer        - Drawerインスタンス（キャンバス・テキスト描画）
+   * @param gameContainer - ゲームのルートコンテナ要素
+   * @param resolution    - キャンバス初期化に使用するエンジン解像度
    */
   static register(
     eventBus: EventBus,
@@ -18,46 +18,46 @@ export class DefaultUIHandler {
   ): void {
     // ----------------------------------------------------------------
     // screen:load
-    //   Injects parsed template HTML and CSS into the DOM.
-    //   For dialog mode it appends the dialog element and marks its style.
+    //   パース済みのテンプレートHTMLとCSSをDOMに注入する。
+    //   ダイアログモードの場合はダイアログ要素を追加し、スタイルにマークを付ける。
     // ----------------------------------------------------------------
     eventBus.on('screen:load', async (data: any) => {
       const { element, html, style, isDialog } = data
 
       if (!isDialog) {
-        // Remove any existing stylesheets
+        // 既存のスタイルシートを削除する
         const styleTags = Array.from(document.head.getElementsByTagName('style'))
         styleTags.forEach((tag) => document.head.removeChild(tag))
 
-        // Inject HTML content
+        // HTMLコンテンツを注入する
         gameContainer.innerHTML = html
 
-        // Initialise the canvas / named view references
+        // キャンバスと各ビューの参照を初期化する
         drawer.setScreen(gameContainer, resolution)
 
-        // Apply the template stylesheet
+        // テンプレートのスタイルシートを適用する
         if (style) {
           const styleEl = document.createElement('style')
           styleEl.textContent = style
           document.head.appendChild(styleEl)
         }
       } else {
-        // Remove stale dialog stylesheets
+        // 古いダイアログ用スタイルシートを削除する
         document.head
           .querySelectorAll('style[data-dialog-style]')
           .forEach((tag) => document.head.removeChild(tag))
 
-        // Close and remove any existing dialog
+        // 既存のダイアログを閉じて削除する
         const existingDialog = document.querySelector('#dialogContainer') as HTMLDialogElement | null
         if (existingDialog) {
           existingDialog.close()
           existingDialog.remove()
         }
 
-        // Append the new dialog element
+        // 新しいダイアログ要素を追加する
         gameContainer.appendChild(element)
 
-        // Apply the dialog stylesheet with a marker attribute
+        // ダイアログ用スタイルシートにマークを付けて適用する
         if (style) {
           const styleEl = document.createElement('style')
           styleEl.textContent = style
@@ -69,7 +69,7 @@ export class DefaultUIHandler {
 
     // ----------------------------------------------------------------
     // text:clear
-    //   Clears the message text area.
+    //   メッセージテキスト表示領域をクリアする。
     // ----------------------------------------------------------------
     eventBus.on('text:clear', () => {
       drawer.clearText()
@@ -77,9 +77,9 @@ export class DefaultUIHandler {
 
     // ----------------------------------------------------------------
     // text:show
-    //   Renders the speaker name and animates content character-by-character.
-    //   data.expandVariable — variable expansion callback from Core
-    //   data.waitFn         — waitHandler callback from Core (for <wait> tags)
+    //   話者名を表示し、コンテンツを1文字ずつアニメーションで描画する。
+    //   data.expandVariable — Coreから渡される変数展開コールバック
+    //   data.waitFn         — Coreから渡されるwaitHandlerコールバック（<wait>タグ用）
     // ----------------------------------------------------------------
     eventBus.on('text:show', async (data: any) => {
       const { name, content, speed, expandVariable, waitFn } = data
@@ -103,9 +103,8 @@ export class DefaultUIHandler {
 
     // ----------------------------------------------------------------
     // choice:show
-    //   Makes the interactive view visible, renders choice buttons via
-    //   the Drawer, then hides the view again.
-    //   Returns the selection result { selectId, onSelect }.
+    //   インタラクティブビューを表示し、Drawerで選択肢ボタンを描画して、
+    //   選択後に非表示に戻す。選択結果 { selectId, onSelect } を返す。
     // ----------------------------------------------------------------
     eventBus.on('choice:show', async (data: any) => {
       const interactiveView = document.querySelector('#interactiveView') as HTMLElement | null
@@ -117,11 +116,11 @@ export class DefaultUIHandler {
 
     // ----------------------------------------------------------------
     // dialog:show
-    //   Populates the loaded dialog container with prompt text and
-    //   action buttons, shows the modal, and returns a Promise that
-    //   resolves with the selected action id when the dialog closes.
-    //   data.expandVariable — variable expansion callback from Core
-    //   data.addScenario    — scenarioManager.addScenario callback
+    //   読み込まれたダイアログコンテナにプロンプトテキストとアクションボタンを
+    //   設定し、モーダルを表示する。ダイアログが閉じられると選択されたアクションの
+    //   IDで解決するPromiseを返す。
+    //   data.expandVariable — Coreから渡される変数展開コールバック
+    //   data.addScenario    — scenarioManager.addScenarioコールバック
     // ----------------------------------------------------------------
     eventBus.on('dialog:show', async (data: any) => {
       const { content, expandVariable, addScenario } = data
@@ -149,6 +148,7 @@ export class DefaultUIHandler {
               `#dialog-button-${action.id}`,
             ) as HTMLButtonElement | null
             if (!button) {
+              // ボタンが存在しない場合は新規作成する
               button = document.createElement('button')
               button.id = `dialog-button-${action.id}`
               button.classList.add('dialog-button')
@@ -156,6 +156,7 @@ export class DefaultUIHandler {
             }
             button.innerText = action.label
             button.addEventListener('click', () => {
+              // 選択されたアクションのシナリオを追加してダイアログを閉じる
               addScenario(action.content)
               result = action.id
               dialogContainer.close()
@@ -174,14 +175,14 @@ export class DefaultUIHandler {
 
     // ----------------------------------------------------------------
     // input:bind
-    //   Attaches keyboard and click listeners to the game container.
-    //   data.onNext   — called when the user advances (Enter / click)
-    //   data.setSkip  — (drawerSkip: boolean, coreNext: boolean) => void
-    //   Calling input:bind again removes the previous listeners first.
+    //   ゲームコンテナにキーボードとクリックのリスナーをバインドする。
+    //   data.onNext  — ユーザーが進行操作（Enter / クリック）した際に呼ばれる
+    //   data.setSkip — (drawerSkip: boolean, coreNext: boolean) => void
+    //   再度 input:bind が発行された際は以前のリスナーを先に削除する。
     // ----------------------------------------------------------------
     let inputAbortController: AbortController | null = null
     eventBus.on('input:bind', (data: any) => {
-      // Remove any previously bound listeners to avoid duplicates
+      // 重複登録を防ぐために以前バインドしたリスナーを削除する
       if (inputAbortController) inputAbortController.abort()
       inputAbortController = new AbortController()
       const { signal } = inputAbortController

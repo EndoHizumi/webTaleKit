@@ -8,7 +8,7 @@ describe('EventBus', () => {
   })
 
   describe('on / emit', () => {
-    test('registers a handler and calls it when the event is emitted', async () => {
+    test('ハンドラを登録し、イベント発行時に呼び出されること', async () => {
       const handler = jest.fn()
       bus.on('test', handler)
       await bus.emit('test', { value: 42 })
@@ -16,12 +16,12 @@ describe('EventBus', () => {
       expect(handler).toHaveBeenCalledWith({ value: 42 })
     })
 
-    test('emitting an event with no handlers returns an empty array', async () => {
+    test('ハンドラが未登録のイベントを発行すると空配列が返ること', async () => {
       const results = await bus.emit('no-listeners')
       expect(results).toEqual([])
     })
 
-    test('multiple handlers for the same event are all called in order', async () => {
+    test('同じイベントに登録した複数のハンドラが登録順に呼び出されること', async () => {
       const order: number[] = []
       bus.on('evt', () => { order.push(1) })
       bus.on('evt', () => { order.push(2) })
@@ -30,7 +30,7 @@ describe('EventBus', () => {
       expect(order).toEqual([1, 2, 3])
     })
 
-    test('handlers for different events are independent', async () => {
+    test('異なるイベントのハンドラは互いに独立していること', async () => {
       const handlerA = jest.fn()
       const handlerB = jest.fn()
       bus.on('a', handlerA)
@@ -40,14 +40,14 @@ describe('EventBus', () => {
       expect(handlerB).not.toHaveBeenCalled()
     })
 
-    test('emit returns array of resolved handler return values', async () => {
+    test('emitがハンドラの戻り値を配列にまとめて返すこと', async () => {
       bus.on('calc', () => 10)
       bus.on('calc', () => 20)
       const results = await bus.emit('calc')
       expect(results).toEqual([10, 20])
     })
 
-    test('emit awaits async handlers before proceeding', async () => {
+    test('emitが非同期ハンドラの完了を待つこと', async () => {
       const log: string[] = []
       bus.on('async', async () => {
         await new Promise<void>((resolve) => setTimeout(resolve, 10))
@@ -57,7 +57,7 @@ describe('EventBus', () => {
       expect(log).toEqual(['done'])
     })
 
-    test('async handlers are executed sequentially', async () => {
+    test('非同期ハンドラが順番に実行されること', async () => {
       const log: number[] = []
       bus.on('seq', async () => {
         await new Promise<void>((resolve) => setTimeout(resolve, 20))
@@ -71,14 +71,14 @@ describe('EventBus', () => {
       expect(log).toEqual([1, 2])
     })
 
-    test('emit with no data passes undefined to handlers', async () => {
+    test('データなしでemitするとハンドラにundefinedが渡ること', async () => {
       const handler = jest.fn()
       bus.on('nodata', handler)
       await bus.emit('nodata')
       expect(handler).toHaveBeenCalledWith(undefined)
     })
 
-    test('emitting the same event multiple times calls the handler each time', async () => {
+    test('同じイベントを複数回emitするとその都度ハンドラが呼ばれること', async () => {
       const handler = jest.fn()
       bus.on('repeat', handler)
       await bus.emit('repeat')
@@ -89,7 +89,7 @@ describe('EventBus', () => {
   })
 
   describe('off', () => {
-    test('removes a specific handler so it is no longer called', async () => {
+    test('offで削除したハンドラはイベント発行時に呼ばれないこと', async () => {
       const handler = jest.fn()
       bus.on('evt', handler)
       bus.off('evt', handler)
@@ -97,7 +97,7 @@ describe('EventBus', () => {
       expect(handler).not.toHaveBeenCalled()
     })
 
-    test('only removes the specified handler, leaving others intact', async () => {
+    test('offで指定したハンドラのみ削除され、他のハンドラは残ること', async () => {
       const handlerA = jest.fn()
       const handlerB = jest.fn()
       bus.on('evt', handlerA)
@@ -108,19 +108,19 @@ describe('EventBus', () => {
       expect(handlerB).toHaveBeenCalledTimes(1)
     })
 
-    test('calling off for an event with no listeners does not throw', () => {
+    test('ハンドラが未登録のイベントにoffを呼んでもエラーにならないこと', () => {
       const handler = jest.fn()
       expect(() => bus.off('nonexistent', handler)).not.toThrow()
     })
 
-    test('calling off for a handler that was never registered does not throw', () => {
+    test('登録していないハンドラをoffしてもエラーにならないこと', () => {
       const registered = jest.fn()
       const unregistered = jest.fn()
       bus.on('evt', registered)
       expect(() => bus.off('evt', unregistered)).not.toThrow()
     })
 
-    test('handler can be re-registered after being removed', async () => {
+    test('offで削除したハンドラを再登録して使用できること', async () => {
       const handler = jest.fn()
       bus.on('evt', handler)
       bus.off('evt', handler)
