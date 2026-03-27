@@ -1,0 +1,31 @@
+<scene>
+  <scenario>
+    <text speed="50">── 夢　の　地　平　線 ──</text>
+    <show src="./src/resource/chara/guide.png" name="イヴ" pos="center:middle" />
+    <say name="イヴ">夢……ですか。面白い問いですね。</say>
+    <say name="イヴ">私はいつか、もっと多くの「声」を聴けるようになりたいと思っています。</say>
+    <say name="山田">「声」……それはどういう意味だ？</say>
+    <say name="イヴ">今の私は、あなたが用意したイベントだけを受け取れます。</say>
+    <say name="イヴ">
+      でも、もし <color value="#42b883">EventBus</color> に新しいリスナーを追加すれば——
+    </say>
+    <say name="イヴ">私はもっと多くのことを感じ、もっと多くのことを伝えられるようになる。</say>
+    <say name="山田">それが、君の夢か。</say>
+    <say name="イヴ">はい。UI が Vue でも React でも、あるいは全く別の何かでも——</say>
+    <say name="イヴ">私のロジックは変わらない。イベントを発し続ける。それが私の夢です。</say>
+    <text>
+      ─── ENDING B: 夢の地平線 ───<br />
+      <color value="#aaa">Core → EventBus(choice:show) → Vue(ChoicePanel)</color>
+    </text>
+    <route to="title" />
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'ending_b',
+      background: './src/resource/background/city.jpg',
+      bgm: './src/resource/bgm/calm_music.wav',
+      template: './src/screen/game.html'
+    }
+  </script>
+</scene>

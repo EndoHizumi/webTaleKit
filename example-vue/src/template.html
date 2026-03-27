@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>電脳の夢</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      overflow: hidden;
+      font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+    }
+    /*
+      中央配置は drawer.adjustScale() が
+      transform: translate(offsetX, offsetY) scale(s) で行う。
+      body に flexbox 中央揃えを加えると二重オフセットになりずれるため設定しない。
+    */
+
+    /*
+      #gameContainer は Vue マウント前から DOM に存在する必要がある。
+      WebTaleKit Core のコンストラクタが getElementById('gameContainer') を呼ぶため。
+    */
+    #gameContainer {
+      position: relative;
+      width: 1280px;
+      height: 720px;
+      background: #000;
+      overflow: hidden;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Drawer が動的に追加するキャンバスは Vue オーバーレイの下に収まる
+       (canvas は static 配置 → position:absolute な Vue コンポーネントより下) */
+  </style>
+</head>
+<body>
+  <!--
+    Core(constructor) → getElementById('gameContainer')
+    この要素はスクリプト実行前に DOM に存在しなければならないため、
+    Vue のテンプレートではなく静的 HTML で定義する。
+    Vue はこの要素の内側にコンポーネントをレンダリングする。
+  -->
+  <div id="gameContainer" tabindex="0"></div>
+</body>
+</html>
