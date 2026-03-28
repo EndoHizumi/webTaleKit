@@ -136,49 +136,22 @@ export class Core {
     // 画面名を設定する。
     this.scenarioManager.progress.currentScene = sceneConfig.name
     this.scenarioManager.setSceneName(sceneConfig.name)
-    // sceneConfig.templateを読み込んで、HTMLを表示する
-    // テンプレートの存在確認
+    // テンプレートの存在確認（ダイアログ以外のみ）
     if (!isDialog && !(await this.checkResourceExists(sceneConfig.template))) {
       console.error(`Template file not found: ${sceneConfig.template}`)
       throw new Error(`Template file not found: ${sceneConfig.template}`)
     }
 
-    const htmlString = await (await fetch(sceneConfig.template)).text()
-    // 読み込んだhtmlからIDにmainを持つdivタグとStyleタグ以下を取り出して、gameContainerに表示する
-    let parser = new DOMParser()
-    let doc = parser.parseFromString(htmlString, 'text/html')
-
-    let mainDiv = isDialog ? doc.getElementById('dialogContainer') : doc.getElementById('main')
-
-    if (!mainDiv) {
-      // mainが見つからない場合は、フォールバックテンプレートを使用
-      if (fallbackTemplate) {
-        console.warn(`Main div not found in  template, using fallback: ${fallbackTemplate}`)
-        mainDiv = doc.createElement('div')
-        const fallbackTemplateText = fallbackTemplate()
-        mainDiv.innerHTML = fallbackTemplateText.htmlString
-        // フォールバックテンプレートのスタイルを適用
-        const styleElement = doc.head.getElementsByTagName('style')[0] || doc.createElement('style')
-        styleElement.textContent = fallbackTemplateText.styleString || ''
-        doc.head.appendChild(styleElement)
-      } else {
-        throw new Error('Main div not found in template and no fallback provided.')
-      }
-    }
     if (!this.gameContainer) {
       throw new Error('Game container not found.')
     }
 
-    // Styleタグの内容を取り出してイベントデータとして渡す
-    const styleElement = doc.head.getElementsByTagName('style')[0]
-    const styleContent = styleElement ? styleElement.textContent : null
-
-    // screen:loadイベントを発行してDOMへの注入をDefaultUIHandlerに委譲する
+    // screen:loadイベントを発行してHTMLの読み込み・パース・DOM注入をDefaultUIHandlerに委譲する
+    // テンプレートURLとフォールバック関数を渡すことで、UIフレームワークが独自のfetch/描画処理を実装できる
     await this.eventBus.emit('screen:load', {
-      element: mainDiv,
-      html: mainDiv.innerHTML,
-      style: styleContent,
+      template: sceneConfig.template,
       isDialog,
+      fallbackTemplate,
     })
 
     if (!skipBackground) {

@@ -18,11 +18,46 @@ export class DefaultUIHandler {
   ): void {
     // ----------------------------------------------------------------
     // screen:load
-    //   パース済みのテンプレートHTMLとCSSをDOMに注入する。
-    //   ダイアログモードの場合はダイアログ要素を追加し、スタイルにマークを付ける。
+    //   テンプレートURLからHTMLを読み込み・パースしてDOMに注入する。
+    //   通常モードはgameContainerのinnerHTMLを置換し、drawer.setScreenを呼び出す。
+    //   ダイアログモードはダイアログ要素を追加し、スタイルにマークを付ける。
+    //   data.template         — テンプレートファイルのURL
+    //   data.isDialog         — ダイアログモードかどうか
+    //   data.fallbackTemplate — テンプレートが見つからない場合のフォールバック関数
     // ----------------------------------------------------------------
     eventBus.on('screen:load', async (data: any) => {
-      const { element, html, style, isDialog } = data
+      const { template, isDialog, fallbackTemplate } = data
+
+      // テンプレートHTMLをフェッチしてパースする
+      const htmlString = await (await fetch(template)).text()
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(htmlString, 'text/html')
+
+      // ダイアログ用は#dialogContainer、通常画面は#mainを取得する
+      let mainDiv: HTMLElement | null = isDialog
+        ? doc.getElementById('dialogContainer')
+        : doc.getElementById('main')
+
+      if (!mainDiv) {
+        // 対象要素が見つからない場合はフォールバックテンプレートを使用する
+        if (fallbackTemplate) {
+          console.warn('テンプレートにメイン要素が見つからないため、フォールバックを使用します')
+          const fallbackContent = fallbackTemplate()
+          const wrapper = doc.createElement('div')
+          wrapper.innerHTML = fallbackContent.htmlString
+          mainDiv = wrapper
+          // フォールバックのスタイルをdocに追加する（styleContentの抽出に使用）
+          const styleEl = doc.head.getElementsByTagName('style')[0] || doc.createElement('style')
+          styleEl.textContent = fallbackContent.styleString || ''
+          doc.head.appendChild(styleEl)
+        } else {
+          throw new Error('テンプレートにメイン要素が見つからず、フォールバックも指定されていません。')
+        }
+      }
+
+      // <style>タグの内容を取り出す
+      const styleElement = doc.head.getElementsByTagName('style')[0]
+      const styleContent = styleElement ? styleElement.textContent : null
 
       if (!isDialog) {
         // 既存のスタイルシートを削除する
@@ -30,15 +65,15 @@ export class DefaultUIHandler {
         styleTags.forEach((tag) => document.head.removeChild(tag))
 
         // HTMLコンテンツを注入する
-        gameContainer.innerHTML = html
+        gameContainer.innerHTML = mainDiv.innerHTML
 
         // キャンバスと各ビューの参照を初期化する
         drawer.setScreen(gameContainer, resolution)
 
         // テンプレートのスタイルシートを適用する
-        if (style) {
+        if (styleContent) {
           const styleEl = document.createElement('style')
-          styleEl.textContent = style
+          styleEl.textContent = styleContent
           document.head.appendChild(styleEl)
         }
       } else {
@@ -55,12 +90,12 @@ export class DefaultUIHandler {
         }
 
         // 新しいダイアログ要素を追加する
-        gameContainer.appendChild(element)
+        gameContainer.appendChild(mainDiv)
 
         // ダイアログ用スタイルシートにマークを付けて適用する
-        if (style) {
+        if (styleContent) {
           const styleEl = document.createElement('style')
-          styleEl.textContent = style
+          styleEl.textContent = styleContent
           styleEl.setAttribute('data-dialog-style', 'true')
           document.head.appendChild(styleEl)
         }
