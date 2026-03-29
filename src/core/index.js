@@ -57,43 +57,51 @@ export class Core {
   }
 
   async start(initScene) {
-    // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
-    // titleタグの内容を書き換える
-    document.title = engineConfig.title
-    // sceneファイルを読み込む
-    await this.loadScene(initScene || 'title')
-    // 画面を表示する
-    await this.loadScreen(this.sceneConfig)
-    // 入力イベントを設定する
-    document.querySelector('#gameContainer').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
+    try {
+      // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
+      // titleタグの内容を書き換える
+      document.title = engineConfig.title
+      // sceneファイルを読み込む
+      await this.loadScene(initScene || 'title')
+      // 画面を表示する
+      await this.loadScreen(this.sceneConfig)
+      // 入力イベントを設定する
+      document.querySelector('#gameContainer').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          this.onNextHandler()
+        } else if (e.key === 'Control') {
+          this.drawer.isSkip = true
+          this.isNext = true
+        }
+      })
+      document.querySelector('#gameContainer').addEventListener('keyup', (e) => {
+        if (e.key === 'Control') {
+          this.drawer.isSkip = true
+          this.isNext = false
+        }
+      })
+      document.querySelector('#gameContainer').addEventListener('click', (e) => {
         this.onNextHandler()
-      } else if (e.key === 'Control') {
-        this.drawer.isSkip = true
-        this.isNext = true
-      }
-    })
-    document.querySelector('#gameContainer').addEventListener('keyup', (e) => {
-      if (e.key === 'Control') {
-        this.drawer.isSkip = true
-        this.isNext = false
-      }
-    })
-    document.querySelector('#gameContainer').addEventListener('click', (e) => {
-      this.onNextHandler()
-    })
+      })
 
-    await this.textHandler('タップでスタート')
-    // BGMを再生する
-    this.soundHandler({
-      mode: 'bgm',
-      src: this.sceneConfig.bgm,
-      loop: true,
-      play: true,
-    })
-    // シナリオを実行する
-    while (this.scenarioManager.hasNext()) {
-      await this.runScenario()
+      await this.textHandler('タップでスタート')
+      // BGMを再生する
+      await this.soundHandler({
+        mode: 'bgm',
+        src: this.sceneConfig.bgm,
+        loop: true,
+        play: true,
+      })
+      // シナリオを実行する
+      while (this.scenarioManager.hasNext()) {
+        await this.runScenario()
+      }
+    } catch (error) {
+      // エラーをログに記録（スタックトレース付き）
+      await logError(error, 'Error in runScenario')
+       // エラーをアラートで表示
+      alert(`システムエラーが発生しました。\n詳細はコンソールで確認してください。:\n${error.message}`)
+      throw error
     }
   }
 
@@ -198,44 +206,35 @@ export class Core {
   }
 
   async runScenario() {
-    try {
-      let scenarioObject = this.scenarioManager.next()
-      if (!scenarioObject) {
+
+    let scenarioObject = this.scenarioManager.next()
+    if (!scenarioObject) {
+      return
+    }
+    // シナリオオブジェクトのtypeプロパティに応じて、対応する関数を実行する
+    const commandType = scenarioObject.type || 'text'
+    const commandFunction = this.commandList[commandType]
+
+    // コマンドが存在しない場合のエラーハンドリング
+    if (!commandFunction) {
+      const errorMessage = `Error: Command type "${commandType}" is not defined`
+      throw new Error(errorMessage)
+    }
+
+    const boundFunction = commandFunction.bind(this)
+    scenarioObject = await this.httpHandler(scenarioObject)
+
+    // ifグローバル属性の処理
+    if (scenarioObject.if !== undefined) {
+      const condition = this.executeCode(`return ${scenarioObject.if}`)
+
+      // 条件がfalseの場合、このタグの処理をスキップ
+      if (!condition) {
         return
       }
-      // シナリオオブジェクトのtypeプロパティに応じて、対応する関数を実行する
-      const commandType = scenarioObject.type || 'text'
-      const commandFunction = this.commandList[commandType]
-
-      // コマンドが存在しない場合のエラーハンドリング
-      if (!commandFunction) {
-        const errorMessage = `Error: Command type "${commandType}" is not defined`
-        throw new Error(errorMessage)
-      }
-
-      const boundFunction = commandFunction.bind(this)
-      scenarioObject = await this.httpHandler(scenarioObject)
-
-      // ifグローバル属性の処理
-      if (scenarioObject.if !== undefined) {
-        const condition = this.executeCode(`return ${scenarioObject.if}`)
-
-        // 条件がfalseの場合、このタグの処理をスキップ
-        if (!condition) {
-          return
-        }
-      }
-
-      await boundFunction(scenarioObject)
-    } catch (error) {
-      // エラーをログに記録（スタックトレース付き）
-      await logError(error, 'Error in runScenario')
-      
-      // エラーをアラートで表示
-      alert(`システムエラーが発生しました:\n${error.message}`)
-      
-      // エラーを再スローせず、ゲームを継続可能にする
     }
+
+    await boundFunction(scenarioObject)
   }
 
   async textHandler(scenarioObject) {
@@ -522,7 +521,7 @@ export class Core {
     let resource
 
     // ファイルの存在確認
-    if(line.src){
+    if (line.src) {
       if (!(await this.checkResourceExists(line.src))) {
         throw new Error(`Sound file not found: ${line.src}`)
       }
