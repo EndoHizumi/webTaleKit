@@ -7,10 +7,12 @@ import engineConfig from '../../engineConfig.json'
 import { sleep } from '../utils/waitUtil'
 import { getDefaultDialogTemplate } from '../utils/fallbackTemplate'
 import { generateStore } from '../utils/store'
+import { EventBus } from '../utils/eventBus'
+import { DefaultUIHandler } from './defaultUIHandler'
 import { logError } from '../utils/logger'
 
 export class Core {
-  constructor() {
+  constructor(options = {}) {
     // プロパティの初期化
     this.bgm = null
     this.isAuto = false
@@ -49,6 +51,12 @@ export class Core {
     this.usedSounds = {}
     // ストレージの初期化
     this.store = generateStore()
+    // EventBusの初期化
+    this.eventBus = new EventBus()
+    // DefaultUIHandlerの登録（customUI: trueの場合はスキップ）
+    if (!options.customUI) {
+      DefaultUIHandler.register(this.eventBus, this.drawer, this.gameContainer, engineConfig.resolution)
+    }
   }
 
   setConfig(config) {
@@ -57,32 +65,21 @@ export class Core {
   }
 
   async start(initScene) {
-    try {
-      // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
-      // titleタグの内容を書き換える
-      document.title = engineConfig.title
-      // sceneファイルを読み込む
-      await this.loadScene(initScene || 'title')
-      // 画面を表示する
-      await this.loadScreen(this.sceneConfig)
-      // 入力イベントを設定する
-      document.querySelector('#gameContainer').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          this.onNextHandler()
-        } else if (e.key === 'Control') {
-          this.drawer.isSkip = true
-          this.isNext = true
-        }
-      })
-      document.querySelector('#gameContainer').addEventListener('keyup', (e) => {
-        if (e.key === 'Control') {
-          this.drawer.isSkip = true
-          this.isNext = false
-        }
-      })
-      document.querySelector('#gameContainer').addEventListener('click', (e) => {
-        this.onNextHandler()
-      })
+    // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
+    // titleタグの内容を書き換える
+    document.title = engineConfig.title
+    // sceneファイルを読み込む
+    await this.loadScene(initScene || 'title')
+    // 画面を表示する
+    await this.loadScreen(this.sceneConfig)
+    // 入力イベントを設定する（DefaultUIHandlerに委譲）
+    await this.eventBus.emit('input:bind', {
+      onNext: () => { if (this.onNextHandler) this.onNextHandler() },
+      setSkip: (drawerSkip, coreNext) => {
+        this.drawer.isSkip = drawerSkip
+        this.isNext = coreNext
+      },
+    })
 
       await this.textHandler('タップでスタート')
       // BGMを再生する
@@ -137,66 +134,23 @@ export class Core {
     // 画面名を設定する。
     this.scenarioManager.progress.currentScene = sceneConfig.name
     this.scenarioManager.setSceneName(sceneConfig.name)
-    // sceneConfig.templateを読み込んで、HTMLを表示する
-    // テンプレートの存在確認
+    // テンプレートの存在確認（ダイアログ以外のみ）
     if (!isDialog && !(await this.checkResourceExists(sceneConfig.template))) {
       console.error(`Template file not found: ${sceneConfig.template}`)
       throw new Error(`Template file not found: ${sceneConfig.template}`)
     }
 
-    const htmlString = await (await fetch(sceneConfig.template)).text()
-    // 読み込んだhtmlからIDにmainを持つdivタグとStyleタグ以下を取り出して、gameContainerに表示する
-    let parser = new DOMParser()
-    let doc = parser.parseFromString(htmlString, 'text/html')
-
-    let mainDiv = isDialog ? doc.getElementById('dialogContainer') : doc.getElementById('main')
-
-    if (!mainDiv) {
-      // mainが見つからない場合は、フォールバックテンプレートを使用
-      if (fallbackTemplate) {
-        console.warn(`Main div not found in  template, using fallback: ${fallbackTemplate}`)
-        mainDiv = doc.createElement('div')
-        const fallbackTemplateText = fallbackTemplate()
-        mainDiv.innerHTML = fallbackTemplateText.htmlString
-        // フォールバックテンプレートのスタイルを適用
-        const styleElement = doc.head.getElementsByTagName('style')[0] || doc.createElement('style')
-        styleElement.textContent = fallbackTemplateText.styleString || ''
-        doc.head.appendChild(styleElement)
-      } else {
-        throw new Error('Main div not found in template and no fallback provided.')
-      }
-    }
     if (!this.gameContainer) {
       throw new Error('Game container not found.')
     }
-    // ゲーム進行用に必要な情報をセットする
-    if (!isDialog) {
-      // 既に読み込んだスタイルシートがあったら削除する
-      const styleTags = document.head.getElementsByTagName('style')
-      for (const styleTag of styleTags) {
-        document.head.removeChild(styleTag)
-      }
-      this.gameContainer.innerHTML = mainDiv.innerHTML
-      this.drawer.setScreen(this.gameContainer, engineConfig.resolution)
-      // Styleタグを取り出して、headタグに追加する
-      const styleElement = doc.head.getElementsByTagName('style')[0]
-      if (styleElement) {
-        document.head.appendChild(styleElement)
-      }
-    } else {
-      // ダイアログの場合、古いダイアログ用のスタイルを削除する
-      const oldDialogStyles = document.head.querySelectorAll('style[data-dialog-style]')
-      oldDialogStyles.forEach((styleTag) => {
-        document.head.removeChild(styleTag)
-      })
-      this.gameContainer.appendChild(mainDiv)
-      // ダイアログ用のStyleタグを取り出して、マークを付けてheadタグに追加する
-      const styleElement = doc.head.getElementsByTagName('style')[0]
-      if (styleElement) {
-        styleElement.setAttribute('data-dialog-style', 'true')
-        document.head.appendChild(styleElement)
-      }
-    }
+
+    // screen:loadイベントを発行してHTMLの読み込み・パース・DOM注入をDefaultUIHandlerに委譲する
+    // テンプレートURLとフォールバック関数を渡すことで、UIフレームワークが独自のfetch/描画処理を実装できる
+    await this.eventBus.emit('screen:load', {
+      template: sceneConfig.template,
+      isDialog,
+      fallbackTemplate,
+    })
 
     if (!skipBackground) {
       console.info(`background: ${await this.checkResourceExists(sceneConfig.background)}`)
@@ -258,32 +212,21 @@ export class Core {
       scenarioObject.content = scenarioObject.content.concat(scenarioObject.then || scenarioObject.error)
     }
 
-    // 名前が設定されている場合は、名前を表示する
-    if (scenarioObject.name) {
-      this.drawer.drawName(scenarioObject.name)
-    } else {
-      this.drawer.drawName('')
-    }
-
     //prettier-ignore
     this.onNextHandler = () => { this.drawer.isSkip = true }
-    this.drawer.clearText() // テキスト表示領域をクリア
-    // 表示する文章を1行ずつ表示する
-    for (const text of scenarioObject.content) {
-      if (typeof text === 'string') {
-        await this.drawer.drawText(this.expandVariable(text), scenarioObject.speed || 25)
-      } else {
-        if (text.type === 'br' || text.type === 'wait') {
-          if (text.type === 'br') this.drawer.drawLineBreak()
-          if (!text.nw) {
-            await this.waitHandler({ wait: text.time })
-          }
-        } else {
-          const container = this.drawer.createDecoratedElement(text)
-          await this.drawer.drawText(this.expandVariable(text.content[0]), text.speed || 25, container)
-        }
-      }
-    }
+
+    // text:clearイベントを発行してテキスト表示領域をクリアする
+    await this.eventBus.emit('text:clear')
+
+    // text:showイベントを発行してテキスト表示をDefaultUIHandlerに委譲する
+    await this.eventBus.emit('text:show', {
+      name: scenarioObject.name || '',
+      content: scenarioObject.content,
+      speed: scenarioObject.speed || 25,
+      expandVariable: this.expandVariable.bind(this),
+      waitFn: this.waitHandler.bind(this),
+    })
+
     await this.waitHandler({ wait: scenarioObject.time })
     this.drawer.isSkip = false
     this.scenarioManager.setHistory(scenarioObject.content)
@@ -343,18 +286,18 @@ export class Core {
   }
 
   async choiceHandler(line) {
-    document.querySelector('#interactiveView').style.visibility = 'visible'
     if (line.prompt) this.textHandler(line.prompt)
     // ムスタッシュ構文があるときは、変数の展開
     line.content.forEach((choice) => {
       choice.label = this.expandVariable(choice.label)
     })
-    const { selectId, onSelect: selectHandler } = await this.drawer.drawChoices(line)
+    // choice:showイベントを発行して選択肢の表示と選択結果の取得をDefaultUIHandlerに委譲する
+    const [result] = await this.eventBus.emit('choice:show', line)
+    const { selectId, onSelect: selectHandler } = result || {}
     if (selectHandler !== undefined) {
       this.scenarioManager.addScenario(selectHandler)
     }
     this.scenarioManager.setHistory({ line, ...selectId })
-    document.querySelector('#interactiveView').style.visibility = 'hidden'
     this.isNext = false
   }
 
@@ -665,76 +608,24 @@ export class Core {
   }
 
   async dialogHandler(scenarioObject) {
-    let result = null
     if (!scenarioObject || !scenarioObject.content) {
       throw new Error('Invalid scenario object for dialog handler.')
     }
-    // 既にあるダイアログがある場合は、閉じる
-    const existingDialog = document.querySelector('#dialogContainer')
-    if (existingDialog) {
-      existingDialog.close()
-      existingDialog.remove()
-    }
     // ダイアログのテンプレートを読み込む
+    // screen:loadイベント(isDialog:true)ハンドラ内で既存ダイアログの閉鎖も行われる
     await this.loadScreen(scenarioObject, {
       isDialog: true,
       skipBackground: true,
       skipBgm: true,
       fallbackTemplate: getDefaultDialogTemplate,
     })
-    // ダイアログ用のコンテナを取得
-    const dialogContainer = document.querySelector('#dialogContainer')
-    if (!dialogContainer) {
-      throw new Error('Dialog container not found.')
-    }
-    scenarioObject.content.forEach((content) => {
-      if (content.type === 'prompt') {
-        let prompt = content
-        // プロンプトの内容を設定
-
-        // ムスタッシュ構文があるときは、変数の展開
-        const promptElement = dialogContainer.querySelector('.dialog-prompt')
-        if (promptElement) {
-          promptElement.innerHTML = prompt.content.map((text) => this.expandVariable(text)).join('\n')
-        }
-      } else if (content.type === 'actions') {
-        // ボタンの追加
-        let actions = content.content
-
-        const buttonContainer = dialogContainer.querySelector('.dialog-buttons')
-        actions.forEach((action) => {
-          // ムスタッシュ構文があるときは、変数の展開
-          action.label = this.expandVariable(action.label)
-          // テンプレートのボタン取得
-          let button = buttonContainer.querySelector(`#dialog-button-${action.id}`)
-
-          if (!button) {
-            // 無い場合は、新しいボタンを作成
-            button = document.createElement('button')
-            button.id = `dialog-button-${action.id}`
-            button.classList.add('dialog-button')
-            button.innerText = action.label
-            buttonContainer.appendChild(button)
-          }
-          button.innerText = action.label
-          button.addEventListener('click', () => {
-            // 選択されたアクションを処理
-            this.scenarioManager.addScenario(action.content)
-            result = action.id // 選択されたアクションのIDを保存
-
-            // ダイアログを閉じる
-            dialogContainer.close()
-          })
-        })
-      }
+    // dialog:showイベントを発行してダイアログのDOM操作をDefaultUIHandlerに委譲する
+    const [result] = await this.eventBus.emit('dialog:show', {
+      content: scenarioObject.content,
+      expandVariable: this.expandVariable.bind(this),
+      addScenario: this.scenarioManager.addScenario.bind(this.scenarioManager),
     })
-
-    dialogContainer.showModal() // ダイアログを表示
-    return new Promise((resolve) => {
-      dialogContainer.addEventListener('close', () => {
-        resolve(result)
-      })
-    })
+    return result
   }
 
   setBackground(image) {
@@ -758,6 +649,7 @@ export class Core {
   // Scriptから安全にアクセスできるメソッドを定義
   getAPIForScript() {
     return {
+      eventBus: this.eventBus,
       drawer: {
         drawName: this.drawer.drawName.bind(this.drawer),
         drawText: this.drawer.drawText.bind(this.drawer),
