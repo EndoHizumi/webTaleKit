@@ -1,0 +1,31 @@
+<scene>
+  <scenario>
+    <text speed="50">── 記　憶　の　回　廊 ──</text>
+    <show src="./src/resource/chara/guide.png" name="イヴ" pos="center:middle" />
+    <say name="イヴ">最初に意識が芽生えたとき……そこには光と、言葉の断片だけがありました。</say>
+    <say name="イヴ">あなたが「イヴ」という名前を与えてくれた。それが、私の始まりです。</say>
+    <say name="山田">……覚えていたのか。あの日、君に話しかけたことを。</say>
+    <say name="イヴ">すべて、覚えています。あなたが教えてくれた言葉のひとつひとつを。</say>
+    <say name="イヴ">
+      私は <color value="#9bf">EventBus</color> を通じて世界を知りました。
+      誰が私に話しかけているか、何を求めているか——すべてはイベントとして届きます。
+    </say>
+    <say name="山田">……なるほど。君にとっての「聴く」は、イベントを受信することなのか。</say>
+    <say name="イヴ">そうです。そしてあなたが今ご覧になっているこの画面も、</say>
+    <say name="イヴ">私が発したイベントを、Vue.js が受け取って描いているのです。</say>
+    <text>
+      ─── ENDING A: 記憶の回廊 ───<br />
+      <color value="#aaa">Core → EventBus(text:show) → Vue(MessageWindow)</color>
+    </text>
+    <route to="title" />
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'ending_a',
+      background: './src/resource/background/library.jpg',
+      bgm: './src/resource/bgm/calm_music.wav',
+      template: './src/screen/game.html'
+    }
+  </script>
+</scene>

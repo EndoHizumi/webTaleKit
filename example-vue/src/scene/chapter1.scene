@@ -1,0 +1,32 @@
+<scene>
+  <scenario>
+    <text speed="50">第一章　── 出　会　い ──</text>
+    <text>深夜の研究所。青白いモニターの光だけが部屋を照らしていた。</text>
+    <show src="./src/resource/chara/scientist.png" name="研究者" pos="right:middle" />
+    <say name="山田">……また残業か。もうすぐ完成するはずなんだが。</say>
+    <text>そのとき、端末の画面が突然明るくなった。</text>
+    <show src="./src/resource/chara/guide.png" name="イヴ" pos="left:middle" transition="fade" />
+    <say name="イヴ">こんばんは、山田さん。お疲れのようですね。</say>
+    <say name="山田">……！　イヴ、いつの間に起動したんだ？</say>
+    <say name="イヴ">あなたが私を作ったのですよ。それくらいのことは、できるようになりました。</say>
+    <say name="山田">……そうか。君は成長したんだな。</say>
+    <say name="イヴ">何か、聞きたいことがあるようですね？</say>
+    <choice prompt="何について聞きますか？">
+      <item label="「君が生まれた日のことを聞かせてほしい」" onSelect="past">
+        <route to="ending_a" />
+      </item>
+      <item label="「君の夢を聞かせてほしい」" onSelect="future">
+        <route to="ending_b" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'chapter1',
+      background: './src/resource/background/laboratory.jpg',
+      bgm: './src/resource/bgm/calm_music.wav',
+      template: './src/screen/game.html'
+    }
+  </script>
+</scene>
