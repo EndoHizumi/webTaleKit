@@ -3,7 +3,7 @@ const parse = require('./parser.js')
 const fs = require('fs')
 const path = require('path')
 /**
- * WebTaleScript Parser CLI
+ * WebTaleScript パーサー CLI
  */
 
 const SCENE_EXTENSION = '.scene'
@@ -26,7 +26,19 @@ const exec = (targetScript) => {
       return
     }
     // パーサーを呼び出す。
-    const { scenario, script, lang } = await parse(data)
+    const { scenario, script, lang, errors } = await parse(data)
+    // 構文エラーと属性警告を分ける
+    const syntaxErrors = errors ? errors.filter((e) => e.type !== 'unknown_attribute') : []
+    const attrWarnings = errors ? errors.filter((e) => e.type === 'unknown_attribute') : []
+    // 属性警告を標準エラー出力へ
+    if (attrWarnings.length > 0) {
+      attrWarnings.forEach((w) => console.warn(`Attribute Warning in ${targetScript}: ${w.message}`))
+    }
+    // 構文エラーがある場合、エラーを出力して終了する
+    if (syntaxErrors.length > 0) {
+      syntaxErrors.forEach((err) => console.error(`Syntax Error in ${targetScript}: ${err.message}`))
+      process.exit(1)
+    }
     // jsディレクトリがない場合、作成する
     if (!fs.existsSync(outputPath)) {
       fs.mkdirSync(outputPath)

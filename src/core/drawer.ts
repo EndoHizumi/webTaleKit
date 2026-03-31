@@ -74,6 +74,12 @@ export class Drawer {
     // パフォーマンス最適化: テキストノードを使用してDOM再構築を回避
     const textNode = document.createTextNode('')
     element.appendChild(textNode)
+    // ruby要素の場合、ルビテキスト(<rt>)をベーステキストの後に追加する
+    if (element.tagName === 'RUBY' && element.dataset.rubyText) {
+      const rt = document.createElement('rt')
+      rt.textContent = element.dataset.rubyText
+      element.appendChild(rt)
+    }
 
     let displayedLength = 0
     for (const char of text) {
@@ -92,7 +98,6 @@ export class Drawer {
           break
         }
       }
-      await sleep(wait)
     }
   }
 
@@ -116,9 +121,7 @@ export class Drawer {
         return span
       case 'ruby':
         const ruby = document.createElement('ruby')
-        const rt = document.createElement('rt')
-        rt.textContent = element.text
-        ruby.appendChild(rt)
+        ruby.dataset.rubyText = element.text
         return ruby
       case 'b':
         return document.createElement('strong')

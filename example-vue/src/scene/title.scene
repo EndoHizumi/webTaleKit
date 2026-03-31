@@ -1,0 +1,20 @@
+<scene>
+  <scenario>
+    <text speed="60">── 電　脳　の　夢 ──</text>
+    <text speed="30">WebTaleKit × Vue.js イベント駆動アーキテクチャ デモ</text>
+    <text>
+      このデモでは、WebTaleKit の <color value="#42b883">EventBus</color> を通じて Vue.js が UI を担当しています。
+    </text>
+    <text>Core はゲームロジックのみを管理し、どんな UI が使われているかを知りません。</text>
+    <route to="chapter1" />
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'title',
+      background: './src/resource/background/laboratory.jpg',
+      bgm: './src/resource/bgm/title_theme.mp3',
+      template: './src/screen/game.html'
+    }
+  </script>
+</scene>
