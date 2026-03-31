@@ -90,6 +90,7 @@
                                 <text>同僚に連絡します。</text>
                             </action>
                         </actions>
+                    </dialog>
                 </action>
             </actions>
         </dialog>
