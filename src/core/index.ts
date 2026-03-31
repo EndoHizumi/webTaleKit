@@ -6,6 +6,7 @@ import { SoundObject } from '../resource/soundObject'
 import { sleep } from '../utils/waitUtil'
 import { getDefaultDialogTemplate } from '../utils/fallbackTemplate'
 import { generateStore, Store } from '../utils/store'
+import { logError } from '../utils/logger'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 let engineConfig: any = require('../../engineConfig.json')
@@ -83,45 +84,53 @@ export class Core {
   }
 
   async start(initScene: string): Promise<void> {
-    // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
-    // titleタグの内容を書き換える
-    document.title = engineConfig.title
-    // sceneファイルを読み込む
-    await this.loadScene(initScene || 'title')
-    // 画面を表示する
-    await this.loadScreen(this.sceneConfig)
-    // 入力イベントを設定する
-    document.querySelector('#gameContainer')!.addEventListener('keydown', (e: Event) => {
-      const ke = e as KeyboardEvent
-      if (ke.key === 'Enter') {
+    try {
+      // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
+      // titleタグの内容を書き換える
+      document.title = engineConfig.title
+      // sceneファイルを読み込む
+      await this.loadScene(initScene || 'title')
+      // 画面を表示する
+      await this.loadScreen(this.sceneConfig)
+      // 入力イベントを設定する
+      document.querySelector('#gameContainer')!.addEventListener('keydown', (e: Event) => {
+        const ke = e as KeyboardEvent
+        if (ke.key === 'Enter') {
+          if (this.onNextHandler) this.onNextHandler()
+        } else if (ke.key === 'Control') {
+          this.drawer.isSkip = true
+          this.isNext = true
+        }
+      })
+      document.querySelector('#gameContainer')!.addEventListener('keyup', (e: Event) => {
+        const ke = e as KeyboardEvent
+        if (ke.key === 'Control') {
+          this.drawer.isSkip = true
+          this.isNext = false
+        }
+      })
+      document.querySelector('#gameContainer')!.addEventListener('click', () => {
         if (this.onNextHandler) this.onNextHandler()
-      } else if (ke.key === 'Control') {
-        this.drawer.isSkip = true
-        this.isNext = true
-      }
-    })
-    document.querySelector('#gameContainer')!.addEventListener('keyup', (e: Event) => {
-      const ke = e as KeyboardEvent
-      if (ke.key === 'Control') {
-        this.drawer.isSkip = true
-        this.isNext = false
-      }
-    })
-    document.querySelector('#gameContainer')!.addEventListener('click', () => {
-      if (this.onNextHandler) this.onNextHandler()
-    })
+      })
 
-    await this.textHandler('タップでスタート')
-    // BGMを再生する
-    this.soundHandler({
-      mode: 'bgm',
-      src: this.sceneConfig.bgm,
-      loop: true,
-      play: true,
-    })
-    // シナリオを実行する
-    while (this.scenarioManager.hasNext()) {
-      await this.runScenario()
+      await this.textHandler('タップでスタート')
+      // BGMを再生する
+      await this.soundHandler({
+        mode: 'bgm',
+        src: this.sceneConfig.bgm,
+        loop: true,
+        play: true,
+      })
+      // シナリオを実行する
+      while (this.scenarioManager.hasNext()) {
+        await this.runScenario()
+      }
+    } catch (error: any) {
+      // エラーをログに記録（スタックトレース付き）
+      await logError(error, 'Error in runScenario')
+       // エラーをアラートで表示
+      alert(`システムエラーが発生しました。\n詳細はコンソールで確認してください。:\n${error.message}`)
+      throw error
     }
   }
 
@@ -198,12 +207,25 @@ export class Core {
       }
       this.gameContainer.innerHTML = mainDiv.innerHTML
       this.drawer.setScreen(this.gameContainer, engineConfig.resolution)
+      // Styleタグを取り出して、headタグに追加する
+      const styleElement = doc.head.getElementsByTagName('style')[0]
+      if (styleElement) {
+        document.head.appendChild(styleElement)
+      }
     } else {
+      // ダイアログの場合、古いダイアログ用のスタイルを削除する
+      const oldDialogStyles = document.head.querySelectorAll('style[data-dialog-style]')
+      oldDialogStyles.forEach((styleTag) => {
+        document.head.removeChild(styleTag)
+      })
       this.gameContainer.appendChild(mainDiv)
+      // ダイアログ用のStyleタグを取り出して、マークを付けてheadタグに追加する
+      const styleElement = doc.head.getElementsByTagName('style')[0]
+      if (styleElement) {
+        styleElement.setAttribute('data-dialog-style', 'true')
+        document.head.appendChild(styleElement)
+      }
     }
-    // Styleタグを取り出して、headタグに追加する
-    const styleElement = doc.head.getElementsByTagName('style')[0]
-    document.head.appendChild(styleElement)
 
     if (!skipBackground) {
       console.info(`background: ${await this.checkResourceExists(sceneConfig.background)}`)
@@ -226,6 +248,7 @@ export class Core {
   }
 
   async runScenario(): Promise<void> {
+
     let scenarioObject = this.scenarioManager.next()
     if (!scenarioObject) {
       return
@@ -361,6 +384,7 @@ export class Core {
     }
     this.scenarioManager.setHistory({ line, selectId } as any)
     ;(document.querySelector('#interactiveView') as HTMLElement).style.visibility = 'hidden'
+    this.isNext = false
   }
 
   jumpHandler(line: any): void {
@@ -377,8 +401,10 @@ export class Core {
       const scenarioList = scenario.slice(line.index, this.scenarioManager.getIndex())
       // sub=falseの行だけを取得
       const subFalseScenario = scenarioList.filter((item: any) => !item.sub)
+      // after に残っている sub=true の要素を除去（前回の選択肢の残骸を除去する）
+      const filteredAfter = noEditScenarioList.after.filter((item: any) => !item.sub)
       // scenarioManagerに追加
-      this.scenarioManager.setScenario([...noEditScenarioList.before, ...subFalseScenario, ...noEditScenarioList.after])
+      this.scenarioManager.setScenario([...noEditScenarioList.before, ...subFalseScenario, ...filteredAfter])
     }
     this.newpageHandler()
     this.scenarioManager.setIndex(Number(line.index))
@@ -492,12 +518,7 @@ export class Core {
 
     // ファイルの存在確認
     if (!(await this.checkResourceExists(line.src))) {
-      console.error(`Image file not found: ${line.src}`)
-
-      // エラーメッセージを表示
-      await this.textHandler(`エラー: 画像ファイルが見つかりません: ${line.src}`)
-      // 空の画像オブジェクトを返す
-      return new ImageObject()
+      throw new Error(`Image file not found: ${line.src}`)
     }
 
     // 既にインスタンスがある場合は、それを使う
@@ -547,12 +568,7 @@ export class Core {
     // ファイルの存在確認
     if (line.src) {
       if (!(await this.checkResourceExists(line.src))) {
-        console.error(`Sound file not found: ${line.src}`)
-
-        // エラーメッセージを表示
-        await this.textHandler(`エラー: 音声ファイルが見つかりません: ${line.src}`)
-        // 空のサウンドオブジェクトを返す
-        return new SoundObject()
+        throw new Error(`Sound file not found: ${line.src}`)
       }
     }
 
@@ -763,8 +779,8 @@ export class Core {
       const context = { ...this.sceneFile }
       const func = new Function(...Object.keys(context), code)
       return func.apply(null, Object.values(context))
-    } catch (error) {
-      console.error('Error executing code:', error)
+    } catch (error: any) {
+      throw new Error(`Error executing code: ${error.message}`)
     }
   }
 
@@ -897,75 +913,62 @@ export class Core {
 
     const saveDataRaw = (this.store as any).get ? (this.store as any).get(`save_${slot}`) : this.store[`save_${slot}`]
     if (!saveDataRaw) {
-      const errorMsg = `セーブデータが見つかりません: スロット${slot}`
-
-      if (line.message !== false) {
-        await this.textHandler(errorMsg)
-      }
-      return
+      throw new Error(`セーブデータが見つかりません: スロット${slot}`)
     }
 
     // ディープコピーで循環参照を回避
     const saveData = JSON.parse(JSON.stringify(saveDataRaw))
 
-    try {
-      const sceneName = saveData.scenarioManager.sceneName || saveData.sceneConfig.name
-      if (!sceneName) {
-        throw new Error('Scene name not found in save data')
+    const sceneName = saveData.scenarioManager.sceneName || saveData.sceneConfig.name
+    if (!sceneName) {
+      throw new Error('Scene name not found in save data')
+    }
+
+    // シーンとプログレスを復元
+    await this.loadScene(sceneName)
+    await this.loadScreen(saveData.sceneConfig, { skipBackground: true, skipBgm: true })
+
+    // 読んだところまで復元
+    this.scenarioManager.setSceneName(saveData.scenarioManager.sceneName)
+    this.scenarioManager.setIndex(saveData.scenarioManager.currentIndex)
+    this.scenarioManager.setHistory(saveData.scenarioManager.history || [])
+    ;(this.scenarioManager as any).progress = { ...(this.scenarioManager as any).progress, ...saveData.scenarioManager.progress }
+
+    // 画面の復元
+    this.displayedImages = {}
+    if (saveData.backgroundImage) {
+      const background = await new ImageObject().setImageAsync(saveData.backgroundImage)
+      this.displayedImages['background'] = {
+        image: background,
+        size: {
+          width: this.gameContainer.clientWidth,
+          height: this.gameContainer.clientHeight,
+        },
       }
+    }
 
-      // シーンとプログレスを復元
-      await this.loadScene(sceneName)
-      await this.loadScreen(saveData.sceneConfig, { skipBackground: true })
-
-      // 読んだところまで復元
-      this.scenarioManager.setSceneName(saveData.scenarioManager.sceneName)
-      this.scenarioManager.setIndex(saveData.scenarioManager.currentIndex)
-      this.scenarioManager.setHistory(saveData.scenarioManager.history || [])
-      ;(this.scenarioManager as any).progress = { ...(this.scenarioManager as any).progress, ...saveData.scenarioManager.progress }
-
-      // 画面の復元
-      this.displayedImages = {}
-      if (saveData.backgroundImage) {
-        const background = await new ImageObject().setImageAsync(saveData.backgroundImage)
-        this.displayedImages['background'] = {
-          image: background,
-          size: {
-            width: this.gameContainer.clientWidth,
-            height: this.gameContainer.clientHeight,
-          },
+    for (const [key, imageData] of Object.entries(saveData.displayedImages) as [string, any][]) {
+      if (imageData.src) {
+        const image = await new ImageObject().setImageAsync(imageData.src)
+        this.displayedImages[key] = {
+          image: image,
+          pos: imageData.pos,
+          size: imageData.size,
+          look: imageData.look,
+          entry: imageData.entry,
         }
       }
+    }
 
-      for (const [key, imageData] of Object.entries(saveData.displayedImages) as [string, any][]) {
-        if (imageData.src) {
-          const image = await new ImageObject().setImageAsync(imageData.src)
-          this.displayedImages[key] = {
-            image: image,
-            pos: imageData.pos,
-            size: imageData.size,
-            look: imageData.look,
-            entry: imageData.entry,
-          }
-        }
-      }
+    // BGMの復元
+    if (saveData.bgmSrc) {
+      this.soundHandler({ mode: 'bgm', src: saveData.bgmSrc, loop: true, play: true })
+    }
 
-      // BGMの復元
-      if (saveData.bgmSrc) {
-        this.soundHandler({ mode: 'bgm', src: saveData.bgmSrc, loop: true, play: true })
-      }
+    this.drawer.show(this.displayedImages)
 
-      this.drawer.show(this.displayedImages)
-
-      if (line.message !== false) {
-        await this.textHandler(`ゲームをロードしました: ${saveData.name}`)
-      }
-    } catch (error: any) {
-      const errorMsg = `ロードに失敗しました: ${error.message}`
-
-      if (line.message !== false) {
-        await this.textHandler(errorMsg)
-      }
+    if (line.message !== false) {
+      await this.textHandler(`ゲームをロードしました: ${saveData.name}`)
     }
   }
 
