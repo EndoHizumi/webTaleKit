@@ -3,17 +3,17 @@
     <say name="Narrator">This scene demonstrates sound features.</say>
     <sound src="./src/resource/bgm/calm_music.wav" />
     <say name="Narrator">Background music is now playing. It can loop continuously.</say>
-    <sound mode="se" src="./src/resource/se/doorbell.mp3" play />
+    <sound mode="se" src="./src/resource/se/doorbell.mp3" play="true" />
     <say name="Narrator">That was a sound effect. </say>
-    <sound mode="se" src="./src/resource/se/doorbell.mp3" play loop/>
+    <sound mode="se" src="./src/resource/se/doorbell.mp3" play="true" loop="true" />
     <say name="Narrator">Now the sound effect is playing in a loop. It will stop when we proceed.</say>
-    <sound name="doorbell.mp3" stop />
+    <sound name="doorbell.mp3" stop="true" />
     <say name="Narrator">The sound effect has been stopped.</say>
-    <sound src="./src/resource/bgm/nc366476_Virtual_Voyage.mp3" play loop />
+    <sound src="./src/resource/bgm/nc366476_Virtual_Voyage.mp3" play="true" loop="true" />
     <say name="Narrator">We can also switch background music smoothly.</say>
     <choice>
       <item label="Return to Title" onSelect="title">
-        <sound src="nc366476_Virtual_Voyage.mp3" stop />
+        <sound src="nc366476_Virtual_Voyage.mp3" stop="true" />
         <route to="title" />
       </item>
     </choice>
