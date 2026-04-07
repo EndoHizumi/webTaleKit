@@ -81,6 +81,20 @@ export class SoundObject {
     }
   }
 
+  pause(): void {
+    if (this.source) {
+      this.ctx.suspend()
+      this.isPlaying = false
+    }
+  }
+
+  resume(): void {
+    if (this.source) {
+      this.ctx.resume()
+      this.isPlaying = true
+    }
+  }
+
   get playing(): boolean {
     return this.isPlaying
   }

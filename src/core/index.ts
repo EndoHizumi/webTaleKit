@@ -137,8 +137,7 @@ export class Core {
   async loadScene(sceneFileName: string): Promise<void> {
     // sceneファイルを読み込む
     const scenePath = `/src/js/${sceneFileName}.js`
-    const runtimeImport = (0, eval)('u => import(u)') as (u: string) => Promise<any>
-    this.sceneFile = await runtimeImport(scenePath)
+    this.sceneFile = await import(/* webpackChunkName: "[request]" */ /* @vite-ignore */ scenePath)
     // sceneファイルの初期化処理を実行
     if (this.sceneFile.init) {
       this.sceneFile.init(this.getAPIForScript())
@@ -382,7 +381,7 @@ export class Core {
     })
     const { selectId, onSelect: selectHandler } = await this.drawer.drawChoices(line)
     if (selectHandler !== undefined) {
-      this.scenarioManager.addScenario(selectHandler, 0)
+      this.scenarioManager.addScenario(selectHandler)
     }
     this.scenarioManager.setHistory({ line, selectId } as any)
     ;(document.querySelector('#interactiveView') as HTMLElement).style.visibility = 'hidden'
@@ -553,7 +552,7 @@ export class Core {
     if ('stop' in line) {
       soundObject.stop()
     } else if ('pause' in line) {
-      soundObject.stop()
+      soundObject.pause()
     }
 
     // soundObjectを管理オブジェクトに追加
@@ -602,7 +601,7 @@ export class Core {
   async ifHandler(line: any): Promise<void> {
     const isTrue = this.executeCode(`return ${line.condition}`)
     const appendScenario = isTrue ? line.content[0].content : line.content[1].content
-    this.scenarioManager.addScenario(appendScenario, 0)
+    this.scenarioManager.addScenario(appendScenario)
   }
 
   async routeHandler(line: any): Promise<void> {
@@ -750,7 +749,7 @@ export class Core {
           button.innerText = action.label
           button.addEventListener('click', () => {
             // 選択されたアクションを処理
-            this.scenarioManager.addScenario(action.content, 0)
+            this.scenarioManager.addScenario(action.content)
             result = action.id // 選択されたアクションのIDを保存
 
             // ダイアログを閉じる
