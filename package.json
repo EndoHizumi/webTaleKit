@@ -19,6 +19,7 @@
   "author": "EndoHizumi",
   "license": "MIT",
   "dependencies": {
+    "gsap": "^3.14.2",
     "html-inline": "^1.2.0",
     "html-minifier": "^4.0.0",
     "html-to-json-parser": "^2.0.1",
