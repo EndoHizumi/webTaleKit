@@ -10,7 +10,7 @@
     <text>
       <color value="red">文字の色を変えたり</color>、<b>太字にしたり</b>、<i>斜体にしたり</i>することもできます。
     </text>
-    <text>改行も<br />簡単に<br />できます。</text>
+    <text>改行も<br>簡単に<br>できます。</text>
     <text>また、テキストの表示中に
       <wait time="1000" />一時停止を入れることもできます。
     </text>
