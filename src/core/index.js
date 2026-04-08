@@ -107,7 +107,9 @@ export class Core {
 
   async loadScene(sceneFileName) {
     // sceneファイルを読み込む
-    this.sceneFile = await import(/* webpackChunkName: "[request]" */ `/src/js/${sceneFileName}.js`)
+    // ESモジュールの名前空間オブジェクトは外部から書き込み不可なため、プレーンオブジェクトにコピーする
+    const moduleNamespace = await import(/* webpackChunkName: "[request]" */ `/src/js/${sceneFileName}.js`)
+    this.sceneFile = { ...moduleNamespace }
     // sceneファイルの初期化処理を実行
     if (this.sceneFile.init) {
       this.sceneFile.init(this.getAPIForScript())
@@ -747,9 +749,12 @@ export class Core {
 
   executeCode(code) {
     try {
-      const context = { ...this.sceneFile }
-      const func = new Function(...Object.keys(context), code)
-      return func.apply(null, Object.values(context))
+      const keys = Object.keys(this.sceneFile).filter((key) => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key))
+      const declarations = keys.map((key) => `let ${key} = _ctx[${JSON.stringify(key)}];`).join('\n')
+      const writeBacks = keys.map((key) => `_ctx[${JSON.stringify(key)}] = ${key};`).join('\n')
+      const wrappedCode = `${declarations}\nconst _result = (function() { ${code} })();\n${writeBacks}\nreturn _result;`
+      const func = new Function('_ctx', wrappedCode)
+      return func(this.sceneFile)
     } catch (error) {
       throw new Error(`Error executing code: ${error.message}`)
     }

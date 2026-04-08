@@ -31,15 +31,15 @@
     <choice prompt="あなたの好きな色は？">
       <item label="赤" onSelect="red">
         <say name="ナレーター">赤を選びました。情熱的な色ですね。</say>
-        <call func="setFavoriteColor('red')" />
+        <call method="setFavoriteColor('red')" />
       </item>
       <item label="青" onSelect="blue">
         <say name="ナレーター">青を選びました。落ち着いた色ですね。</say>
-        <call func="setFavoriteColor('blue')" />
+        <call method="setFavoriteColor('blue')" />
       </item>
       <item label="緑" onSelect="green">
         <say name="ナレーター">緑を選びました。自然を感じる色ですね。</say>
-        <call func="setFavoriteColor('green')" />
+        <call method="setFavoriteColor('green')" />
       </item>
     </choice>
     <if condition="getFavoriteColor() === 'red'">
@@ -84,7 +84,7 @@
       template: './src/screen/title.html'
     }
 
-    let favoriteColor = '';
+    export let favoriteColor = '';
 
     export function setFavoriteColor(color) {
       favoriteColor = color;
