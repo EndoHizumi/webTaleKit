@@ -15,6 +15,7 @@ const EVENT_META = {
   'text:clear':   { color: '#94a3b8', label: 'text:clear' },
   'text:show':    { color: '#34d399', label: 'text:show' },
   'choice:show':  { color: '#f59e0b', label: 'choice:show' },
+  'dialog:show':  { color: '#f472b6', label: 'dialog:show' },
   'input:bind':   { color: '#a78bfa', label: 'input:bind' },
 }
 
@@ -29,6 +30,11 @@ function makeSummary(eventName, data) {
     }
     case 'choice:show':
       return `選択肢 ×${data.content?.length ?? 0} 件`
+    case 'dialog:show': {
+      const prompt = data.content?.find((c) => c.type === 'prompt')
+      const text = prompt?.content?.[0] ?? ''
+      return (typeof text === 'string' ? text : '').slice(0, 20) + (text.length > 18 ? '...' : '')
+    }
     case 'screen:load':
       return data.isDialog ? 'dialog' : 'main'
     default:
@@ -40,7 +46,7 @@ let _uid = 0
 
 export function useEventBusMonitor() {
   // ── フロー図パルス状態 ──────────────────────────────────────────
-  // 0=idle, 1=Core ハイライト, 2=EventBus ハイライト, 3=Vue ハイライト
+  // 0=idle, 1=Core ハイライト, 2=EventBus ハイライト, 3=Vue ハイライト, 4=薄く保持
   const pulsePhase = ref(0)
   const currentEvent = ref('')   // パルス中のイベント名（フロー図に表示）
 
@@ -65,8 +71,7 @@ export function useEventBusMonitor() {
       phaseTimer = setTimeout(() => {
         pulsePhase.value = 3  // Vue 光る
         phaseTimer = setTimeout(() => {
-          pulsePhase.value = 0  // idle に戻る
-          currentEvent.value = ''
+          pulsePhase.value = 4  // 次のイベントが来るまで薄く残す
           phaseTimer = null
         }, 400)
       }, 150)
@@ -89,10 +94,21 @@ export function useEventBusMonitor() {
     startPulse(eventName)
   }
 
+  function clearEvents() {
+    recentEvents.value = []
+    pulsePhase.value = 0
+    currentEvent.value = ''
+    if (phaseTimer !== null) {
+      clearTimeout(phaseTimer)
+      phaseTimer = null
+    }
+  }
+
   return {
     pulsePhase: readonly(pulsePhase),
     currentEvent: readonly(currentEvent),
     recentEvents: readonly(recentEvents),
     recordEvent,
+    clearEvents,
   }
 }

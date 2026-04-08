@@ -21,6 +21,13 @@
     @select="onChoiceSelected"
   />
 
+  <DialogPanel
+    :visible="dialog.visible"
+    :prompt="dialog.prompt"
+    :actions="dialog.actions"
+    @action="onDialogAction"
+  />
+
   <WaitCursor :visible="waitCursor.visible" />
 
   <!-- EventBus フロービジュアライザー -->
@@ -28,12 +35,14 @@
     :pulse-phase="pulsePhase"
     :current-event="currentEvent"
     :recent-events="recentEvents"
+    @clear="clearEvents"
   />
 
   <!-- Vue State Inspector (DevTools 風) -->
   <VueStateInspector
     :message="message"
     :choices="choices"
+    :dialog="dialog"
     :wait-cursor="waitCursor"
     :pulse-phase="pulsePhase"
     :current-event="currentEvent"
@@ -44,6 +53,7 @@
 import { onMounted } from 'vue'
 import MessageWindow from './components/MessageWindow.vue'
 import ChoicePanel from './components/ChoicePanel.vue'
+import DialogPanel from './components/DialogPanel.vue'
 import WaitCursor from './components/WaitCursor.vue'
 import EventBusMonitor from './components/EventBusMonitor.vue'
 import VueStateInspector from './components/VueStateInspector.vue'
@@ -55,14 +65,16 @@ const props = defineProps({
   engineConfig: { type: Object, required: true },
 })
 
-const { pulsePhase, currentEvent, recentEvents, recordEvent } = useEventBusMonitor()
+const { pulsePhase, currentEvent, recentEvents, recordEvent, clearEvents } = useEventBusMonitor()
 
 const {
   message,
   choices,
+  dialog,
   waitCursor,
   onTextDisplayed,
   onChoiceSelected,
+  onDialogAction,
   onNext,
   onSetSkip,
 } = useWebTaleKit(props.game, props.engineConfig.resolution, { onEvent: recordEvent })

@@ -6,7 +6,18 @@
       このデモでは、WebTaleKit の <color value="#42b883">EventBus</color> を通じて Vue.js が UI を担当しています。
     </text>
     <text>Core はゲームロジックのみを管理し、どんな UI が使われているかを知りません。</text>
-    <route to="chapter1" />
+
+    <choice prompt="体験するデモを選んでください">
+      <item label="ストーリーデモ（選択肢・ルート分岐）" onSelect="story">
+        <route to="chapter1" />
+      </item>
+      <item label="ダイアログデモ（dialog:show イベント）" onSelect="dialog">
+        <route to="dialog_demo" />
+      </item>
+      <item label="セーブ・ロードデモ" onSelect="save_load">
+        <route to="save_load_demo" />
+      </item>
+    </choice>
   </scenario>
 
   <script>
