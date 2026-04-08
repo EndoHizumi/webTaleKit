@@ -1,59 +1,79 @@
 <template>
-  <div class="ebm-panel">
-    <!-- ヘッダー -->
-    <div class="ebm-header">
-      <span class="ebm-dot" :class="{ pulse: pulsePhase > 0 }" />
+  <div class="ebm-panel" :class="{ collapsed }">
+    <!-- ヘッダー（常時表示・クリック可能） -->
+    <div class="ebm-header" @click="toggle">
+      <span class="ebm-dot" :class="{ pulse: isPulsing, retained: isRetained }" />
       EventBus Monitor
+      <span class="ebm-toggle">{{ collapsed ? '▸' : '▾' }}</span>
     </div>
 
-    <!-- フロー図: Core → EventBus → Vue -->
-    <div class="ebm-flow">
-      <div class="ebm-node" :class="{ active: pulsePhase >= 1 }">
-        <span class="ebm-icon">◈</span> Core
+    <!-- 折りたたみ可能な本体 -->
+    <template v-if="!collapsed">
+      <!-- フロー図: Core → EventBus → Vue -->
+      <div class="ebm-flow">
+        <div class="ebm-node" :class="{ active: pulsePhase >= 1 && pulsePhase <= 3, retained: isRetained }">
+          <span class="ebm-icon">◈</span> Core
+        </div>
+
+        <div class="ebm-connector" :class="{ active: pulsePhase >= 2 && pulsePhase <= 3, retained: isRetained }">
+          <span class="ebm-arrow-line" />
+          <span class="ebm-emit-label" :class="{ visible: pulsePhase >= 1 || isRetained, retained: isRetained }">
+            emit( <em>{{ currentEvent || '…' }}</em> )
+          </span>
+        </div>
+
+        <div class="ebm-node accent" :class="{ active: pulsePhase >= 2 && pulsePhase <= 3, retained: isRetained }">
+          <span class="ebm-icon">⚡</span> EventBus
+        </div>
+
+        <div class="ebm-connector" :class="{ active: pulsePhase >= 3 && pulsePhase <= 3, retained: isRetained }">
+          <span class="ebm-arrow-line" />
+          <span class="ebm-emit-label" :class="{ visible: pulsePhase >= 2 || isRetained, retained: isRetained }">
+            receive
+          </span>
+        </div>
+
+        <div class="ebm-node vue" :class="{ active: pulsePhase === 3, retained: isRetained }">
+          <span class="ebm-icon">◆</span> Vue UI
+        </div>
       </div>
 
-      <div class="ebm-connector" :class="{ active: pulsePhase >= 2 }">
-        <span class="ebm-arrow-line" />
-        <span class="ebm-emit-label" :class="{ visible: pulsePhase >= 1 }">
-          emit( <em>{{ currentEvent || '…' }}</em> )
-        </span>
-      </div>
-
-      <div class="ebm-node accent" :class="{ active: pulsePhase >= 2 }">
-        <span class="ebm-icon">⚡</span> EventBus
-      </div>
-
-      <div class="ebm-connector" :class="{ active: pulsePhase >= 3 }">
-        <span class="ebm-arrow-line" />
-        <span class="ebm-emit-label" :class="{ visible: pulsePhase >= 2 }">
-          receive
-        </span>
-      </div>
-
-      <div class="ebm-node vue" :class="{ active: pulsePhase >= 3 }">
-        <span class="ebm-icon">◆</span> Vue UI
-      </div>
-    </div>
-
-    <!-- イベントログ -->
-    <div class="ebm-log-header">recent events</div>
-    <TransitionGroup name="log" tag="ul" class="ebm-log">
-      <li v-for="ev in recentEvents" :key="ev.id" class="ebm-log-item">
-        <span class="ebm-tag" :style="{ borderColor: ev.color, color: ev.color }">
-          {{ ev.name }}
-        </span>
-        <span v-if="ev.summary" class="ebm-summary">{{ ev.summary }}</span>
-      </li>
-    </TransitionGroup>
+      <!-- イベントログ -->
+      <div class="ebm-log-header">recent events</div>
+      <TransitionGroup name="log" tag="ul" class="ebm-log">
+        <li v-for="ev in recentEvents" :key="ev.id" class="ebm-log-item">
+          <span class="ebm-tag" :style="{ borderColor: ev.color, color: ev.color }">
+            {{ ev.name }}
+          </span>
+          <span v-if="ev.summary" class="ebm-summary">{{ ev.summary }}</span>
+        </li>
+      </TransitionGroup>
+    </template>
   </div>
 </template>
 
 <script setup>
-defineProps({
+import { computed, ref } from 'vue'
+
+const props = defineProps({
   pulsePhase:   { type: Number, default: 0 },
   currentEvent: { type: String, default: '' },
   recentEvents: { type: Array,  default: () => [] },
 })
+
+const emit = defineEmits(['clear'])
+
+const collapsed = ref(false)
+const isRetained = computed(() => props.pulsePhase === 4)
+const isPulsing = computed(() => props.pulsePhase > 0 && props.pulsePhase < 4)
+
+function toggle() {
+  collapsed.value = !collapsed.value
+  // 再表示時にログをクリアする
+  if (!collapsed.value) {
+    emit('clear')
+  }
+}
 </script>
 
 <style scoped>
@@ -67,12 +87,15 @@ defineProps({
   border: 1px solid rgba(100, 140, 255, 0.2);
   border-radius: 8px;
   padding: 10px 12px 8px;
-  pointer-events: none;
   z-index: 90;
   font-family: 'Courier New', monospace;
   font-size: 11px;
   color: rgba(200, 210, 255, 0.75);
   backdrop-filter: blur(4px);
+}
+
+.ebm-panel.collapsed {
+  padding-bottom: 10px;
 }
 
 /* ── ヘッダー ────────────────────────────────── */
@@ -85,6 +108,21 @@ defineProps({
   color: rgba(150, 170, 255, 0.6);
   text-transform: uppercase;
   margin-bottom: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ebm-panel.collapsed .ebm-header {
+  margin-bottom: 0;
+}
+
+.ebm-header:hover {
+  color: rgba(180, 200, 255, 0.9);
+}
+
+.ebm-toggle {
+  margin-left: auto;
+  font-size: 9px;
 }
 
 .ebm-dot {
@@ -97,6 +135,10 @@ defineProps({
 .ebm-dot.pulse {
   background: #7af;
   box-shadow: 0 0 6px #7af;
+}
+.ebm-dot.retained {
+  background: rgba(122, 170, 255, 0.65);
+  box-shadow: 0 0 3px rgba(122, 170, 255, 0.35);
 }
 
 /* ── フロー図 ────────────────────────────────── */
@@ -131,17 +173,35 @@ defineProps({
   background: rgba(40, 70, 160, 0.5);
   box-shadow: 0 0 10px rgba(100, 160, 255, 0.3);
 }
+.ebm-node.retained {
+  color: rgba(200, 230, 255, 0.78);
+  border-color: rgba(120, 180, 255, 0.35);
+  background: rgba(34, 52, 110, 0.3);
+  box-shadow: 0 0 4px rgba(100, 160, 255, 0.14);
+}
 .ebm-node.accent.active {
   color: #ffe08a;
   border-color: rgba(250, 200, 80, 0.6);
   background: rgba(80, 60, 20, 0.5);
   box-shadow: 0 0 10px rgba(250, 200, 80, 0.3);
 }
+.ebm-node.accent.retained {
+  color: rgba(255, 224, 138, 0.78);
+  border-color: rgba(250, 200, 80, 0.35);
+  background: rgba(80, 60, 20, 0.28);
+  box-shadow: 0 0 4px rgba(250, 200, 80, 0.16);
+}
 .ebm-node.vue.active {
   color: #6ee7b7;
   border-color: rgba(52, 211, 153, 0.6);
   background: rgba(20, 70, 50, 0.5);
   box-shadow: 0 0 10px rgba(52, 211, 153, 0.3);
+}
+.ebm-node.vue.retained {
+  color: rgba(110, 231, 183, 0.82);
+  border-color: rgba(52, 211, 153, 0.35);
+  background: rgba(20, 70, 50, 0.28);
+  box-shadow: 0 0 4px rgba(52, 211, 153, 0.16);
 }
 
 .ebm-icon {
@@ -170,6 +230,10 @@ defineProps({
   background: rgba(120, 180, 255, 0.7);
   box-shadow: 0 0 4px rgba(120, 180, 255, 0.5);
 }
+.ebm-connector.retained .ebm-arrow-line {
+  background: rgba(120, 180, 255, 0.42);
+  box-shadow: 0 0 2px rgba(120, 180, 255, 0.22);
+}
 
 .ebm-emit-label {
   font-size: 9px;
@@ -182,6 +246,9 @@ defineProps({
 }
 .ebm-emit-label.visible {
   color: rgba(150, 170, 255, 0.7);
+}
+.ebm-emit-label.retained {
+  color: rgba(150, 170, 255, 0.48);
 }
 .ebm-emit-label em {
   font-style: normal;

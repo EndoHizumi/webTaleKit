@@ -31,15 +31,29 @@ export function useWebTaleKit(game, resolution, { onEvent } = {}) {
     _resolve: null,
   })
 
+  const dialog = reactive({
+    visible: false,
+    prompt: '',
+    actions: [],
+    expandVariable: null,
+    addScenario: null,
+    _resolve: null,
+  })
+
   const waitCursor = reactive({ visible: false })
   const inputHandlers = ref({ onNext: null, setSkip: null })
 
   // ── EventBus ハンドラ登録 ─────────────────────────────────────────
 
   // screen:load: Drawer のキャンバス初期化のみ実施（HTML 注入は Vue が担うため不要）
+  //              isDialog の場合は何もしない（Vue が DialogPanel で描画する）
   let canvasInitialized = false
   eventBus.on('screen:load', async (data) => {
     onEvent?.('screen:load', data)
+    if (data.isDialog) {
+      // ダイアログモードでは Canvas の再初期化は不要
+      return
+    }
     if (!canvasInitialized) {
       const gameContainer = document.getElementById('gameContainer')
       // Drawer がキャンバスを gameContainer に追加し、画像描画の準備をする
@@ -80,6 +94,38 @@ export function useWebTaleKit(game, resolution, { onEvent } = {}) {
     })
   })
 
+  // dialog:show: ダイアログの表示。ユーザーがアクションを選択するまで Core を待機させる。
+  //              content 配列から prompt と actions を抽出し、Vue のリアクティブ状態に反映する。
+  eventBus.on('dialog:show', (data) => {
+    onEvent?.('dialog:show', data)
+    return new Promise((resolve) => {
+      const { content, expandVariable, addScenario } = data
+
+      let promptText = ''
+      let actionItems = []
+
+      content.forEach((item) => {
+        if (item.type === 'prompt') {
+          promptText = item.content
+            .map((text) => (expandVariable ? expandVariable(text) : text))
+            .join('\n')
+        } else if (item.type === 'actions') {
+          actionItems = item.content.map((action) => ({
+            ...action,
+            label: expandVariable ? expandVariable(action.label) : action.label,
+          }))
+        }
+      })
+
+      dialog.visible = true
+      dialog.prompt = promptText
+      dialog.actions = actionItems
+      dialog.expandVariable = expandVariable
+      dialog.addScenario = addScenario
+      dialog._resolve = resolve
+    })
+  })
+
   // input:bind: キーボード・クリックのコールバックを受け取って保持する
   eventBus.on('input:bind', (data) => {
     onEvent?.('input:bind', data)
@@ -106,6 +152,19 @@ export function useWebTaleKit(game, resolution, { onEvent } = {}) {
     }
   }
 
+  /** DialogPanel がユーザーのアクション選択を通知する */
+  function onDialogAction(action) {
+    if (dialog.addScenario && action.content) {
+      dialog.addScenario(action.content)
+    }
+    dialog.visible = false
+    const result = action.id
+    if (dialog._resolve) {
+      dialog._resolve(result)
+      dialog._resolve = null
+    }
+  }
+
   /** クリック / Enter でゲームを進める */
   function onNext() {
     waitCursor.visible = false
@@ -120,9 +179,11 @@ export function useWebTaleKit(game, resolution, { onEvent } = {}) {
   return {
     message: readonly(message),
     choices: readonly(choices),
+    dialog: readonly(dialog),
     waitCursor: readonly(waitCursor),
     onTextDisplayed,
     onChoiceSelected,
+    onDialogAction,
     onNext,
     onSetSkip,
   }

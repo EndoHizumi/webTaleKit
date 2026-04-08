@@ -36,9 +36,9 @@
             <span v-if="typeof item === 'string'" class="vsi-val string">"{{ item }}"</span>
             <span v-else-if="item && item.type === 'color'" class="vsi-val obj-inline">
               {type: "color", color: <span :style="{ color: item.color }">{{ item.color }}</span>,
-              content: [<span class="vsi-val string">"{{ item.content?.[0] ?? '' }}"</span>…]}
+              content: [<span class="vsi-val string">"{{ item.content?.[0] ?? '' }}"</span>...]}
             </span>
-            <span v-else class="vsi-val obj-inline">{{ JSON.stringify(item).slice(0, 30) }}…</span>
+            <span v-else class="vsi-val obj-inline">{{ JSON.stringify(item).slice(0, 30) }}...</span>
           </div>
         </template>
       </ValArray>
@@ -73,6 +73,38 @@
             <span class="vsi-array-index">{{ index }}</span>
             <span class="vsi-val obj-inline">
               {id: <span class="vsi-val number">{{ item.id }}</span>,
+              label: <span class="vsi-val string">"{{ item.label }}"</span>}
+            </span>
+          </div>
+        </template>
+      </ValArray>
+    </PropRow>
+
+    <!-- ── DialogPanel ───────────────────────── -->
+    <div class="vsi-tree-item child">
+      <span class="vsi-caret">▾</span>
+      <span class="vsi-comp-name">&lt;DialogPanel&gt;</span>
+    </div>
+
+    <PropRow label="visible" :flash="flashing.dialogVisible">
+      <ValBool :value="dialog.visible" />
+    </PropRow>
+
+    <PropRow label="prompt" :flash="flashing.dialogPrompt">
+      <ValString :value="dialog.prompt || ''" />
+    </PropRow>
+
+    <PropRow label="actions" :flash="flashing.dialogActions">
+      <ValArray
+        :items="dialog.actions ?? []"
+        :expanded="expanded.dialogActions"
+        @toggle="expanded.dialogActions = !expanded.dialogActions"
+      >
+        <template #item="{ item, index }">
+          <div class="vsi-array-item">
+            <span class="vsi-array-index">{{ index }}</span>
+            <span class="vsi-val obj-inline">
+              {id: <span class="vsi-val string">"{{ item.id }}"</span>,
               label: <span class="vsi-val string">"{{ item.label }}"</span>}
             </span>
           </div>
@@ -145,7 +177,7 @@ const ValArray = {
       </span>
       <div v-if="expanded" class="vsi-array-body">
         <slot v-for="(item, index) in items" name="item" :item="item" :index="index" />
-        <div v-if="items.length === 0" class="vsi-array-item empty">（空）</div>
+        <div v-if="items.length === 0" class="vsi-array-item empty">(empty)</div>
       </div>
     </span>
   `,
@@ -155,18 +187,20 @@ const ValArray = {
 const props = defineProps({
   message:      { type: Object, required: true },
   choices:      { type: Object, required: true },
+  dialog:       { type: Object, required: true },
   waitCursor:   { type: Object, required: true },
   pulsePhase:   { type: Number, default: 0 },
   currentEvent: { type: String, default: '' },
 })
 
 // ── 展開状態 ─────────────────────────────────────────────────────
-const expanded = reactive({ content: false, choiceItems: false })
+const expanded = reactive({ content: false, choiceItems: false, dialogActions: false })
 
 // ── フラッシュ状態 ───────────────────────────────────────────────
 const flashing = reactive({
   name: false, content: false, speed: false,
   choicesVisible: false, choicesPrompt: false, choicesItems: false,
+  dialogVisible: false, dialogPrompt: false, dialogActions: false,
   waitVisible: false, pulsePhase: false, currentEvent: false,
 })
 
@@ -181,6 +215,9 @@ watch(() => props.message.speed,      () => flash('speed'))
 watch(() => props.choices.visible,    () => flash('choicesVisible'))
 watch(() => props.choices.prompt,     () => flash('choicesPrompt'))
 watch(() => props.choices.items,      () => { flash('choicesItems'); if (props.choices.items?.length) expanded.choiceItems = true })
+watch(() => props.dialog.visible,     () => flash('dialogVisible'))
+watch(() => props.dialog.prompt,      () => flash('dialogPrompt'))
+watch(() => props.dialog.actions,     () => { flash('dialogActions'); if (props.dialog.actions?.length) expanded.dialogActions = true })
 watch(() => props.waitCursor.visible, () => flash('waitVisible'))
 watch(() => props.pulsePhase,         () => flash('pulsePhase'))
 watch(() => props.currentEvent,       () => flash('currentEvent'))
@@ -204,6 +241,8 @@ watch(() => props.currentEvent,       () => flash('currentEvent'))
   color: rgba(200, 210, 255, 0.75);
   backdrop-filter: blur(4px);
   user-select: none;
+  max-height: 90%;
+  overflow-y: auto;
 }
 
 /* ── ヘッダー ─────────────────────────────────── */
