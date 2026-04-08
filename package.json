@@ -8,7 +8,7 @@
     "test": "jest",
     "setup": "npm install && cd example && npm install",
     "dev": "npm run build && cd example && npm run dev",
-    "build": "rimraf ./dist/ && tsc && cp -r package.json README.md engineConfig.json parser/ dist/ && cp src/core/index.js  dist/src/core/",
+    "build": "rimraf ./dist/ && tsc && cp -r package.json README.md engineConfig.json parser/ dist/",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
