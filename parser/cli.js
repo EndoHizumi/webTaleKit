@@ -6,8 +6,6 @@ const path = require('path')
  * WebTaleScript パーサー CLI
  */
 
-const SCENE_EXTENSION = '.scene'
-
 const exec = (targetScript) => {
   // ファイル名を取得する。（拡張子を除く）
   const fileName = path.basename(targetScript).split('.')[0]
@@ -58,22 +56,18 @@ const exec = (targetScript) => {
   })
 }
 
-const collectSceneFiles = (targetPath) => {
-  const stat = fs.statSync(targetPath)
-
-  if (stat.isFile()) {
-    return path.extname(targetPath) === SCENE_EXTENSION ? [targetPath] : []
-  }
-
-  if (!stat.isDirectory()) {
-    return []
-  }
-
-  return fs.readdirSync(targetPath).flatMap((entry) => collectSceneFiles(path.join(targetPath, entry)))
-}
-
 // コマンドライン引数から、ファイル一覧を取得する
 const targetScripts = process.argv.slice(2)[0]
-collectSceneFiles(targetScripts).forEach((file) => {
-  exec(file)
-})
+if (fs.statSync(targetScripts).isDirectory()) {
+  fs.readdir(targetScripts, (err, files) => {
+    if (err) {
+      console.error(err)
+      return
+    }
+    files.forEach((file) => {
+      exec(`${targetScripts}/${file}`)
+    })
+  })
+} else {
+  exec(targetScripts)
+}

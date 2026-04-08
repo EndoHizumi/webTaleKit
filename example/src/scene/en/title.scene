@@ -1,6 +1,6 @@
 <scene>
   <scenario>
-    <sound src="./src/resource/bgm/title_theme.mp3" play="true" loop="true" />
+    <sound src="./src/resource/bgm/title_theme.mp3" play loop />
     <say name="Narrator">Welcome to the WebTaleKit Demo Game!</say>
     <say name="Narrator">Please select a feature to explore:</say>
     <choice>

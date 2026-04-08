@@ -35,13 +35,11 @@ module.exports = async (data) => {
    */
   /** HTMLを読み込む */
   const html = minify(data, {
-    // Keep spaces between tag attributes; otherwise xmldom receives malformed markup.
-    removeTagWhitespace: false,
+    removeTagWhitespace: true,
     collapseWhitespace: true,
     removeComments: true,
     minifyJS: true,
     minifyCSS: true,
-    keepClosingSlash: true,
   })
   // HTMLをJSONに変換
   const parseJson = await HTMLToJSON(html)

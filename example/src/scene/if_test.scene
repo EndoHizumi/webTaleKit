@@ -3,9 +3,8 @@
     <text>ifグローバル属性のテストです。</text>
     <text>変数hogeの値を設定します。</text>
     
-    <call method="hoge = 1" />
-    
     <text>現在のhogeの値: {{hoge}}</text>
+    <call method="hoge = 1" />
     
     <text if="hoge==1">この文章はhoge==1の場合に表示されます。</text>
     <text if="hoge==2">この文章はhoge==2の場合に表示されます。</text>
@@ -32,6 +31,6 @@
       template: './src/screen/title.html'
     }
     
-    export let hoge = 2;
+    export let hoge = 0;
   </script>
 </scene>

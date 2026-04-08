@@ -5,9 +5,9 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "play": "rimraf dist && mkdir -p dist/src/js &&  node ../parser/cli.js ./src/scene/ dist/src/js/ && npx webpack serve --open --mode development",
-    "dev": "rimraf dist && mkdir -p dist/src/js && node ../parser/cli.js ./src/scene/ dist/src/js/ && npx webpack serve --mode development",
-    "build": "rimraf dist && mkdir -p dist/src/js && node ../parser/cli.js ./src/scene/ dist/src/js/ && webpack --mode production"
+    "play": "rimraf dist && npx wtc ./src/scene/ ./src/js/ && npx webpack serve --open --mode development",
+    "dev": "rimraf dist && npx wtc ./src/scene/ ./src/js/ && npx webpack serve --mode development",
+    "build": "rimraf dist && npx wtc ./src/scene/ ./src/js/ && webpack --mode production"
   },
   "dependencies": {
     "console-browserify": "^1.2.0",
@@ -25,4 +25,3 @@
     "webtalekit-alpha": "0.2.11"
   }
 }
-

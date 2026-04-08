@@ -22,7 +22,6 @@
     "src/core/resourceManager.ts",
     "src/core/scenarioManager.ts",
     "src/core/defaultUIHandler.ts",
-    "src/core/index.ts",
     "src/resource/ImageObject.ts",
     "src/resource/soundObject.ts"
   ],

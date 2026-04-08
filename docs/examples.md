@@ -113,7 +113,7 @@ webTaleKitを使った実践的なサンプルコードを紹介します。
     <choice prompt="日記をどうしますか？">
       <item label="読む" if="!hasReadDiary">
         <text>日記には、悲しい過去が綴られていた。</text>
-        <call func="setHasReadDiary(true)" />
+        <call method="setHasReadDiary(true)" />
       </item>
       <item label="もう一度読む" if="hasReadDiary">
         <text>あの日の記憶が、また蘇ってきた。</text>
@@ -287,7 +287,7 @@ Mustache記法で変数をテキストに埋め込むシーンです。
 
     <choice prompt="どうしますか？">
       <item label="宿に泊まる" if="money >= 500">
-        <call func="spendMoney(500)" />
+        <call method="spendMoney(500)" />
         <text>{{playerName}}は宿に泊まることにした。</text>
         <text>残金：{{money}}円</text>
       </item>

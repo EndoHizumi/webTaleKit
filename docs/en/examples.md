@@ -113,7 +113,7 @@ Changing displayed content based on a variable's value.
     <choice prompt="What do you do with the diary?">
       <item label="Read it" if="!hasReadDiary">
         <text>The diary recounts a sad past.</text>
-        <call func="setHasReadDiary(true)" />
+        <call method="setHasReadDiary(true)" />
       </item>
       <item label="Read it again" if="hasReadDiary">
         <text>The memories from that day come flooding back.</text>
@@ -287,7 +287,7 @@ Embedding variables in text using Mustache syntax.
 
     <choice prompt="What will you do?">
       <item label="Stay at the inn" if="money >= 500">
-        <call func="spendMoney(500)" />
+        <call method="spendMoney(500)" />
         <text>{{playerName}} decided to stay at the inn.</text>
         <text>Remaining gold: {{money}} G</text>
       </item>
