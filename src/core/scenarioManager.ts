@@ -26,7 +26,7 @@ export class ScenarioManager {
     this.progress.currentIndex = 0
   }
 
-  addScenario (scenario: any, index: number): void {
+  addScenario (scenario: any, index?: number): void {
     // 区別にsub=trueを追加
     const _scenario =  scenario.map((item: any) => ({ ...item, sub: true }))
     // この行を消すと動く
