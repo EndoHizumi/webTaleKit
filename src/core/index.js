@@ -65,6 +65,7 @@ export class Core {
   }
 
   async start(initScene) {
+    try {
     // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
     // titleタグの内容を書き換える
     document.title = engineConfig.title
