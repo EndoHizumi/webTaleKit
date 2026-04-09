@@ -80,6 +80,8 @@ export class Core {
         this.drawer.isSkip = drawerSkip
         this.isNext = coreNext
       },
+      toggleAuto: () => { this.isAuto = !this.isAuto },
+      toggleSkip: () => { this.isSkip = !this.isSkip },
     })
 
       await this.textHandler('タップでスタート')
@@ -218,6 +220,11 @@ export class Core {
     //prettier-ignore
     this.onNextHandler = () => { this.drawer.isSkip = true }
 
+    // スキップモードが有効な場合はテキストアニメーションを即座にスキップする
+    if (this.isSkip) {
+      this.drawer.isSkip = true
+    }
+
     // text:clearイベントを発行してテキスト表示領域をクリアする
     await this.eventBus.emit('text:clear')
 
@@ -255,14 +262,26 @@ export class Core {
       line.wait = Number(line.wait)
     }
     if (typeof line.wait === 'number') {
+      if (this.isSkip) {
+        // スキップモードが有効な場合は待機をスキップする
+        return
+      }
       if (line.wait > 0 || this.isAuto) {
         const waitTime = line.wait || 1500
         // 指定された時間だけ待機
         await sleep(waitTime)
       }
     } else {
-      // 改行ごとに入力待ち
-      await this.clickWait()
+      if (this.isSkip) {
+        // スキップモードが有効な場合は入力待ちをスキップする
+        return
+      } else if (this.isAuto) {
+        // オートモードが有効な場合はデフォルト時間後に自動進行する
+        await sleep(1500)
+      } else {
+        // 改行ごとに入力待ち
+        await this.clickWait()
+      }
     }
   }
 
@@ -730,6 +749,15 @@ export class Core {
         getSaveList: () => this.getSaveList(),
         deleteSave: (slot) => this.deleteSave(slot),
       },
+      store: this.store,
+      playback: {
+        toggleAuto: () => { this.isAuto = !this.isAuto },
+        setAuto: (value) => { this.isAuto = value },
+        isAuto: () => this.isAuto,
+        toggleSkip: () => { this.isSkip = !this.isSkip },
+        setSkip: (value) => { this.isSkip = value },
+        isSkip: () => this.isSkip,
+      },
     }
   }
 
@@ -780,7 +808,7 @@ export class Core {
   async loadHandler(line) {
     const slot = line.slot || 'auto'
 
-    const saveDataRaw = this.store.get ? this.store.get(`save_${slot}`) : this.store[`save_${slot}`]
+    const saveDataRaw = this.store.get(`save_${slot}`)
     if (!saveDataRaw) {
       throw new Error(`セーブデータが見つかりません: スロット${slot}`)
     }
@@ -859,6 +887,6 @@ export class Core {
   }
 
   deleteSave(slot) {
-    delete this.store[`save_${slot}`]
+    this.store.remove(`save_${slot}`)
   }
 }
