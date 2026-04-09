@@ -229,9 +229,9 @@ export class DefaultUIHandler {
             onNext()
           } else if (e.key === 'Control') {
             setSkip(true, true)
-          } else if ((e.key === 'a' || e.key === 'A') && toggleAuto) {
+          } else if (e.key.toLowerCase() === 'a' && toggleAuto) {
             toggleAuto()
-          } else if ((e.key === 's' || e.key === 'S') && toggleSkip) {
+          } else if (e.key.toLowerCase() === 's' && toggleSkip) {
             toggleSkip()
           }
         },

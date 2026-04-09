@@ -261,21 +261,20 @@ export class Core {
     if (typeof line.wait === 'string' && !isNaN(Number(line.wait))) {
       line.wait = Number(line.wait)
     }
+
+    // スキップモードが有効な場合は全ての待機をスキップする
+    if (this.isSkip) {
+      return
+    }
+
     if (typeof line.wait === 'number') {
-      if (this.isSkip) {
-        // スキップモードが有効な場合は待機をスキップする
-        return
-      }
       if (line.wait > 0 || this.isAuto) {
         const waitTime = line.wait || 1500
         // 指定された時間だけ待機
         await sleep(waitTime)
       }
     } else {
-      if (this.isSkip) {
-        // スキップモードが有効な場合は入力待ちをスキップする
-        return
-      } else if (this.isAuto) {
+      if (this.isAuto) {
         // オートモードが有効な場合はデフォルト時間後に自動進行する
         await sleep(1500)
       } else {
@@ -753,10 +752,10 @@ export class Core {
       playback: {
         toggleAuto: () => { this.isAuto = !this.isAuto },
         setAuto: (value) => { this.isAuto = value },
-        isAuto: () => this.isAuto,
+        getAuto: () => this.isAuto,
         toggleSkip: () => { this.isSkip = !this.isSkip },
         setSkip: (value) => { this.isSkip = value },
-        isSkip: () => this.isSkip,
+        getSkip: () => this.isSkip,
       },
     }
   }
