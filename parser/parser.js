@@ -1,8 +1,12 @@
-const { HTMLToJSON } = require('html-to-json-parser')
-const { minify } = require('html-minifier')
 const { check } = require('./checker')
 
-module.exports = async (data) => {
+/**
+ * WebTaleScript パーサー（環境非依存）
+ * @param {string} data - WTSファイルの文字列
+ * @param {Function} htmlParser - HTMLをParsedNode形式に変換する関数
+ * @returns {Promise<{scenario: Array, script: Array, lang: string, errors: Array}>}
+ */
+module.exports = async (data, htmlParser) => {
   let scenario = []
   let script = []
   let lang = 'js'
@@ -29,20 +33,8 @@ module.exports = async (data) => {
     return rest
   }
 
-  /**
-   * HTMLとして解析され、変換されたオブジェクトを、WTS仕様に変換する
-   * @param {string} html 読み込んだWSTファイル
-   */
-  /** HTMLを読み込む */
-  const html = minify(data, {
-    removeTagWhitespace: true,
-    collapseWhitespace: true,
-    removeComments: true,
-    minifyJS: true,
-    minifyCSS: true,
-  })
-  // HTMLをJSONに変換
-  const parseJson = await HTMLToJSON(html)
+  // 外から注入されたパーサーを使用
+  const parseJson = await htmlParser(data)
   let scenarioCount = 0
   parseJson.content.forEach((element) => {
     if (element.type === 'scenario') {

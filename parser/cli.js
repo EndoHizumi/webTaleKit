@@ -1,7 +1,27 @@
 #!/usr/bin/env node
+const { HTMLToJSON } = require('html-to-json-parser')
+const { minify } = require('html-minifier')
 const parse = require('./parser.js')
 const fs = require('fs')
 const path = require('path')
+
+const minifyOptions = {
+  removeTagWhitespace: true,
+  collapseWhitespace: true,
+  removeComments: true,
+  minifyJS: true,
+  minifyCSS: true,
+}
+
+/**
+ * Node.js 向け HTMLParserAdapter（minify + HTMLToJSON）
+ * @param {string} data
+ * @returns {Promise<object>}
+ */
+const nodeHtmlParser = async (data) => {
+  const html = minify(data, minifyOptions)
+  return HTMLToJSON(html)
+}
 /**
  * WebTaleScript パーサー CLI
  */
@@ -24,7 +44,7 @@ const exec = (targetScript) => {
       return
     }
     // パーサーを呼び出す。
-    const { scenario, script, lang, errors } = await parse(data)
+    const { scenario, script, lang, errors } = await parse(data, nodeHtmlParser)
     // 構文エラーと属性警告を分ける
     const syntaxErrors = errors ? errors.filter((e) => e.type !== 'unknown_attribute') : []
     const attrWarnings = errors ? errors.filter((e) => e.type === 'unknown_attribute') : []
