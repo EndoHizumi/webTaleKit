@@ -655,16 +655,14 @@ export class Core {
     }
   }
 
-  async executeSandboxScenario(scenarioObjects) {
+  async executeScenario(scenarioObjects) {
     const snap = this.scenarioManager.snapshot()
     try {
       this.scenarioManager.setScenario(scenarioObjects)
-      while (this.scenarioManager.hasNext()) {
-        await this.runScenario()
-      }
+      await this.runScenario()
       return { success: true }
     } catch (error) {
-      console.error('Sandbox scenario error:', error)
+      console.error('scenario error:', error)
       return {
         success: false,
         error: error.message || 'Unknown error',
@@ -753,7 +751,7 @@ export class Core {
         deleteSave: (slot) => this.deleteSave(slot),
       },
       sandbox: {
-        execute: this.executeSandboxScenario.bind(this),
+        execute: this.executeScenario.bind(this),
       },
     }
   }
