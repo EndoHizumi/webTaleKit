@@ -221,7 +221,7 @@ export class DefaultUIHandler {
       if (inputAbortController) inputAbortController.abort()
       inputAbortController = new AbortController()
       const { signal } = inputAbortController
-      const { onNext, setSkip } = data
+      const { onNext, setSkip, toggleAuto, toggleSkip } = data
       gameContainer.addEventListener(
         'keydown',
         (e: KeyboardEvent) => {
@@ -229,6 +229,10 @@ export class DefaultUIHandler {
             onNext()
           } else if (e.key === 'Control') {
             setSkip(true, true)
+          } else if (e.key.toLowerCase() === 'a' && toggleAuto) {
+            toggleAuto()
+          } else if (e.key.toLowerCase() === 's' && toggleSkip) {
+            toggleSkip()
           }
         },
         { signal },
