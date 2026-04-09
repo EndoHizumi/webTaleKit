@@ -1,4 +1,11 @@
-import { validateScenarioObjects } from '../utils/validateScenario'
+import * as logger from '../utils/logger'
+import {
+  assertScenarioValidation,
+  createScenarioValidationError,
+  formatValidationOutput,
+  reportScenarioValidation,
+  validateScenarioObjects,
+} from '../utils/validateScenario'
 
 const mockCommandList: Record<string, Function> = {
   text: () => {},
@@ -29,6 +36,8 @@ describe('validateScenarioObjects', () => {
     expect(result.valid).toBe(true)
     expect(result.errors).toHaveLength(0)
     expect(result.warnings).toHaveLength(0)
+    expect(result.sanitizedScenario).toEqual(scenario)
+    expect(result.sanitized).toBe(false)
   })
 
   test('空配列で valid: false + error が返ること', () => {
@@ -80,9 +89,26 @@ describe('validateScenarioObjects', () => {
 
   test('HTMLタグを含むテキストがエスケープされること', () => {
     const scenario = [{ type: 'text', content: ['<script>alert("xss")</script>'] }]
-    validateScenarioObjects(scenario, mockCommandList)
-    expect(scenario[0].content[0]).not.toContain('<script>')
-    expect(scenario[0].content[0]).toContain('&lt;script&gt;')
+    const result = validateScenarioObjects(scenario, mockCommandList)
+    expect(scenario[0].content[0]).toContain('<script>')
+    expect(result.sanitizedScenario[0].content[0]).not.toContain('<script>')
+    expect(result.sanitizedScenario[0].content[0]).toContain('&lt;script&gt;')
+    expect(result.sanitized).toBe(true)
+  })
+
+  test('ネストしたオブジェクトも非破壊でサニタイズされること', () => {
+    const scenario = [
+      {
+        type: 'choice',
+        content: [{ type: 'item', label: '<b>危険</b>', content: ['<i>text</i>'] }],
+      },
+    ]
+
+    const result = validateScenarioObjects(scenario, mockCommandList)
+
+    expect(scenario[0].content[0].label).toBe('<b>危険</b>')
+    expect(result.sanitizedScenario[0].content[0].label).toBe('&lt;b&gt;危険&lt;/b&gt;')
+    expect(result.sanitizedScenario[0].content[0].content[0]).toBe('&lt;i&gt;text&lt;/i&gt;')
   })
 
   test('index が正常範囲内の jump で warning が出ないこと', () => {
@@ -93,5 +119,45 @@ describe('validateScenarioObjects', () => {
     ]
     const result = validateScenarioObjects(scenario, mockCommandList)
     expect(result.warnings.filter((w) => w.type === 'jump')).toHaveLength(0)
+  })
+
+  test('formatValidationOutput が warnings と errors を整形すること', () => {
+    const result = validateScenarioObjects([{ type: 'say', content: ['hello'] }], mockCommandList)
+    const formatted = formatValidationOutput(result)
+
+    expect(formatted.errors).toHaveLength(0)
+    expect(formatted.warnings[0]).toContain('[index:0]')
+    expect(formatted.warnings[0]).toContain('<say>')
+  })
+
+  test('createScenarioValidationError が error をまとめた Error を返すこと', () => {
+    const result = validateScenarioObjects([{ type: 'choice', content: [] }], mockCommandList)
+    const error = createScenarioValidationError(result, 'Custom context')
+
+    expect(error).toBeInstanceOf(Error)
+    expect(error?.message).toContain('Custom context')
+    expect(error?.message).toContain('choice コマンドに item が含まれていません')
+  })
+
+  test('assertScenarioValidation が invalid 時に throw すること', () => {
+    const result = validateScenarioObjects([{ type: 'choice', content: [] }], mockCommandList)
+    expect(() => assertScenarioValidation(result)).toThrow(/Scenario validation failed/)
+  })
+
+  test('reportScenarioValidation が warning と error を logger に流すこと', async () => {
+    const outputLogSpy = jest.spyOn(logger, 'outputLog').mockResolvedValue()
+    const logErrorSpy = jest.spyOn(logger, 'logError').mockResolvedValue()
+    const result = validateScenarioObjects([
+      { type: 'say', content: ['hello'] },
+      { type: 'choice', content: [] },
+    ], mockCommandList)
+
+    await reportScenarioValidation(result, 'Validation test')
+
+    expect(outputLogSpy).toHaveBeenCalled()
+    expect(logErrorSpy).toHaveBeenCalled()
+
+    outputLogSpy.mockRestore()
+    logErrorSpy.mockRestore()
   })
 })
