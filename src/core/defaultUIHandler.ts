@@ -232,11 +232,9 @@ export class DefaultUIHandler {
           if (e.key === 'Enter') {
             onNext()
           } else if (e.key === 'Control') {
-            setSkip(true, true)
+            toggleSkip()
           } else if (e.key.toLowerCase() === 'a' && toggleAuto) {
             toggleAuto()
-          } else if (e.key.toLowerCase() === 's' && toggleSkip) {
-            toggleSkip()
           }
         },
         { signal },
@@ -245,7 +243,7 @@ export class DefaultUIHandler {
         'keyup',
         (e: KeyboardEvent) => {
           if (e.key === 'Control') {
-            setSkip(true, false)
+            toggleSkip()
           }
         },
         { signal },

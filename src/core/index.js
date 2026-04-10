@@ -220,11 +220,6 @@ export class Core {
     //prettier-ignore
     this.onNextHandler = () => { this.drawer.isSkip = true }
 
-    // スキップモードが有効な場合はテキストアニメーションを即座にスキップする
-    if (this.isSkip) {
-      this.drawer.isSkip = true
-    }
-
     // text:clearイベントを発行してテキスト表示領域をクリアする
     await this.eventBus.emit('text:clear')
 
@@ -232,7 +227,7 @@ export class Core {
     await this.eventBus.emit('text:show', {
       name: scenarioObject.name || '',
       content: scenarioObject.content,
-      speed: scenarioObject.speed || 25,
+      speed: this.isSkip ? 1 : scenarioObject.speed || 25,
       expandVariable: this.expandVariable.bind(this),
       waitFn: this.waitHandler.bind(this),
     })
@@ -289,7 +284,7 @@ export class Core {
     this.drawer.setVisibility('#waitCircle', true)
     return new Promise((resolve) => {
       const intervalId = setInterval(() => {
-        if (this.isNext) {
+        if (this.isNext || this.isAuto || this.isSkip) {
           this.drawer.setVisibility('#waitCircle', false)
           clearInterval(intervalId)
           this.isNext = false
