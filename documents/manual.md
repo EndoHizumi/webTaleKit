@@ -105,5 +105,30 @@
 
 4. `dist`ディレクトリの内容をWebサーバーにデプロイすることで、ゲームを公開できます。
 
+## シナリオ検証とサニタイズ
+
+WebTaleKit では、シナリオ配列に対して検証とサニタイズを行う公開APIを利用できます。
+
+- `validateScenarioObjects` は `valid`、`errors`、`warnings` に加えて `sanitizedScenario` を返します
+- `sanitizedScenario` は非破壊で生成されるため、元のシナリオ配列は変更されません
+- `reportScenarioValidation` を使うと、既存 logger に合わせた警告・エラー出力ができます
+- `assertScenarioValidation` を使うと、エラーがある場合に呼び出し側で停止できます
+
+この機能は公開APIであり、エンジン本体が自動で適用するわけではありません。ツール、エディタ、ビルド処理、サーバー側変換など、必要な場所で明示的に呼び出してください。
+
+```ts
+import {
+  reportScenarioValidation,
+  validateScenarioObjects,
+} from '../src/utils/validateScenario'
+
+const result = validateScenarioObjects(scenarioObjects, commandList)
+await reportScenarioValidation(result, 'Manual validation')
+
+if (result.valid) {
+  const scenarioForRuntime = result.sanitizedScenario
+}
+```
+
 以上がWebTaleKitを使ってビジュアルノベルゲームを作成するための基本的な流れです。
 タグの詳細については、[WebTaleKit仕様](documents/spec.md)を参照してください。
