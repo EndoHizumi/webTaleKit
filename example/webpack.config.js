@@ -65,10 +65,6 @@ module.exports = {
               destination: path.resolve(__dirname, 'dist/src/screen'),
             },
             {
-              source: path.resolve(__dirname, './src/scene'),
-              destination: path.resolve(__dirname, 'dist/src/scene'),
-            },
-            {
               source: path.resolve(__dirname, '../node_modules/typescript/lib/typescript.js'),
               destination: path.resolve(__dirname, 'dist/vendor/typescript.js'),
             },
