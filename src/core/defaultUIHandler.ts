@@ -64,6 +64,8 @@ export class DefaultUIHandler {
         const styleTags = Array.from(document.head.getElementsByTagName('style'))
         styleTags.forEach((tag) => document.head.removeChild(tag))
 
+        gameContainer.tabIndex = 0
+
         // HTMLコンテンツを注入する
         gameContainer.innerHTML = mainDiv.innerHTML
 
@@ -76,6 +78,8 @@ export class DefaultUIHandler {
           styleEl.textContent = styleContent
           document.head.appendChild(styleEl)
         }
+
+        gameContainer.focus()
       } else {
         // 古いダイアログ用スタイルシートを削除する
         document.head
@@ -246,7 +250,14 @@ export class DefaultUIHandler {
         },
         { signal },
       )
-      gameContainer.addEventListener('click', () => onNext(), { signal })
+      gameContainer.addEventListener(
+        'click',
+        () => {
+          gameContainer.focus()
+          onNext()
+        },
+        { signal },
+      )
     })
   }
 }
