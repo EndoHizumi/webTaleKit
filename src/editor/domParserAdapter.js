@@ -1,7 +1,5 @@
 /* eslint-env browser */
 
-import { minify } from 'html-minifier'
-
 const minifyOptions = {
   removeTagWhitespace: true,
   collapseWhitespace: true,
@@ -46,6 +44,51 @@ const domNodeToJson = (node) => {
   return result
 }
 
+const removeCommentNodes = (node) => {
+  Array.from(node.childNodes).forEach((childNode) => {
+    if (childNode.nodeType === Node.COMMENT_NODE) {
+      childNode.remove()
+      return
+    }
+    removeCommentNodes(childNode)
+  })
+}
+
+const normalizeScriptNodes = (node) => {
+  Array.from(node.childNodes).forEach((childNode) => {
+    if (childNode.nodeType === Node.ELEMENT_NODE && childNode.tagName.toLowerCase() === 'script') {
+      childNode.textContent = (childNode.textContent || '').trim()
+      return
+    }
+    normalizeScriptNodes(childNode)
+  })
+}
+
+const normalizeHtmlInBrowser = (html) => {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(html, 'text/html')
+  removeCommentNodes(doc)
+  normalizeScriptNodes(doc)
+
+  if (doc.body) {
+    return doc.body.innerHTML.trim()
+  }
+
+  return doc.documentElement ? doc.documentElement.outerHTML : html.trim()
+}
+
+const normalizeHtml = async (html) => {
+  if (typeof window === 'undefined') {
+    if (globalThis.__WEBTALEKIT_HTML_MINIFY__) {
+      return globalThis.__WEBTALEKIT_HTML_MINIFY__(html, minifyOptions)
+    }
+
+    return html.trim()
+  }
+
+  return normalizeHtmlInBrowser(html)
+}
+
 const getRootNode = (doc) => {
   if (doc.body) {
     const rootNode = Array.from(doc.body.childNodes).find((node) => node.nodeType === Node.ELEMENT_NODE)
@@ -64,8 +107,7 @@ const getRootNode = (doc) => {
  * @returns {Promise<import('./domParserAdapter').ParsedNode>}
  */
 export const domParserAdapter = async (html) => {
-  const normalizedHtml = minify(html, minifyOptions)
   const parser = new DOMParser()
-  const doc = parser.parseFromString(normalizedHtml, 'text/html')
+  const doc = parser.parseFromString(await normalizeHtml(html), 'text/html')
   return domNodeToJson(getRootNode(doc))
 }

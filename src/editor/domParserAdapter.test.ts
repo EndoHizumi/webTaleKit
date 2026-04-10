@@ -58,6 +58,7 @@ describe('domParserAdapter', () => {
   const globalAny = globalThis as any
   const originalDOMParser = globalAny.DOMParser
   const originalNode = globalAny.Node
+  const originalHtmlMinify = globalAny.__WEBTALEKIT_HTML_MINIFY__
   let warnSpy: jest.SpyInstance
 
   beforeAll(() => {
@@ -65,7 +66,9 @@ describe('domParserAdapter', () => {
     globalAny.Node = {
       ELEMENT_NODE: 1,
       TEXT_NODE: 3,
+      COMMENT_NODE: 8,
     }
+    globalAny.__WEBTALEKIT_HTML_MINIFY__ = minify
   })
 
   beforeEach(() => {
@@ -87,6 +90,12 @@ describe('domParserAdapter', () => {
       globalAny.Node = originalNode
     } else {
       delete globalAny.Node
+    }
+
+    if (originalHtmlMinify) {
+      globalAny.__WEBTALEKIT_HTML_MINIFY__ = originalHtmlMinify
+    } else {
+      delete globalAny.__WEBTALEKIT_HTML_MINIFY__
     }
   })
 
