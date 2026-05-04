@@ -54,7 +54,7 @@ export class ScenarioManager {
   }
 
   next(): any {
-   if(this.progress.currentIndex <= this.scenarioData.length) {
+   if(this.progress.currentIndex <= (this.scenarioData?.length || 0)) {
      const nextScenario = this.scenarioData[this.progress.currentIndex] 
      this.progress.currentIndex += 1
      return  nextScenario
@@ -64,7 +64,7 @@ export class ScenarioManager {
   }
 
   hasNext(): boolean {
-    return this.progress.currentIndex < this.scenarioData.length
+    return this.progress.currentIndex < (this.scenarioData?.length || 0)
   }
 
   getIndex(): number {
