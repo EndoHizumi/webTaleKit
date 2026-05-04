@@ -520,14 +520,6 @@ export class Core {
   }
 
   async routeHandler(line) {
-    if (this.bgm.isPlaying) {
-      // BGMを停止する
-      this.soundHandler({
-        mode: 'bgm',
-        src: this.sceneConfig.bgm,
-        stop: true,
-      })
-    }
     this.newpageHandler()
     if (this.sceneFile.cleanUp) {
       // 終了処理を実行する
