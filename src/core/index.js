@@ -323,7 +323,6 @@ export class Core {
       // scenarioManagerに追加
       this.scenarioManager.setScenario([...noEditScenarioList.before, ...subFalseScenario, ...filteredAfter])
     }
-    this.newpageHandler()
     this.scenarioManager.setIndex(Number(line.index))
   }
 
