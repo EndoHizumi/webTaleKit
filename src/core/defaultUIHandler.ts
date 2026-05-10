@@ -65,7 +65,7 @@ export class DefaultUIHandler {
         styleTags.forEach((tag) => document.head.removeChild(tag))
 
         gameContainer.tabIndex = 0
-
+        gameContainer.style.outline = 'none'
         // HTMLコンテンツを注入する
         gameContainer.innerHTML = mainDiv.innerHTML
 
