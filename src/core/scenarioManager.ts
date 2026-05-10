@@ -1,4 +1,13 @@
 import { ImageObject } from "../resource/ImageObject"
+
+export interface ScenarioSnapshot {
+  scenario: any[]
+  index: number
+  sceneName: string
+  progress: any
+  history: any[]
+}
+
 export class ScenarioManager {
   private backlist: any
   private saveDataList: any
@@ -80,6 +89,24 @@ export class ScenarioManager {
 
   getHistory (): any[] {
     return this.backlist
+  }
+
+  snapshot(): ScenarioSnapshot {
+    return {
+      scenario: JSON.parse(JSON.stringify(this.scenarioData ?? [])),
+      index: this.getIndex(),
+      sceneName: this.getSceneName(),
+      progress: JSON.parse(JSON.stringify(this.progress)),
+      history: [...this.getHistory()],
+    }
+  }
+
+  restore(snap: ScenarioSnapshot): void {
+    this.scenarioData = JSON.parse(JSON.stringify(snap.scenario))
+    this.progress = JSON.parse(JSON.stringify(snap.progress))
+    this.progress.currentIndex = snap.index
+    this.progress.currentScene = snap.sceneName
+    this.backlist = [...snap.history]
   }
 
   setSelectedChoice (prompt:string, id:number):void {

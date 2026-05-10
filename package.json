@@ -8,6 +8,7 @@
     "test": "jest",
     "setup": "npm install && cd example && npm install",
     "dev": "npm run build && cd example && npm run dev",
+    "api": "node server/api.js",
     "build": "rimraf ./dist/ && tsc && cp -r package.json README.md engineConfig.json parser/ dist/ && cp src/core/index.js  dist/src/core/",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
@@ -19,6 +20,7 @@
   "author": "EndoHizumi",
   "license": "MIT",
   "dependencies": {
+    "express": "^5.2.1",
     "gsap": "^3.14.2",
     "html-inline": "^1.2.0",
     "html-minifier": "^4.0.0",

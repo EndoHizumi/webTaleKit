@@ -13,6 +13,7 @@
 - [Testing Instructions](#testing-instructions)
 - [Quick Start](#quick-start)
 - [Development Commands](#development-commands)
+- [Scenario Validation API](#scenario-validation-api)
 - [Current Status](#current-status)
 - [Roadmap](#roadmap)
 - [Features](#features-available-in-alpha-01x-02x)
@@ -184,6 +185,35 @@ Choices are important elements that let players control game progression. You ca
 - `npm run docs:dev` - Start VitePress documentation server
 - `npm run docs:build` - Build documentation
 - `npm run docs:preview` - Preview built documentation
+
+## Scenario Validation API
+
+webTaleKit provides a public API for validating scenario arrays and non-destructively sanitizing HTML-like string content.
+
+- `validateScenarioObjects` returns validation results and a sanitized scenario
+- `formatValidationOutput` converts errors and warnings into display-friendly strings
+- `createScenarioValidationError` builds an `Error` from validation results
+- `assertScenarioValidation` throws when validation errors exist
+- `reportScenarioValidation` sends warnings and errors through the logger
+
+These APIs are not automatically enforced by the engine at runtime. They are intended to be called explicitly by the user from scene import flows, editor integrations, custom build steps, or server-side tooling.
+
+```ts
+import {
+  assertScenarioValidation,
+  reportScenarioValidation,
+  validateScenarioObjects,
+} from './src/utils/validateScenario'
+
+const result = validateScenarioObjects(scenarioObjects, commandList)
+
+await reportScenarioValidation(result, 'Scene import')
+assertScenarioValidation(result, 'Scene import')
+
+const safeScenario = result.sanitizedScenario
+```
+
+`sanitizedScenario` is returned without mutating the original input array. When `sanitized` is `true`, HTML-like text has been escaped.
 
 ## Current Status
 

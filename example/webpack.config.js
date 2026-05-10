@@ -4,11 +4,14 @@ const FileManagerPlugin = require('filemanager-webpack-plugin')
 
 module.exports = {
   mode: 'development',
-  entry: './src/index.js',
+  entry: {
+    main: './src/index.js',
+    runtimePlayer: './src/runtime-player.js',
+  },
   devtool: 'source-map',
   output: {
     publicPath: '/',
-    filename: 'bundle.js',
+    filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'dist'),
     chunkFilename: 'src/js/[name].bundle.js',
   },
@@ -42,6 +45,12 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './src/template.html',
       filename: 'index.html',
+      chunks: ['main'],
+    }),
+    new HtmlWebpackPlugin({
+      template: './src/runtime-template.html',
+      filename: 'runtime-parser.html',
+      chunks: ['runtimePlayer'],
     }),
     new FileManagerPlugin({
       events: {
@@ -54,6 +63,10 @@ module.exports = {
             {
               source: path.resolve(__dirname, './src/screen'),
               destination: path.resolve(__dirname, 'dist/src/screen'),
+            },
+            {
+              source: path.resolve(__dirname, '../node_modules/typescript/lib/typescript.js'),
+              destination: path.resolve(__dirname, 'dist/vendor/typescript.js'),
             },
           ],
         },

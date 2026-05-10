@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebTaleKit Runtime Preview</title>
+    <style>
+        :root {
+            --bg: #f3efe7;
+            --panel: rgba(255, 252, 245, 0.92);
+            --panel-strong: #fffaf0;
+            --ink: #1d1b18;
+            --muted: #6e6458;
+            --accent: #145c4b;
+            --accent-strong: #0a3b30;
+            --warn: #9c6a15;
+            --error: #9a2f2f;
+            --line: rgba(29, 27, 24, 0.12);
+            --shadow: 0 24px 60px rgba(51, 43, 30, 0.14);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "BIZ UDPGothic", "Hiragino Sans", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(20, 92, 75, 0.18), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(189, 126, 44, 0.16), transparent 30%),
+                linear-gradient(135deg, #f7f2e9 0%, #efe7da 100%);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(340px, 480px) minmax(480px, 1fr);
+            gap: 24px;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+        }
+
+        .editor-panel {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 24px 24px 16px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .eyebrow {
+            margin: 0 0 10px;
+            letter-spacing: 0.12em;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+
+        h1 {
+            margin: 0;
+            font-family: "Aoboshi One", "Yu Mincho", serif;
+            font-size: clamp(28px, 4vw, 42px);
+            line-height: 1.1;
+        }
+
+        .panel-header p {
+            margin: 12px 0 0;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .toolbar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 20px 24px 0;
+        }
+
+        .toolbar label,
+        .editor-head label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: var(--muted);
+        }
+
+        select,
+        textarea,
+        button,
+        a.runtime-link {
+            font: inherit;
+        }
+
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid rgba(20, 92, 75, 0.16);
+            border-radius: 16px;
+            background: var(--panel-strong);
+            color: var(--ink);
+        }
+
+        select {
+            padding: 12px 14px;
+        }
+
+        .editor-body {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 20px 24px 24px;
+            min-height: 0;
+            flex: 1;
+        }
+
+        .editor-head {
+            display: flex;
+            gap: 12px;
+            align-items: end;
+        }
+
+        .editor-head > div {
+            flex: 1;
+        }
+
+        textarea {
+            min-height: 420px;
+            resize: vertical;
+            padding: 18px;
+            line-height: 1.6;
+            font-family: "Iosevka Web", "Cascadia Code", monospace;
+            font-size: 14px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        button,
+        a.runtime-link {
+            border: none;
+            border-radius: 999px;
+            padding: 12px 18px;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform 160ms ease, background 160ms ease, opacity 160ms ease;
+        }
+
+        button.secondary,
+        a.runtime-link.secondary {
+            background: #ded2bf;
+            color: var(--ink);
+        }
+
+        button:hover,
+        a.runtime-link:hover {
+            transform: translateY(-1px);
+            background: var(--accent-strong);
+        }
+
+        button.secondary:hover,
+        a.runtime-link.secondary:hover {
+            background: #cdbca3;
+        }
+
+        button:disabled {
+            opacity: 0.65;
+            cursor: wait;
+            transform: none;
+        }
+
+        .status {
+            margin: 0;
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: rgba(20, 92, 75, 0.08);
+            color: var(--accent-strong);
+            white-space: pre-wrap;
+            line-height: 1.5;
+            min-height: 78px;
+        }
+
+        .status[data-state="warning"] {
+            background: rgba(156, 106, 21, 0.1);
+            color: var(--warn);
+        }
+
+        .status[data-state="error"] {
+            background: rgba(154, 47, 47, 0.1);
+            color: var(--error);
+        }
+
+        .preview-panel {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .preview-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            padding: 24px 24px 12px;
+        }
+
+        .preview-meta p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        .preview-stage {
+            padding: 0 24px 24px;
+            flex: 1;
+            display: flex;
+        }
+
+        #gameContainer {
+            width: 100%;
+            min-height: 720px;
+            border-radius: 24px;
+            overflow: hidden;
+            background:
+                linear-gradient(180deg, rgba(20, 92, 75, 0.12), rgba(20, 92, 75, 0.02)),
+                #000;
+            outline: none;
+            position: relative;
+        }
+
+        .hint-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 0 24px 24px;
+        }
+
+        .hint-list span {
+            border-radius: 999px;
+            padding: 8px 12px;
+            background: rgba(29, 27, 24, 0.06);
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        @media (max-width: 1100px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            #gameContainer {
+                min-height: 540px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout">
+        <section class="panel editor-panel">
+            <div class="panel-header">
+                <p class="eyebrow">Browser Parser Sandbox</p>
+                <h1>WebTaleScript Runtime Preview</h1>
+                <p>ブラウザ版 domParserAdapter と parser を使って WTS をその場で解析し、右側で即時実行します。複数ファイル構成の route も試せます。</p>
+            </div>
+            <div class="toolbar">
+                <div>
+                    <label for="sampleSelect">Sample</label>
+                    <select id="sampleSelect"></select>
+                </div>
+                <div>
+                    <label for="runtimeSceneList">Scene File</label>
+                    <select id="runtimeSceneList"></select>
+                </div>
+            </div>
+            <div class="editor-body">
+                <div class="editor-head">
+                    <div>
+                        <label for="runtimeSource">WTS Source</label>
+                    </div>
+                </div>
+                <textarea id="runtimeSource" spellcheck="false"></textarea>
+                <div class="actions">
+                    <button id="runPreviewButton" type="button">Run Preview</button>
+                    <button id="resetSampleButton" type="button" class="secondary">Reset Sample</button>
+                    <a href="./index.html" class="runtime-link secondary">Back To Example</a>
+                </div>
+                <p id="runtimeStatus" class="status" data-state="idle">サンプルを読み込んでいます...</p>
+            </div>
+        </section>
+
+        <section class="panel preview-panel">
+            <div class="preview-meta">
+                <div>
+                    <p class="eyebrow">Live Preview</p>
+                    <p>プレビュー領域をクリックすると進行できます。再実行時は前のプレビューを破棄して作り直します。</p>
+                </div>
+                <a href="./index.html?scene=title" class="runtime-link">Main Demo</a>
+            </div>
+            <div class="preview-stage">
+                <div id="gameContainer" tabindex="0"></div>
+            </div>
+            <div class="hint-list">
+                <span>script type="text/typescript" に対応</span>
+                <span>route で複数 scene を遷移可能</span>
+                <span>unknown_attribute は警告として表示</span>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>

@@ -561,8 +561,11 @@ export class Core {
   }
 
   // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？
-  callHandler(line) {
-    this.executeCode(line.method)
+  async callHandler(line) {
+    const result = this.executeCode(line.method)
+    if (result && typeof result.then === 'function') {
+      await result
+    }
   }
 
   async httpHandler(line) {
@@ -665,6 +668,23 @@ export class Core {
     }
   }
 
+  async executeScenario(scenarioObjects) {
+    const snap = this.scenarioManager.snapshot()
+    try {
+      this.scenarioManager.setScenario(scenarioObjects)
+      await this.runScenario()
+      return { success: true }
+    } catch (error) {
+      console.error('scenario error:', error)
+      return {
+        success: false,
+        error: error.message || 'Unknown error',
+      }
+    } finally {
+      this.scenarioManager.restore(snap)
+    }
+  }
+
   // Scriptから安全にアクセスできるメソッドを定義
   getAPIForScript() {
     return {
@@ -751,6 +771,9 @@ export class Core {
         toggleSkip: () => { this.isSkip = !this.isSkip },
         setSkip: (value) => { this.isSkip = value },
         getSkip: () => this.isSkip,
+      },
+      sandbox: {
+        execute: this.executeScenario.bind(this),
       },
     }
   }

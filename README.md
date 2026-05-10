@@ -13,6 +13,7 @@
 - [動作確認手順](#動作確認手順)
 - [Quick Start(デモゲームを弄ってみよう)](#quick-startデモゲームを弄ってみよう)
 - [開発コマンド](#開発コマンド)
+- [シナリオ検証API](#シナリオ検証api)
 - [現在の状況](#現在の状況)
 - [ロードマップ](#ロードマップ実装予定)
 - [できること](#アルファ版01x-02xでできること)
@@ -184,6 +185,35 @@ npm run play
 - `npm run docs:dev` - VitePressドキュメントサーバーを起動
 - `npm run docs:build` - ドキュメントをビルド
 - `npm run docs:preview` - ビルドしたドキュメントをプレビュー
+
+## シナリオ検証API
+
+WebTaleKit には、シナリオ配列を検証しつつ、HTML風の文字列を非破壊でサニタイズできる公開APIがあります。
+
+- `validateScenarioObjects` - 検証結果とサニタイズ済みシナリオを返します
+- `formatValidationOutput` - エラーと警告を表示用文字列へ整形します
+- `createScenarioValidationError` - 検証結果から Error を生成します
+- `assertScenarioValidation` - エラーがある場合に例外を送出します
+- `reportScenarioValidation` - logger 経由で警告とエラーを出力します
+
+これらのAPIは、エンジン実行時に自動で強制適用されません。シナリオの読み込み時、エディタ連携時、独自ビルド処理時などに、利用者が必要に応じて呼び出す想定です。
+
+```ts
+import {
+  assertScenarioValidation,
+  reportScenarioValidation,
+  validateScenarioObjects,
+} from './src/utils/validateScenario'
+
+const result = validateScenarioObjects(scenarioObjects, commandList)
+
+await reportScenarioValidation(result, 'Scene import')
+assertScenarioValidation(result, 'Scene import')
+
+const safeScenario = result.sanitizedScenario
+```
+
+`sanitizedScenario` は元の入力配列を破壊せずに返されます。`sanitized` が `true` の場合は、HTML風の文字列がエスケープされています。
 
 ## 現在の状況
 

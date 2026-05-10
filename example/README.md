@@ -8,11 +8,19 @@
 2. \`npm run dev\` を実行して、開発サーバーを起動します。
 3. ブラウザで \`<http://localhost:8080\`> にアクセスしてゲームを開始します。
 
+ブラウザ版パーサーのリアルタイム実行デモは \`http://localhost:8080/runtime-parser.html\` で確認できます。
+
 ## スクリプト
 
 - \`npm run play\`: 開発モードでゲームを起動し、ブラウザを開きます。
 - \`npm run dev\`: 開発モードでゲームを起動します。
 - \`npm run build\`: プロダクションビルドを作成します。
+
+## リアルタイム実行デモ
+
+- \`runtime-parser.html\` は、ブラウザ版 \`domParserAdapter\` と \`parser/parser.js\` を使って WTS をその場でパースし、右側のプレビューで即時実行する確認ページです。
+- Starter サンプルでは複数 scene を同時に読み込み、\`route\` での遷移までブラウザ内で確認できます。
+- \`script type="text/typescript"\` の scene も、その場で JavaScript に変換して実行できます。
 
 ## プロジェクト構造
 
