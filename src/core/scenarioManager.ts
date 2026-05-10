@@ -30,7 +30,8 @@ export class ScenarioManager {
   }
 
   setScenario (scenario: any, sceneName: string=''): void {
-    this.scenarioData = scenario
+    const normalizedScenario = scenario ?? []
+    this.scenarioData = JSON.parse(JSON.stringify(normalizedScenario))
     this.progress.currentScene = sceneName
     this.progress.currentIndex = 0
   }
@@ -38,7 +39,7 @@ export class ScenarioManager {
   addScenario (scenario: any, index: number): void {
     // 区別にsub=trueを追加
     const _scenario =  scenario.map((item: any) => ({ ...item, sub: true }))
-    // この行を消すと動く
+    // この行を消すと動く(原因があまりにも単純でまぬけすぎたので、残しておく)
     // ('call','debug', {scenario, index})
     // index指定がある場合はその値に挿入する
     if(index) {
@@ -54,16 +55,22 @@ export class ScenarioManager {
   }
 
   next(): any {
-   if(this.progress.currentIndex <= this.scenarioData.length) {
-     const nextScenario = this.scenarioData[this.progress.currentIndex] 
-     this.progress.currentIndex += 1
-     return  nextScenario
-   } else {
-    return null
-   }
+    if (!Array.isArray(this.scenarioData)) {
+      return null
+    }
+    if (this.progress.currentIndex >= this.scenarioData.length) {
+      return null
+    }
+
+    const nextScenario = this.scenarioData[this.progress.currentIndex]
+    this.progress.currentIndex += 1
+    return nextScenario
   }
 
   hasNext(): boolean {
+    if (!Array.isArray(this.scenarioData)) {
+      return false
+    }
     return this.progress.currentIndex < this.scenarioData.length
   }
 

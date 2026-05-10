@@ -113,3 +113,77 @@ describe('ScenarioManager snapshot / restore', () => {
     expect(snap.scenario[0].content[0]).toBe('original')
   })
 })
+
+describe('ScenarioManager setScenario cloning', () => {
+  let sm: ScenarioManager
+
+  beforeEach(() => {
+    sm = new ScenarioManager()
+  })
+
+  test('setScenario がディープクローンを行い、元の配列への変更が影響しないこと', () => {
+    const scenario = [{ type: 'text', content: ['original'] }]
+    sm.setScenario(scenario, 'scene1')
+
+    // 元の配列を変更
+    scenario[0].content[0] = 'mutated'
+    scenario.push({ type: 'text', content: ['added'] })
+
+    // ScenarioManager 内部のデータは影響を受けない
+    const stored = sm.getScenario()
+    expect(stored[0].content[0]).toBe('original')
+    expect(stored.length).toBe(1)
+  })
+
+  test('setScenario(undefined) がクラッシュせず空配列として扱われること', () => {
+    expect(() => {
+      sm.setScenario(undefined as any, 'scene1')
+    }).not.toThrow()
+
+    expect(sm.hasNext()).toBe(false)
+    expect(sm.next()).toBeNull()
+    expect(sm.getScenario()).toEqual([])
+  })
+
+  test('setScenario(null) がクラッシュせず空配列として扱われること', () => {
+    expect(() => {
+      sm.setScenario(null as any, 'scene1')
+    }).not.toThrow()
+
+    expect(sm.hasNext()).toBe(false)
+    expect(sm.next()).toBeNull()
+    expect(sm.getScenario()).toEqual([])
+  })
+})
+
+describe('ScenarioManager next / hasNext guards', () => {
+  let sm: ScenarioManager
+
+  beforeEach(() => {
+    sm = new ScenarioManager()
+  })
+
+  test('scenario が未設定のとき next は null、hasNext は false を返すこと', () => {
+    expect(sm.hasNext()).toBe(false)
+    expect(sm.next()).toBeNull()
+  })
+
+  test('scenario が空配列のとき next は null、hasNext は false を返すこと', () => {
+    sm.setScenario([], 'scene1')
+    expect(sm.hasNext()).toBe(false)
+    expect(sm.next()).toBeNull()
+  })
+
+  test('末尾到達後の next は null を返し index を進めないこと', () => {
+    sm.setScenario([{ type: 'text', content: ['A'] }], 'scene1')
+
+    expect(sm.next()).toEqual({ type: 'text', content: ['A'] })
+    expect(sm.hasNext()).toBe(false)
+
+    const indexBefore = sm.getIndex()
+    expect(sm.next()).toBeNull()
+    expect(sm.getIndex()).toBe(indexBefore)
+    expect(sm.next()).toBeNull()
+    expect(sm.getIndex()).toBe(indexBefore)
+  })
+})
