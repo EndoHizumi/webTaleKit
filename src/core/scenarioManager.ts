@@ -55,17 +55,23 @@ export class ScenarioManager {
   }
 
   next(): any {
-   if(this.progress.currentIndex <= (this.scenarioData?.length || 0)) {
-     const nextScenario = this.scenarioData[this.progress.currentIndex] 
-     this.progress.currentIndex += 1
-     return  nextScenario
-   } else {
-    return null
-   }
+    if (!Array.isArray(this.scenarioData)) {
+      return null
+    }
+    if (this.progress.currentIndex >= this.scenarioData.length) {
+      return null
+    }
+
+    const nextScenario = this.scenarioData[this.progress.currentIndex]
+    this.progress.currentIndex += 1
+    return nextScenario
   }
 
   hasNext(): boolean {
-    return this.progress.currentIndex < (this.scenarioData?.length || 0)
+    if (!Array.isArray(this.scenarioData)) {
+      return false
+    }
+    return this.progress.currentIndex < this.scenarioData.length
   }
 
   getIndex(): number {

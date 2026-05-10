@@ -113,3 +113,33 @@ describe('ScenarioManager snapshot / restore', () => {
     expect(snap.scenario[0].content[0]).toBe('original')
   })
 })
+
+describe('ScenarioManager next / hasNext guards', () => {
+  let sm: ScenarioManager
+
+  beforeEach(() => {
+    sm = new ScenarioManager()
+  })
+
+  test('scenario が未設定のとき next は null、hasNext は false を返すこと', () => {
+    expect(sm.hasNext()).toBe(false)
+    expect(sm.next()).toBeNull()
+  })
+
+  test('scenario が空配列のとき next は null、hasNext は false を返すこと', () => {
+    sm.setScenario([], 'scene1')
+    expect(sm.hasNext()).toBe(false)
+    expect(sm.next()).toBeNull()
+  })
+
+  test('末尾到達後の next は null を返し index を進めないこと', () => {
+    sm.setScenario([{ type: 'text', content: ['A'] }], 'scene1')
+
+    expect(sm.next()).toEqual({ type: 'text', content: ['A'] })
+    expect(sm.hasNext()).toBe(false)
+
+    const indexBefore = sm.getIndex()
+    expect(sm.next()).toBeNull()
+    expect(sm.getIndex()).toBe(indexBefore)
+  })
+})
