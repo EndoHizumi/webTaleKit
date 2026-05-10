@@ -30,7 +30,8 @@ export class ScenarioManager {
   }
 
   setScenario (scenario: any, sceneName: string=''): void {
-    this.scenarioData =  JSON.parse(JSON.stringify(scenario))
+    const normalizedScenario = scenario ?? []
+    this.scenarioData = JSON.parse(JSON.stringify(normalizedScenario))
     this.progress.currentScene = sceneName
     this.progress.currentIndex = 0
   }
