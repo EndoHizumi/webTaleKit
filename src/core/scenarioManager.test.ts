@@ -141,5 +141,7 @@ describe('ScenarioManager next / hasNext guards', () => {
     const indexBefore = sm.getIndex()
     expect(sm.next()).toBeNull()
     expect(sm.getIndex()).toBe(indexBefore)
+    expect(sm.next()).toBeNull()
+    expect(sm.getIndex()).toBe(indexBefore)
   })
 })
