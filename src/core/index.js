@@ -80,6 +80,8 @@ export class Core {
         this.drawer.isSkip = drawerSkip
         this.isNext = coreNext
       },
+      toggleAuto: () => { this.isAuto = !this.isAuto },
+      toggleSkip: () => { this.isSkip = !this.isSkip },
     })
 
       await this.textHandler('タップでスタート')
@@ -225,7 +227,7 @@ export class Core {
     await this.eventBus.emit('text:show', {
       name: scenarioObject.name || '',
       content: scenarioObject.content,
-      speed: scenarioObject.speed || 25,
+      speed: this.isSkip ? 1 : scenarioObject.speed || 25,
       expandVariable: this.expandVariable.bind(this),
       waitFn: this.waitHandler.bind(this),
     })
@@ -254,6 +256,12 @@ export class Core {
     if (typeof line.wait === 'string' && !isNaN(Number(line.wait))) {
       line.wait = Number(line.wait)
     }
+
+    // スキップモードが有効な場合は全ての待機をスキップする
+    if (this.isSkip) {
+      return
+    }
+
     if (typeof line.wait === 'number') {
       if (line.wait > 0 || this.isAuto) {
         const waitTime = line.wait || 1500
@@ -261,8 +269,13 @@ export class Core {
         await sleep(waitTime)
       }
     } else {
-      // 改行ごとに入力待ち
-      await this.clickWait()
+      if (this.isAuto) {
+        // オートモードが有効な場合はデフォルト時間後に自動進行する
+        await sleep(1500)
+      } else {
+        // 改行ごとに入力待ち
+        await this.clickWait()
+      }
     }
   }
 
@@ -271,7 +284,7 @@ export class Core {
     this.drawer.setVisibility('#waitCircle', true)
     return new Promise((resolve) => {
       const intervalId = setInterval(() => {
-        if (this.isNext) {
+        if (this.isNext || this.isAuto || this.isSkip) {
           this.drawer.setVisibility('#waitCircle', false)
           clearInterval(intervalId)
           this.isNext = false
@@ -750,6 +763,15 @@ export class Core {
         getSaveList: () => this.getSaveList(),
         deleteSave: (slot) => this.deleteSave(slot),
       },
+      store: this.store,
+      playback: {
+        toggleAuto: () => { this.isAuto = !this.isAuto },
+        setAuto: (value) => { this.isAuto = value },
+        getAuto: () => this.isAuto,
+        toggleSkip: () => { this.isSkip = !this.isSkip },
+        setSkip: (value) => { this.isSkip = value },
+        getSkip: () => this.isSkip,
+      },
       sandbox: {
         execute: this.executeScenario.bind(this),
       },
@@ -803,7 +825,7 @@ export class Core {
   async loadHandler(line) {
     const slot = line.slot || 'auto'
 
-    const saveDataRaw = this.store.get ? this.store.get(`save_${slot}`) : this.store[`save_${slot}`]
+    const saveDataRaw = this.store.get(`save_${slot}`)
     if (!saveDataRaw) {
       throw new Error(`セーブデータが見つかりません: スロット${slot}`)
     }
@@ -882,6 +904,6 @@ export class Core {
   }
 
   deleteSave(slot) {
-    delete this.store[`save_${slot}`]
+    this.store.remove(`save_${slot}`)
   }
 }

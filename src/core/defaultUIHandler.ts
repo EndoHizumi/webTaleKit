@@ -64,6 +64,8 @@ export class DefaultUIHandler {
         const styleTags = Array.from(document.head.getElementsByTagName('style'))
         styleTags.forEach((tag) => document.head.removeChild(tag))
 
+        gameContainer.tabIndex = 0
+        gameContainer.style.outline = 'none'
         // HTMLコンテンツを注入する
         gameContainer.innerHTML = mainDiv.innerHTML
 
@@ -76,6 +78,8 @@ export class DefaultUIHandler {
           styleEl.textContent = styleContent
           document.head.appendChild(styleEl)
         }
+
+        gameContainer.focus()
       } else {
         // 古いダイアログ用スタイルシートを削除する
         document.head
@@ -221,14 +225,16 @@ export class DefaultUIHandler {
       if (inputAbortController) inputAbortController.abort()
       inputAbortController = new AbortController()
       const { signal } = inputAbortController
-      const { onNext, setSkip } = data
+      const { onNext, setSkip, toggleAuto, toggleSkip } = data
       gameContainer.addEventListener(
         'keydown',
         (e: KeyboardEvent) => {
           if (e.key === 'Enter') {
             onNext()
           } else if (e.key === 'Control') {
-            setSkip(true, true)
+            toggleSkip()
+          } else if (e.key.toLowerCase() === 'a' && toggleAuto) {
+            toggleAuto()
           }
         },
         { signal },
@@ -237,12 +243,19 @@ export class DefaultUIHandler {
         'keyup',
         (e: KeyboardEvent) => {
           if (e.key === 'Control') {
-            setSkip(true, false)
+            toggleSkip()
           }
         },
         { signal },
       )
-      gameContainer.addEventListener('click', () => onNext(), { signal })
+      gameContainer.addEventListener(
+        'click',
+        () => {
+          gameContainer.focus()
+          onNext()
+        },
+        { signal },
+      )
     })
   }
 }

@@ -6,6 +6,8 @@ interface StoreData {
 
 export interface Store extends StoreData {
   set(key: string, value: any): void;
+  get(key: string): any;
+  remove(key: string): void;
 }
 
 export const generateStore = (): Store => {
@@ -16,7 +18,14 @@ export const generateStore = (): Store => {
     set(key: string, value: any): void {
       storejs.set(key, value);
       this[key] = value;
-    }
+    },
+    get(key: string): any {
+      return storejs.get(key);
+    },
+    remove(key: string): void {
+      storejs.remove(key);
+      delete (this as StoreData)[key];
+    },
   };
 
   return store;
