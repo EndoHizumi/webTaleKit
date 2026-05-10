@@ -114,6 +114,48 @@ describe('ScenarioManager snapshot / restore', () => {
   })
 })
 
+describe('ScenarioManager setScenario cloning', () => {
+  let sm: ScenarioManager
+
+  beforeEach(() => {
+    sm = new ScenarioManager()
+  })
+
+  test('setScenario がディープクローンを行い、元の配列への変更が影響しないこと', () => {
+    const scenario = [{ type: 'text', content: ['original'] }]
+    sm.setScenario(scenario, 'scene1')
+
+    // 元の配列を変更
+    scenario[0].content[0] = 'mutated'
+    scenario.push({ type: 'text', content: ['added'] })
+
+    // ScenarioManager 内部のデータは影響を受けない
+    const stored = sm.getScenario()
+    expect(stored[0].content[0]).toBe('original')
+    expect(stored.length).toBe(1)
+  })
+
+  test('setScenario(undefined) がクラッシュせず空配列として扱われること', () => {
+    expect(() => {
+      sm.setScenario(undefined as any, 'scene1')
+    }).not.toThrow()
+
+    expect(sm.hasNext()).toBe(false)
+    expect(sm.next()).toBeNull()
+    expect(sm.getScenario()).toEqual([])
+  })
+
+  test('setScenario(null) がクラッシュせず空配列として扱われること', () => {
+    expect(() => {
+      sm.setScenario(null as any, 'scene1')
+    }).not.toThrow()
+
+    expect(sm.hasNext()).toBe(false)
+    expect(sm.next()).toBeNull()
+    expect(sm.getScenario()).toEqual([])
+  })
+})
+
 describe('ScenarioManager next / hasNext guards', () => {
   let sm: ScenarioManager
 
