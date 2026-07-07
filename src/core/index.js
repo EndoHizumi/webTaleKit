@@ -397,9 +397,7 @@ export class Core {
       entry: line.entry,
     }
     const layerOrder = Number(line['z-index'] ?? line.order)
-    if (Number.isFinite(layerOrder)) {
-      this.displayedImages[key].order = layerOrder
-    }
+    this.displayedImages[key].order = Number.isFinite(layerOrder) ? layerOrder : 0
 
     if (line.sepia) this.displayedImages[key].image.setSepia(line.sepia)
     if (line.mono) this.displayedImages[key].image.setMonochrome(line.mono)
@@ -866,7 +864,7 @@ export class Core {
           size: imageData.size,
           look: imageData.look,
           entry: imageData.entry,
-          order: imageData.order,
+          order: Number.isFinite(Number(imageData.order)) ? Number(imageData.order) : 0,
         }
       }
     }
