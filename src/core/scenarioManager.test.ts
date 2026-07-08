@@ -10,10 +10,12 @@ class MockCanvas {
   }
 }
 
-(global as any).Image = MockImage;
-(global as any).document = {
-  createElement: () => new MockCanvas(),
-}
+Object.assign(globalThis, {
+  Image: MockImage,
+  document: {
+    createElement: () => new MockCanvas(),
+  },
+})
 
 import { ScenarioManager } from '../core/scenarioManager'
 
@@ -137,7 +139,7 @@ describe('ScenarioManager setScenario cloning', () => {
 
   test('setScenario(undefined) がクラッシュせず空配列として扱われること', () => {
     expect(() => {
-      sm.setScenario(undefined as any, 'scene1')
+      sm.setScenario(undefined, 'scene1')
     }).not.toThrow()
 
     expect(sm.hasNext()).toBe(false)
@@ -147,7 +149,7 @@ describe('ScenarioManager setScenario cloning', () => {
 
   test('setScenario(null) がクラッシュせず空配列として扱われること', () => {
     expect(() => {
-      sm.setScenario(null as any, 'scene1')
+      sm.setScenario(null, 'scene1')
     }).not.toThrow()
 
     expect(sm.hasNext()).toBe(false)

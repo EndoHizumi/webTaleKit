@@ -85,12 +85,17 @@ export interface ScenarioLine {
   voice?: string
   then?: ScenarioContent[]
   error?: ScenarioContent[]
+  // テキスト装飾ノード（color / ruby）と<wait>のno-wait属性
+  value?: string
+  text?: string
+  nw?: boolean
 
   // wait
   wait?: number | string
 
   // choice
   prompt?: string
+  position?: string
 
   // jump
   index?: number | string
@@ -161,6 +166,40 @@ export interface SceneFile {
   // httpタグのレスポンス格納先
   res?: unknown
   [key: string]: unknown
+}
+
+// 選択肢の選択結果（Drawer.drawChoices / choice:showイベントの戻り値）
+export interface ChoiceResult {
+  selectId?: number
+  onSelect?: ScenarioLine[]
+}
+
+// EventBusのイベントペイロード
+export interface ScreenLoadEvent {
+  template?: string
+  isDialog?: boolean
+  fallbackTemplate?: (() => { htmlString: string; styleString: string }) | null
+}
+
+export interface TextShowEvent {
+  name: string
+  content?: ScenarioContent[]
+  speed: number
+  expandVariable: (text: string) => string
+  waitFn: (line: ScenarioLine) => Promise<void>
+}
+
+export interface DialogShowEvent {
+  content: ScenarioContent[]
+  expandVariable: (text: string) => string
+  addScenario: (scenario: ScenarioLine[], index?: number) => void
+}
+
+export interface InputBindEvent {
+  onNext: () => void
+  setSkip: (drawerSkip: boolean, coreNext: boolean) => void
+  toggleAuto: () => void
+  toggleSkip: () => void
 }
 
 // シナリオ進行状況

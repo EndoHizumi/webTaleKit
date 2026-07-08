@@ -1,4 +1,5 @@
 import * as logger from '../utils/logger'
+import { ChoiceItem } from '../core/types'
 import {
   assertScenarioValidation,
   createScenarioValidationError,
@@ -91,8 +92,8 @@ describe('validateScenarioObjects', () => {
     const scenario = [{ type: 'text', content: ['<script>alert("xss")</script>'] }]
     const result = validateScenarioObjects(scenario, mockCommandList)
     expect(scenario[0].content[0]).toContain('<script>')
-    expect(result.sanitizedScenario[0].content[0]).not.toContain('<script>')
-    expect(result.sanitizedScenario[0].content[0]).toContain('&lt;script&gt;')
+    expect(result.sanitizedScenario[0].content![0]).not.toContain('<script>')
+    expect(result.sanitizedScenario[0].content![0]).toContain('&lt;script&gt;')
     expect(result.sanitized).toBe(true)
   })
 
@@ -107,8 +108,9 @@ describe('validateScenarioObjects', () => {
     const result = validateScenarioObjects(scenario, mockCommandList)
 
     expect(scenario[0].content[0].label).toBe('<b>危険</b>')
-    expect(result.sanitizedScenario[0].content[0].label).toBe('&lt;b&gt;危険&lt;/b&gt;')
-    expect(result.sanitizedScenario[0].content[0].content[0]).toBe('&lt;i&gt;text&lt;/i&gt;')
+    const sanitizedItem = result.sanitizedScenario[0].content![0] as ChoiceItem
+    expect(sanitizedItem.label).toBe('&lt;b&gt;危険&lt;/b&gt;')
+    expect(sanitizedItem.content![0]).toBe('&lt;i&gt;text&lt;/i&gt;')
   })
 
   test('index が正常範囲内の jump で warning が出ないこと', () => {

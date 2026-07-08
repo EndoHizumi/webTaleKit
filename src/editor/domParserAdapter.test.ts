@@ -55,7 +55,7 @@ const fixtures = [
 ]
 
 describe('domParserAdapter', () => {
-  const globalAny = globalThis as any
+  const globalAny = globalThis as unknown as Record<string, unknown>
   const originalDOMParser = globalAny.DOMParser
   const originalNode = globalAny.Node
   const originalHtmlMinify = globalAny.__WEBTALEKIT_HTML_MINIFY__

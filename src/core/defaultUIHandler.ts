@@ -1,5 +1,13 @@
 import { EventBus } from '../utils/eventBus'
 import { Drawer } from './drawer'
+import {
+  ChoiceItem,
+  DialogShowEvent,
+  InputBindEvent,
+  ScenarioLine,
+  ScreenLoadEvent,
+  TextShowEvent,
+} from './types'
 
 export class DefaultUIHandler {
   /**
@@ -25,11 +33,11 @@ export class DefaultUIHandler {
     //   data.isDialog         — ダイアログモードかどうか
     //   data.fallbackTemplate — テンプレートが見つからない場合のフォールバック関数
     // ----------------------------------------------------------------
-    eventBus.on('screen:load', async (data: any) => {
+    eventBus.on('screen:load', async (data: ScreenLoadEvent) => {
       const { template, isDialog, fallbackTemplate } = data
 
       // テンプレートHTMLをフェッチしてパースする
-      const htmlString = await (await fetch(template)).text()
+      const htmlString = await (await fetch(String(template))).text()
       const parser = new DOMParser()
       const doc = parser.parseFromString(htmlString, 'text/html')
 
@@ -120,10 +128,10 @@ export class DefaultUIHandler {
     //   data.expandVariable — Coreから渡される変数展開コールバック
     //   data.waitFn         — Coreから渡されるwaitHandlerコールバック（<wait>タグ用）
     // ----------------------------------------------------------------
-    eventBus.on('text:show', async (data: any) => {
+    eventBus.on('text:show', async (data: TextShowEvent) => {
       const { name, content, speed, expandVariable, waitFn } = data
       drawer.drawName(name)
-      for (const text of content) {
+      for (const text of content!) {
         if (typeof text === 'string') {
           await drawer.drawText(expandVariable(text), speed)
         } else {
@@ -134,7 +142,7 @@ export class DefaultUIHandler {
             }
           } else {
             const container = drawer.createDecoratedElement(text)
-            await drawer.drawText(expandVariable(text.content[0]), text.speed || speed, container)
+            await drawer.drawText(expandVariable(text.content![0] as string), Number(text.speed) || speed, container)
           }
         }
       }
@@ -145,7 +153,7 @@ export class DefaultUIHandler {
     //   インタラクティブビューを表示し、Drawerで選択肢ボタンを描画して、
     //   選択後に非表示に戻す。選択結果 { selectId, onSelect } を返す。
     // ----------------------------------------------------------------
-    eventBus.on('choice:show', async (data: any) => {
+    eventBus.on('choice:show', async (data: ScenarioLine) => {
       const interactiveView = document.querySelector('#interactiveView') as HTMLElement | null
       if (interactiveView) interactiveView.style.visibility = 'visible'
       const result = await drawer.drawChoices(data)
@@ -161,28 +169,30 @@ export class DefaultUIHandler {
     //   data.expandVariable — Coreから渡される変数展開コールバック
     //   data.addScenario    — scenarioManager.addScenarioコールバック
     // ----------------------------------------------------------------
-    eventBus.on('dialog:show', async (data: any) => {
+    eventBus.on('dialog:show', async (data: DialogShowEvent) => {
       const { content, expandVariable, addScenario } = data
-      let result: any = null
+      let result: number | null = null
 
       const dialogContainer = document.querySelector('#dialogContainer') as HTMLDialogElement | null
       if (!dialogContainer) {
         throw new Error('Dialog container not found.')
       }
 
-      content.forEach((item: any) => {
+      const items = content as ScenarioLine[]
+      items.forEach((item) => {
         if (item.type === 'prompt') {
           const promptElement = dialogContainer.querySelector('.dialog-prompt')
           if (promptElement) {
-            promptElement.innerHTML = item.content
-              .map((text: any) => expandVariable(text))
+            promptElement.innerHTML = item.content!
+              .map((text) => expandVariable(text as string))
               .join('\n')
           }
         } else if (item.type === 'actions') {
           const buttonContainer = dialogContainer.querySelector('.dialog-buttons')
           if (!buttonContainer) return
-          item.content.forEach((action: any) => {
-            action.label = expandVariable(action.label)
+          const actions = item.content as ChoiceItem[]
+          actions.forEach((action) => {
+            action.label = expandVariable(action.label ?? '')
             let button = buttonContainer.querySelector(
               `#dialog-button-${action.id}`,
             ) as HTMLButtonElement | null
@@ -196,8 +206,8 @@ export class DefaultUIHandler {
             button.innerText = action.label
             button.addEventListener('click', () => {
               // 選択されたアクションのシナリオを追加してダイアログを閉じる
-              addScenario(action.content)
-              result = action.id
+              addScenario(action.content!)
+              result = action.id ?? null
               dialogContainer.close()
             })
           })
@@ -205,7 +215,7 @@ export class DefaultUIHandler {
       })
 
       dialogContainer.showModal()
-      return new Promise<any>((resolve) => {
+      return new Promise<number | null>((resolve) => {
         dialogContainer.addEventListener('close', () => {
           resolve(result)
         })
@@ -220,7 +230,7 @@ export class DefaultUIHandler {
     //   再度 input:bind が発行された際は以前のリスナーを先に削除する。
     // ----------------------------------------------------------------
     let inputAbortController: AbortController | null = null
-    eventBus.on('input:bind', (data: any) => {
+    eventBus.on('input:bind', (data: InputBindEvent) => {
       // 重複登録を防ぐために以前バインドしたリスナーを削除する
       if (inputAbortController) inputAbortController.abort()
       inputAbortController = new AbortController()

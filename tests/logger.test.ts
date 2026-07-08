@@ -68,7 +68,7 @@ describe('Logger', () => {
     })
 
     it('should default to log level if invalid level provided', async () => {
-      await outputLog('Test message', 'invalid' as any)
+      await outputLog('Test message', 'invalid' as unknown as Parameters<typeof outputLog>[1])
       
       expect(consoleLogSpy).toHaveBeenCalled()
     })

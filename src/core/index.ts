@@ -12,6 +12,7 @@ import { DefaultUIHandler } from './defaultUIHandler'
 import { logError } from '../utils/logger'
 import {
   ChoiceItem,
+  ChoiceResult,
   DisplayedImage,
   DisplayedImageMap,
   EngineConfig,
@@ -285,7 +286,7 @@ export class Core {
     await this.eventBus.emit('text:show', {
       name: line.name || '',
       content: line.content,
-      speed: this.isSkip ? 1 : line.speed || 25,
+      speed: this.isSkip ? 1 : Number(line.speed) || 25,
       expandVariable: this.expandVariable.bind(this),
       waitFn: this.waitHandler.bind(this),
     })
@@ -367,12 +368,13 @@ export class Core {
       choice.label = this.expandVariable(choice.label)
     })
     // choice:showイベントを発行して選択肢の表示と選択結果の取得をDefaultUIHandlerに委譲する
-    const [result] = await this.eventBus.emit('choice:show', line)
+    const [result] = (await this.eventBus.emit('choice:show', line)) as Array<ChoiceResult | undefined>
     const { selectId, onSelect: selectHandler } = result || {}
     if (selectHandler !== undefined) {
       this.scenarioManager.addScenario(selectHandler)
     }
-    this.scenarioManager.setHistory({ line, ...selectId })
+    // 元実装の { line, ...selectId } と同じ挙動（selectIdは数値なのでスプレッドしても何も追加されない）
+    this.scenarioManager.setHistory(Object.assign({ line }, selectId))
     this.isNext = false
   }
 

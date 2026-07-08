@@ -1,6 +1,6 @@
 export class SoundObject {
-  // 表示済みの画像を管理するクラス
-  private audio: any = null
+  // 読み込み済みの音声データを管理するクラス
+  private audio: AudioBuffer | null = null
   private ctx: AudioContext = new AudioContext()
   private isPlaying: boolean = false
   public source: AudioBufferSourceNode | null = this.ctx.createBufferSource()

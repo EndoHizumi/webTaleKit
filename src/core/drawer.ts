@@ -1,6 +1,15 @@
 import { ImageObject } from '../resource/ImageObject'
 import { sleep } from '../utils/waitUtil'
 import { gsap } from 'gsap'
+import { ChoiceItem, ChoiceResult, DisplayedImageMap, EntryOption, Position, ScenarioLine, Size } from './types'
+
+// フェード描画のオプション
+interface FadeOption {
+  pos?: Position
+  size?: Size
+  look?: boolean
+  entry?: EntryOption
+}
 
 /*
  drawerの目的
@@ -13,7 +22,6 @@ export class Drawer {
   private interactiveView!: HTMLElement
   private ctx!: CanvasRenderingContext2D
   private screenHtml!: HTMLElement
-  private config: any
   private fadeCanvas!: HTMLCanvasElement
   private fadeCtx!: CanvasRenderingContext2D
   isSkip: boolean = false
@@ -114,11 +122,11 @@ export class Drawer {
     }
   }
 
-  createDecoratedElement(element: any): HTMLElement {
+  createDecoratedElement(element: ScenarioLine): HTMLElement {
     switch (element.type) {
       case 'color': {
         const span = document.createElement('span')
-        span.style.color = element.value
+        span.style.color = element.value ?? ''
         return span
       }
       case 'ruby': {
@@ -135,10 +143,10 @@ export class Drawer {
     }
   }
 
-  async drawChoices(choices: any): Promise<{ selectId: number; onSelect: any }> {
+  async drawChoices(choices: ScenarioLine): Promise<ChoiceResult> {
     let isSelect = false
-    let selectId = 0
-    let onSelect = 0
+    let selectId: number | undefined
+    let onSelect: ScenarioLine[] | undefined
 
     // 選択肢ボタンの配置を設定する
     const interactiveView = document.querySelector('#interactiveView') as HTMLElement
@@ -148,7 +156,7 @@ export class Drawer {
       interactiveView.className = 'auto'
       
       // 選択肢の数に応じてレイアウトを調整
-      const choiceCount = choices.content.length
+      const choiceCount = choices.content!.length
       
       if (choiceCount >= TWO_COLUMN_THRESHOLD) {
         // 6つ以上の選択肢がある場合、2列レイアウトに切り替え
@@ -165,10 +173,10 @@ export class Drawer {
       interactiveView.className = 'manual'
     }
     // 選択肢を表示
-    const choiceCount = choices.content.length
+    const choiceCount = choices.content!.length
     const useTwoColumns = choiceCount >= TWO_COLUMN_THRESHOLD
-    
-    for (const choice of choices.content) {
+
+    for (const choice of choices.content as ChoiceItem[]) {
       const defaultImage =
         choice.default !== undefined ? choice.default : './src/resource/system/systemPicture/02_button/button.png'
       const hoverImage =
@@ -179,10 +187,10 @@ export class Drawer {
       button.className = 'choice'
       if (interactiveView.className == 'manual') {
         button.style.position = 'absolute'
-        button.style.top = choice.position?.y || 0
-        button.style.left = choice.position?.x || 0
+        button.style.top = String(choice.position?.y || 0)
+        button.style.left = String(choice.position?.x || 0)
       }
-      button.style.color = choice.color !== undefined ? choice.color.default : 'black'
+      button.style.color = (choice.color !== undefined ? choice.color.default : 'black') ?? ''
       // 2列レイアウトの場合は幅を調整
       button.style.width = useTwoColumns ? 'calc(50% - 10px)' : '100%'
       button.style.height = '50px'
@@ -194,19 +202,19 @@ export class Drawer {
       button.addEventListener('mouseenter', function () {
         // マウスが要素の上にあるときの背景色
         this.style.backgroundImage = `url(${hoverImage})`
-        this.style.color = choice.color !== undefined ? choice.color.hover : 'black'
+        this.style.color = (choice.color !== undefined ? choice.color.hover : 'black') ?? ''
       })
       button.addEventListener('mouseleave', function () {
         // マウスが要素から離れたときの背景色
         this.style.backgroundImage = `url(${defaultImage})`
-        this.style.color = choice.color !== undefined ? choice.color.default : 'black'
+        this.style.color = (choice.color !== undefined ? choice.color.default : 'black') ?? ''
       })
       button.addEventListener('mousedown', function () {
         // マウスが要素を選択したときの背景色
         this.style.backgroundImage = `url(${selectImage})`
-        this.style.color = choice.color !== undefined ? choice.color.select : 'black'
+        this.style.color = (choice.color !== undefined ? choice.color.select : 'black') ?? ''
       })
-      button.innerHTML = choice.label
+      button.innerHTML = choice.label ?? ''
       button.onclick = () => {
         this.interactiveView.querySelectorAll('.choice').forEach((element) => {
           element.parentNode?.removeChild(element)
@@ -229,15 +237,15 @@ export class Drawer {
     })
   }
 
-  async fadeIn(duration: number = 1000, img?: ImageObject, option?: object): Promise<void> {
+  async fadeIn(duration: number = 1000, img?: ImageObject, option?: FadeOption): Promise<void> {
     return this.fade(0, 1, duration, img, option)
   }
 
-  async fadeOut(duration: number = 1000, img?: ImageObject, option?: object): Promise<void> {
+  async fadeOut(duration: number = 1000, img?: ImageObject, option?: FadeOption): Promise<void> {
     return this.fade(1, 0, duration, img, option)
   }
 
-  private fade(start: number, end: number, duration: number, img?: ImageObject, option?: any): Promise<void> {
+  private fade(start: number, end: number, duration: number, img?: ImageObject, option?: FadeOption): Promise<void> {
     return new Promise<void>((resolve) => {
       const startTime = performance.now()
       const pos: { x: number; y: number } = option?.pos || {
@@ -278,7 +286,7 @@ export class Drawer {
     })
   }
 
-  show(displayedImages: any) {
+  show(displayedImages: DisplayedImageMap) {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
     for (const key in displayedImages) {
       const img: ImageObject = displayedImages[key].image
@@ -286,7 +294,7 @@ export class Drawer {
         x: 0,
         y: 0,
       }
-      const size: { width: number; height: number } = displayedImages[key].size
+      const size: Size | undefined = displayedImages[key].size
       const reverse: boolean = displayedImages[key].look || false
       const entry: { time: number; wait: boolean } = displayedImages[key].entry || { time: 1, wait: false }
       if (entry.wait) {
@@ -301,12 +309,13 @@ export class Drawer {
     this.adjustScale(this.gameScreen)
   }
 
-  moveTo(name: string, displayedImages: any, pos: { x: number; y: number }, durning: number) {
+  moveTo(name: string, displayedImages: DisplayedImageMap, pos: { x: number; y: number }, durning: number) {
     return new Promise((resolve) => {
       const target = displayedImages[name]
-      const dest = { x: target.pos.x + Number(pos.x), y: target.pos.y + Number(pos.y) }
+      const targetPos = target.pos!
+      const dest = { x: targetPos.x + Number(pos.x), y: targetPos.y + Number(pos.y) }
 
-      gsap.to(target.pos, {
+      gsap.to(targetPos, {
         x: dest.x,
         y: dest.y,
         duration: durning,
@@ -328,7 +337,7 @@ export class Drawer {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
   }
 
-  drawCanvas(img: ImageObject, pos: any, size: any, reverse: any, ctx?: CanvasRenderingContext2D) {
+  drawCanvas(img: ImageObject, pos: Position, size: Size | undefined, reverse: boolean, ctx?: CanvasRenderingContext2D) {
     if (ctx === undefined) {
       ctx = this.ctx
     }

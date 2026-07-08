@@ -1,4 +1,4 @@
-type EventHandler<T = any> = (data: T) => any
+type EventHandler<T = unknown> = (data: T) => unknown
 
 export class EventBus {
   private handlers: Map<string, EventHandler[]>
@@ -7,14 +7,14 @@ export class EventBus {
     this.handlers = new Map()
   }
 
-  on<T = any>(event: string, handler: EventHandler<T>): void {
+  on<T = unknown>(event: string, handler: EventHandler<T>): void {
     if (!this.handlers.has(event)) {
       this.handlers.set(event, [])
     }
     this.handlers.get(event)!.push(handler as EventHandler)
   }
 
-  off<T = any>(event: string, handler: EventHandler<T>): void {
+  off<T = unknown>(event: string, handler: EventHandler<T>): void {
     const handlers = this.handlers.get(event)
     if (handlers) {
       const index = handlers.indexOf(handler as EventHandler)
@@ -24,9 +24,9 @@ export class EventBus {
     }
   }
 
-  async emit<T = any>(event: string, data?: T): Promise<any[]> {
+  async emit<T = unknown>(event: string, data?: T): Promise<unknown[]> {
     const handlers = this.handlers.get(event) || []
-    const results: any[] = []
+    const results: unknown[] = []
     for (const handler of handlers) {
       results.push(await handler(data))
     }

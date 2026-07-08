@@ -1,4 +1,5 @@
 import { logError, outputLog } from './logger'
+import { ScenarioLine } from '../core/types'
 
 export interface ValidationMessage {
   index: number
@@ -10,7 +11,7 @@ export interface ValidationResult {
   valid: boolean
   errors: ValidationMessage[]
   warnings: ValidationMessage[]
-  sanitizedScenario: any[]
+  sanitizedScenario: ScenarioLine[]
   sanitized: boolean
 }
 
@@ -33,7 +34,7 @@ function escapeHtml(text: string): string {
 
 const HTML_TAG_PATTERN = /<[^>]*>|<[^>]*$/
 
-function sanitizeValue(value: any): { value: any; changed: boolean } {
+function sanitizeValue(value: unknown): { value: unknown; changed: boolean } {
   if (typeof value === 'string') {
     if (!HTML_TAG_PATTERN.test(value)) {
       return { value, changed: false }
@@ -61,10 +62,11 @@ function sanitizeValue(value: any): { value: any; changed: boolean } {
   }
 
   let changed = false
-  const sanitizedObject: Record<string, any> = {}
+  const sanitizedObject: Record<string, unknown> = {}
+  const source = value as Record<string, unknown>
 
-  for (const key of Object.keys(value)) {
-    const sanitizedEntry = sanitizeValue(value[key])
+  for (const key of Object.keys(source)) {
+    const sanitizedEntry = sanitizeValue(source[key])
     sanitizedObject[key] = sanitizedEntry.value
     if (sanitizedEntry.changed) {
       changed = true
@@ -74,7 +76,7 @@ function sanitizeValue(value: any): { value: any; changed: boolean } {
   return { value: sanitizedObject, changed }
 }
 
-export function sanitizeScenarioObjects(scenarioObjects: any[]): { sanitizedScenario: any[]; sanitized: boolean } {
+export function sanitizeScenarioObjects(scenarioObjects: ScenarioLine[]): { sanitizedScenario: ScenarioLine[]; sanitized: boolean } {
   const sanitizedResult = sanitizeValue(scenarioObjects)
   return {
     sanitizedScenario: Array.isArray(sanitizedResult.value) ? sanitizedResult.value : [],
@@ -139,7 +141,7 @@ export async function reportScenarioValidation(
 }
 
 export function validateScenarioObjects(
-  scenarioObjects: any[],
+  scenarioObjects: ScenarioLine[],
   commandList: Record<string, (...args: unknown[]) => unknown>,
 ): ValidationResult {
   const errors: ValidationMessage[] = []
@@ -177,7 +179,7 @@ export function validateScenarioObjects(
 
     if (type === 'choice') {
       const items = Array.isArray(obj.content)
-        ? obj.content.filter((c: any) => c.type === 'item')
+        ? obj.content.filter((c) => typeof c !== 'string' && c.type === 'item')
         : []
       if (items.length === 0) {
         errors.push({ index: i, type, message: 'choice コマンドに item が含まれていません' })

@@ -2,7 +2,7 @@ import StackTrace from 'stacktrace-js'
 
 type LogLevel = 'log' | 'debug' | 'warn' | 'error';
 
-export async function outputLog(msg: string = 'None', level: LogLevel = 'log', option?: any): Promise<void> {
+export async function outputLog(msg: string = 'None', level: LogLevel = 'log', option?: unknown): Promise<void> {
   if (!['log', 'debug', 'warn', 'error'].includes(level)) {
     level = 'log'
   }

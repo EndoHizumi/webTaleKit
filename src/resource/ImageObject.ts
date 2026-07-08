@@ -1,6 +1,6 @@
 export class ImageObject {
   // 表示済みの画像を管理するクラス
-  private image: any = null
+  private image: HTMLImageElement
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
   private filter: string[] = []
@@ -47,7 +47,8 @@ export class ImageObject {
         this.canvas.height = this.image.height
         resolve(this)
       }
-      this.image.onError = () => {
+      // JS時代はonError（存在しないプロパティ）で失敗時にPromiseが未解決のままだった
+      this.image.onerror = () => {
         reject(new Error('画像の読み込みに失敗しました'))
       }
     })
