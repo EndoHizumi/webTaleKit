@@ -138,10 +138,21 @@ export async function reportScenarioValidation(
   }
 }
 
+/** CommandRegistryのようにhas()で登録確認できるオブジェクト */
+export interface CommandLookup {
+  has(tagName: string): boolean
+}
+
+function isCommandLookup(commandList: Record<string, Function> | CommandLookup): commandList is CommandLookup {
+  return typeof (commandList as CommandLookup).has === 'function'
+}
+
 export function validateScenarioObjects(
   scenarioObjects: any[],
-  commandList: Record<string, Function>,
+  commandList: Record<string, Function> | CommandLookup,
 ): ValidationResult {
+  const hasCommand = (type: string): boolean =>
+    isCommandLookup(commandList) ? commandList.has(type) : type in commandList
   const errors: ValidationMessage[] = []
   const warnings: ValidationMessage[] = []
   const { sanitizedScenario, sanitized } = sanitizeScenarioObjects(scenarioObjects)
@@ -155,7 +166,7 @@ export function validateScenarioObjects(
     const obj = sanitizedScenario[i]
     const type: string = obj.type ?? 'text'
 
-    if (!(type in commandList)) {
+    if (!hasCommand(type)) {
       errors.push({ index: i, type, message: `未知のコマンドタイプ "${type}" が指定されています` })
       continue
     }
