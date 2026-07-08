@@ -7,7 +7,7 @@ import {
   validateScenarioObjects,
 } from '../utils/validateScenario'
 
-const mockCommandList: Record<string, Function> = {
+const mockCommandList: Record<string, (...args: unknown[]) => unknown> = {
   text: () => {},
   say: () => {},
   show: () => {},

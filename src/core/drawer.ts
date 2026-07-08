@@ -85,7 +85,7 @@ export class Drawer {
     let displayedLength = 0
     for (const char of text) {
       //prettier-ignore
-      setTimeout(() => { this.readySkip = true, wait });
+      setTimeout(() => { this.readySkip = true, wait })
       // 100ミリ秒待ってから、スキップボタンが押されたら即座に表示
       if (!this.isSkip) {
         textNode.textContent += char
@@ -116,14 +116,16 @@ export class Drawer {
 
   createDecoratedElement(element: any): HTMLElement {
     switch (element.type) {
-      case 'color':
+      case 'color': {
         const span = document.createElement('span')
         span.style.color = element.value
         return span
-      case 'ruby':
+      }
+      case 'ruby': {
         const ruby = document.createElement('ruby')
         ruby.dataset.rubyText = element.text
         return ruby
+      }
       case 'b':
         return document.createElement('strong')
       case 'i':
@@ -140,7 +142,6 @@ export class Drawer {
 
     // 選択肢ボタンの配置を設定する
     const interactiveView = document.querySelector('#interactiveView') as HTMLElement
-    const CHOICE_HEIGHT = 50 // 1つの選択肢の高さ（px） - button.style.heightと一致させる必要がある
     const TWO_COLUMN_THRESHOLD = 6 // 2列レイアウトに切り替える選択肢の数
 
     if (choices.position == 'auto' || choices.position === undefined) {
@@ -279,7 +280,7 @@ export class Drawer {
 
   show(displayedImages: any) {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
-    for (let key in displayedImages) {
+    for (const key in displayedImages) {
       const img: ImageObject = displayedImages[key].image
       const pos: { x: number; y: number } = displayedImages[key].pos || {
         x: 0,

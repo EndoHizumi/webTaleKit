@@ -1,24 +1,24 @@
 // @ts-check
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('@playwright/test')
 
 test.describe('リソースエラーハンドリングのテスト', () => {
   test('存在しないリソースを指定した場合にエラーメッセージが表示される', async ({ page }) => {
     // 直接リソースエラーテスト用のSceneファイルを開く
-    await page.goto('http://localhost:8080/?scene=resource-error-test');
+    await page.goto('http://localhost:8080/?scene=resource-error-test')
     
     // ページが読み込まれるのを待つ（少し長めに）
-    await page.waitForTimeout(3000);
+    await page.waitForTimeout(3000)
     
     // ページが読み込まれるのを待つ
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('networkidle')
     
     // デバッグ用にスクリーンショットを撮影
-    await page.screenshot({ path: 'tests/e2e/screenshots/before-error-check.png' });
+    await page.screenshot({ path: 'tests/e2e/screenshots/before-error-check.png' })
     
     // コンソールログを監視
     page.on('console', msg => {
-      console.log(`PAGE LOG: ${msg.text()}`);
-    });
+      console.log(`PAGE LOG: ${msg.text()}`)
+    })
     
     // より広範囲なエラーメッセージのパターンを試す
     const errorPatterns = [
@@ -27,32 +27,32 @@ test.describe('リソースエラーハンドリングのテスト', () => {
       'text="エラー: BGMファイルが見つかりません"',
       'text="エラー"',
       'text=エラー'
-    ];
+    ]
     
-    let errorMessage = null;
+    let errorMessage = null
     
     // 各パターンを試す
     for (const pattern of errorPatterns) {
-      console.log(`Checking for error pattern: ${pattern}`);
+      console.log(`Checking for error pattern: ${pattern}`)
       errorMessage = await page.waitForSelector(pattern, { timeout: 5000 })
-        .catch(() => null);
+        .catch(() => null)
       
       if (errorMessage) {
-        console.log(`Found error message with pattern: ${pattern}`);
-        break;
+        console.log(`Found error message with pattern: ${pattern}`)
+        break
       }
     }
     
     // エラーメッセージが表示されたことを確認
     if (!errorMessage) {
       // ページ全体のHTMLを取得して確認
-      const html = await page.content();
-      console.log('Page HTML:', html);
+      const html = await page.content()
+      console.log('Page HTML:', html)
     }
     
-    expect(errorMessage).not.toBeNull();
+    expect(errorMessage).not.toBeNull()
     
     // スクリーンショットを撮影
-    await page.screenshot({ path: 'tests/e2e/screenshots/resource-error-handling.png' });
-  });
-});
+    await page.screenshot({ path: 'tests/e2e/screenshots/resource-error-handling.png' })
+  })
+})

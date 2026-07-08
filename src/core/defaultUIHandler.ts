@@ -225,7 +225,7 @@ export class DefaultUIHandler {
       if (inputAbortController) inputAbortController.abort()
       inputAbortController = new AbortController()
       const { signal } = inputAbortController
-      const { onNext, setSkip, toggleAuto, toggleSkip } = data
+      const { onNext, toggleAuto, toggleSkip } = data
       gameContainer.addEventListener(
         'keydown',
         (e: KeyboardEvent) => {

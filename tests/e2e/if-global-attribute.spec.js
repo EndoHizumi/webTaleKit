@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test'
+import { test } from '@playwright/test'
 
 test('ifグローバル属性のテスト', async ({ page }) => {
   // テストのタイムアウトを60秒に設定

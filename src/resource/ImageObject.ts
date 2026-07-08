@@ -48,19 +48,19 @@ export class ImageObject {
         resolve(this)
       }
       this.image.onError = () => {
-        reject(new Error('画像の読み込みに失敗しました'));
+        reject(new Error('画像の読み込みに失敗しました'))
       }
     })
   }
 
   draw(reverse = false): ImageObject {
     if (reverse) {
-      this.ctx.save();
-      this.ctx.scale(-1, 1);
-      this.ctx.drawImage(this.image, -this.image.width,0);
-      this.ctx.restore();
+      this.ctx.save()
+      this.ctx.scale(-1, 1)
+      this.ctx.drawImage(this.image, -this.image.width,0)
+      this.ctx.restore()
     } else {
-      this.ctx.drawImage(this.image, 0, 0); 
+      this.ctx.drawImage(this.image, 0, 0) 
     }
     return this
   }

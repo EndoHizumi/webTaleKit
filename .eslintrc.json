@@ -1,7 +1,13 @@
 {
+  "root": true,
   "extends": ["eslint:recommended", "eslint-config-prettier", "prettier"],
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2022": true
+  },
   "parserOptions": {
-    "ecmaVersion": 2020,
+    "ecmaVersion": 2022,
     "sourceType": "module"
   },
   "rules": {
@@ -15,9 +21,22 @@
   },
   "overrides": [
     {
-      "files": ["**/*.test.ts"],
+      "files": ["**/*.ts"],
+      "parser": "@typescript-eslint/parser",
+      "plugins": ["@typescript-eslint"],
+      "extends": ["plugin:@typescript-eslint/recommended"],
+      "rules": {
+        "no-undef": "off",
+        "@typescript-eslint/no-explicit-any": "warn"
+      }
+    },
+    {
+      "files": ["**/*.test.ts", "tests/**/*.ts", "tests/**/*.js"],
       "env": {
         "jest": true
+      },
+      "rules": {
+        "@typescript-eslint/no-var-requires": "off"
       }
     }
   ]

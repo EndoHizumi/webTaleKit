@@ -1,4 +1,4 @@
-import storejs from 'storejs';
+import storejs from 'storejs'
 
 interface StoreData {
   [key: string]: any;
@@ -11,22 +11,22 @@ export interface Store extends StoreData {
 }
 
 export const generateStore = (): Store => {
-  const allData: StoreData = storejs();
+  const allData: StoreData = storejs()
 
   const store: Store = {
     ...allData,
     set(key: string, value: any): void {
-      storejs.set(key, value);
-      this[key] = value;
+      storejs.set(key, value)
+      this[key] = value
     },
     get(key: string): any {
-      return storejs.get(key);
+      return storejs.get(key)
     },
     remove(key: string): void {
-      storejs.remove(key);
-      delete (this as StoreData)[key];
+      storejs.remove(key)
+      delete (this as StoreData)[key]
     },
-  };
+  }
 
-  return store;
+  return store
 }

@@ -140,7 +140,7 @@ export async function reportScenarioValidation(
 
 export function validateScenarioObjects(
   scenarioObjects: any[],
-  commandList: Record<string, Function>,
+  commandList: Record<string, (...args: unknown[]) => unknown>,
 ): ValidationResult {
   const errors: ValidationMessage[] = []
   const warnings: ValidationMessage[] = []

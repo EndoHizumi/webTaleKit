@@ -10,8 +10,8 @@ class MockCanvas {
   }
 }
 
-;(global as any).Image = MockImage
-;(global as any).document = {
+(global as any).Image = MockImage;
+(global as any).document = {
   createElement: () => new MockCanvas(),
 }
 

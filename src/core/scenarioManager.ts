@@ -125,6 +125,6 @@ export class ScenarioManager {
   }
 
   getBackground():ImageObject{
-    return this.background;
+    return this.background
   }
 }

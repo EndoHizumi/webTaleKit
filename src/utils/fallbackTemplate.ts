@@ -13,7 +13,7 @@ export function getDefaultDialogTemplate() {
           <div class="dialog-footer" data-options></div>
         </div>
       </dialog>
-    `;
+    `
   const styleString = `
         #dialogContainer {
           border: 1px solid #ccc;
@@ -39,9 +39,9 @@ export function getDefaultDialogTemplate() {
         dialog::backdrop {
           background-color: rgba(0, 0, 0, 0.8);
         }
-    `;
+    `
   return {
     htmlString,
     styleString
-  };
+  }
 }

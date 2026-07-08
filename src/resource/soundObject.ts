@@ -60,7 +60,7 @@ export class SoundObject {
     this.source = this.ctx.createBufferSource()
     this.source.buffer = this.audio
     this.source.connect(this.ctx.destination)
-    this.source.loop = loop;
+    this.source.loop = loop
     this.source.start(0)
 
     this.isPlaying = true
