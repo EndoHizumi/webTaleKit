@@ -396,8 +396,8 @@ export class Core {
       look: line.look,
       entry: line.entry,
     }
-    const layerOrder = Number(line['z-index'] ?? line.order)
-    this.displayedImages[key].order = Number.isFinite(layerOrder) ? layerOrder : 0
+    const layerOrder = Number(line['z-index'])
+    this.displayedImages[key]['z-index'] = Number.isFinite(layerOrder) ? layerOrder : 0
 
     if (line.sepia) this.displayedImages[key].image.setSepia(line.sepia)
     if (line.mono) this.displayedImages[key].image.setMonochrome(line.mono)
@@ -794,7 +794,7 @@ export class Core {
             size: this.displayedImages[key].size,
             look: this.displayedImages[key].look,
             entry: this.displayedImages[key].entry,
-            order: this.displayedImages[key].order,
+            'z-index': this.displayedImages[key]['z-index'],
           }
         }
         return acc
@@ -864,7 +864,7 @@ export class Core {
           size: imageData.size,
           look: imageData.look,
           entry: imageData.entry,
-          order: Number.isFinite(Number(imageData.order)) ? Number(imageData.order) : 0,
+          'z-index': Number.isFinite(Number(imageData['z-index'])) ? Number(imageData['z-index']) : 0,
         }
       }
     }

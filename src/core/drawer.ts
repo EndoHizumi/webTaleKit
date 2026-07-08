@@ -5,8 +5,6 @@ import { gsap } from 'gsap'
 const getImageLayerOrder = (imageData: any) => {
   const zIndex = Number(imageData?.['z-index'])
   if (Number.isFinite(zIndex)) return zIndex
-  const order = Number(imageData?.order)
-  if (Number.isFinite(order)) return order
   return 0
 }
 
