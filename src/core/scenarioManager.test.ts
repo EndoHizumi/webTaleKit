@@ -49,7 +49,7 @@ describe('ScenarioManager snapshot / restore', () => {
     scenario[0].content[0] = 'changed'
     sm.next()
 
-    expect(snap.scenario[0].content[0]).toBe('hello')
+    expect(snap.scenario[0].content![0]).toBe('hello')
     expect(snap.index).toBe(0)
   })
 
@@ -109,8 +109,8 @@ describe('ScenarioManager snapshot / restore', () => {
     sm.restore(snap)
 
     // 復元後にシナリオを変更してもスナップショットは影響を受けない
-    sm.getScenario()[0].content[0] = 'mutated'
-    expect(snap.scenario[0].content[0]).toBe('original')
+    sm.getScenario()[0].content![0] = 'mutated'
+    expect(snap.scenario[0].content![0]).toBe('original')
   })
 })
 
@@ -131,7 +131,7 @@ describe('ScenarioManager setScenario cloning', () => {
 
     // ScenarioManager 内部のデータは影響を受けない
     const stored = sm.getScenario()
-    expect(stored[0].content[0]).toBe('original')
+    expect(stored[0].content![0]).toBe('original')
     expect(stored.length).toBe(1)
   })
 

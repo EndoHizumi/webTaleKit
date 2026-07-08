@@ -3,7 +3,8 @@ module.exports = {
   testEnvironment: 'node',
   moduleFileExtensions: ['ts', 'js'],
   transform: {
-    '^.+\\.[tj]s$': 'ts-jest',
+    // tsconfig本体はdynamic import保持のためmodule:es2020だが、JestはCommonJSが必要
+    '^.+\\.[tj]s$': ['ts-jest', { tsconfig: { module: 'commonjs' } }],
   },
   testMatch: ['**/*.test.ts'],
 };

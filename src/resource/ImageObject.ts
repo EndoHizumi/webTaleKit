@@ -35,7 +35,7 @@ export class ImageObject {
     return {width: this.image.width, height: this.image.height}
   }
 
-  async setImageAsync(src: string): Promise<ImageObject> {
+  async setImageAsync(src?: string): Promise<ImageObject> {
     if (!src || src.length == 0) {
       return this
     }

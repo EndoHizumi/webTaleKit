@@ -5,8 +5,9 @@
     "outDir": "./dist/src/",
     "sourceMap": true,
     "noImplicitAny": true,
-    "module": "commonjs",
+    "module": "es2020",
     "target": "es5",
+    "lib": ["es2022", "dom"],
     "allowJs": true,
     "esModuleInterop": true,
     "noEmitOnError": true,
@@ -18,12 +19,15 @@
     "src/utils/waitUtil.ts",
     "src/utils/fallbackTemplate.ts",
     "src/utils/eventBus.ts",
+    "src/core/index.ts",
+    "src/core/types.ts",
     "src/core/drawer.ts",
     "src/core/resourceManager.ts",
     "src/core/scenarioManager.ts",
     "src/core/defaultUIHandler.ts",
     "src/resource/ImageObject.ts",
-    "src/resource/soundObject.ts"
+    "src/resource/soundObject.ts",
+    "src/types/modules.d.ts"
   ],
   "exclude": ["node_modules", "dist"]
 }

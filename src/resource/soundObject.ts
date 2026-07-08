@@ -37,7 +37,7 @@ export class SoundObject {
     return
   }
 
-  async setAudioAsync(src: string): Promise<SoundObject> {
+  async setAudioAsync(src?: string): Promise<SoundObject> {
     if (!src || src.length == 0) {
       return this
     }
@@ -48,7 +48,7 @@ export class SoundObject {
   }
 
   // music control
-  play(loop: boolean): void {
+  play(loop: boolean = false): void {
     if (this.isPlaying) {
       this.stop()
     }
@@ -70,6 +70,11 @@ export class SoundObject {
         this.isPlaying = false
       }
     }
+  }
+
+  // AudioContextを一時停止する（core側のpause属性から呼ばれる）
+  pause(): void {
+    void this.ctx.suspend()
   }
 
   stop(): void {

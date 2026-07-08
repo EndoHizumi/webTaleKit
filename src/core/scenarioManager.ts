@@ -1,20 +1,20 @@
 import { ImageObject } from "../resource/ImageObject"
+import { Progress, ScenarioLine } from './types'
 
 export interface ScenarioSnapshot {
-  scenario: any[]
+  scenario: ScenarioLine[]
   index: number
   sceneName: string
-  progress: any
-  history: any[]
+  progress: Progress
+  history: unknown[]
 }
 
 export class ScenarioManager {
-  private backlist: any
-  private saveDataList: any
-  private progress: any
-  private ctx: any
+  private backlist: unknown[]
+  private saveDataList: unknown[]
+  progress: Progress
   private background: ImageObject = new ImageObject()
-  private scenarioData: any
+  private scenarioData: ScenarioLine[] = []
 
   constructor () {
     this.backlist = []
@@ -29,16 +29,16 @@ export class ScenarioManager {
     }
   }
 
-  setScenario (scenario: any, sceneName: string=''): void {
+  setScenario (scenario: ScenarioLine[] | null | undefined, sceneName: string=''): void {
     const normalizedScenario = scenario ?? []
     this.scenarioData = JSON.parse(JSON.stringify(normalizedScenario))
     this.progress.currentScene = sceneName
     this.progress.currentIndex = 0
   }
 
-  addScenario (scenario: any, index: number): void {
+  addScenario (scenario: ScenarioLine[], index?: number): void {
     // 区別にsub=trueを追加
-    const _scenario =  scenario.map((item: any) => ({ ...item, sub: true }))
+    const _scenario =  scenario.map((item) => ({ ...item, sub: true }))
     // この行を消すと動く(原因があまりにも単純でまぬけすぎたので、残しておく)
     // ('call','debug', {scenario, index})
     // index指定がある場合はその値に挿入する
@@ -50,11 +50,11 @@ export class ScenarioManager {
     }
   }
 
-  getScenario (): any {
+  getScenario (): ScenarioLine[] {
     return this.scenarioData
   }
 
-  next(): any {
+  next(): ScenarioLine | null {
     if (!Array.isArray(this.scenarioData)) {
       return null
     }
@@ -90,11 +90,11 @@ export class ScenarioManager {
     return this.progress.currentScene
   }
 
-  setHistory (text: string): void {
+  setHistory (text: unknown): void {
     this.backlist.push(text)
   }
 
-  getHistory (): any[] {
+  getHistory (): unknown[] {
     return this.backlist
   }
 

@@ -25,7 +25,7 @@ webTaleKit is a TypeScript-based visual novel game engine that allows creating i
 
 ### Core Components
 
-- **Core** (`src/core/index.js`): Main 976-line command dispatcher and state orchestrator. Holds `displayedImages` (currently shown images), `sceneFile` (loaded scene exports), and `sceneConfig`. Note: this file is plain JavaScript, not TypeScript.
+- **Core** (`src/core/index.ts`): Main command dispatcher and state orchestrator. Holds `displayedImages` (currently shown images), `sceneFile` (loaded scene exports), and `sceneConfig`. Shared types (`ScenarioLine`, `SceneFile`, `DisplayedImage`, etc.) live in `src/core/types.ts`.
 - **ScenarioManager** (`src/core/scenarioManager.ts`): Tracks execution index, injects dynamic choice branches (marked `sub=true`), manages text history/backlog.
 - **Drawer** (`src/core/drawer.ts`): Canvas-based rendering — text animation, choice buttons, image compositing, fade transitions, responsive scaling.
 - **ResourceManager** (`src/core/resourceManager.ts`): Lightweight asset registry (currently underdeveloped; actual loading happens inline in command handlers).
@@ -120,6 +120,6 @@ All commands support conditional execution with an `if` attribute — the comman
 
 ## Build Process
 
-1. Compiles TypeScript files to JavaScript
+1. Compiles TypeScript files to JavaScript (`module: es2020` so dynamic `import()` and webpack magic comments survive; Jest overrides to CommonJS in `jest.config.js`)
 2. Copies `package.json`, `README.md`, `engineConfig.json`, `parser/`
-3. Outputs to `dist/`; `src/core/index.js` is the main entry point
+3. Outputs to `dist/`; `src/core/index.ts` compiles to the main entry point `dist/src/core/index.js`

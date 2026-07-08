@@ -1,8 +1,11 @@
 export class ResourceManager {
   private resourceMap: Record<string, string>;
+  // webpackIgnore付きdynamic importで渡されるリソース設定（現状は保持のみ）
+  private configSource: Promise<unknown> | null;
 
-  constructor() {
+  constructor(config?: Promise<unknown>) {
     this.resourceMap = {}; // リソースを管理するオブジェクト
+    this.configSource = config ?? null;
   }
 
   // リソースを追加または更新
