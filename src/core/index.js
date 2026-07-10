@@ -9,6 +9,7 @@ import { getDefaultDialogTemplate } from '../utils/fallbackTemplate'
 import { generateStore } from '../utils/store'
 import { EventBus } from '../utils/eventBus'
 import { DefaultUIHandler } from './defaultUIHandler'
+import DomElementHandler from './domElementHandler'
 import { logError } from '../utils/logger'
 
 export class Core {
@@ -38,11 +39,15 @@ export class Core {
       dialog: this.dialogHandler,
       save: this.saveHandler,
       load: this.loadHandler,
+      add: (args) => this.domElementHandler.addElement(args),
+      remove: (args) => this.domElementHandler.removeElement(args),
     }
     // gameContainerの初期化（HTMLのgameContainerを取得する）
     this.gameContainer = document.getElementById('gameContainer')
     // Drawerの初期化（canvasタグのサイズを設定する)
     this.drawer = new Drawer(this.gameContainer)
+    // DomElementHandlerの初期化
+    this.domElementHandler = new DomElementHandler(this.gameContainer)
     // ScenarioManagerの初期化（変数の初期値設定）
     this.scenarioManager = new ScenarioManager()
     // ResourceManagerの初期化（引数にconfigを渡して、リソース管理配列を作る）
