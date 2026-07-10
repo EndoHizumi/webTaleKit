@@ -46,10 +46,10 @@ export class Core {
     this.gameContainer = document.getElementById('gameContainer')
     // Drawerの初期化（canvasタグのサイズを設定する)
     this.drawer = new Drawer(this.gameContainer)
-    // DomElementHandlerの初期化
-    this.domElementHandler = new DomElementHandler(this.gameContainer)
     // ScenarioManagerの初期化（変数の初期値設定）
     this.scenarioManager = new ScenarioManager()
+    // DomElementHandlerの初期化
+    this.domElementHandler = new DomElementHandler(this.gameContainer, (content) => this.scenarioManager.addScenario(content))
     // ResourceManagerの初期化（引数にconfigを渡して、リソース管理配列を作る）
     this.resourceManager = new ResourceManager(import(/* webpackIgnore: true */ '/src/resource/config.js')) //  webpackIgnoreでバンドルを無視する
     this.displayedImages = {}

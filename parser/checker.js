@@ -35,6 +35,8 @@ const ALLOWED_PARENTS = {
   data: TOP_LEVEL_COMMANDS,
   error: TOP_LEVEL_COMMANDS,
   progress: TOP_LEVEL_COMMANDS,
+  // addタグ配下でのみ使用可能なイベント定義
+  onclick: ['add'],
 }
 
 /**
@@ -90,6 +92,8 @@ const KNOWN_ATTRIBUTES = {
   data:     new Set([]),
   error:    new Set([]),
   progress: new Set([]),
+  // onclick自体は属性を持たない。中身は子要素のWTSコマンド
+  onclick:  new Set([]),
 }
 
 /**
