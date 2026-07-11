@@ -1,32 +1,13 @@
 #!/usr/bin/env node
-const { HTMLToJSON } = require('html-to-json-parser')
-const { minify } = require('html-minifier')
-const parse = require('./parser.js')
-const fs = require('fs')
-const path = require('path')
+import * as fs from 'fs'
+import * as path from 'path'
+import parse from './parser'
+import { nodeHtmlParser } from './nodeHtmlParser'
 
-const minifyOptions = {
-  removeTagWhitespace: true,
-  collapseWhitespace: true,
-  removeComments: true,
-  minifyJS: true,
-  minifyCSS: true,
-}
-
-/**
- * Node.js 向け HTMLParserAdapter（minify + HTMLToJSON）
- * @param {string} data
- * @returns {Promise<object>}
- */
-const nodeHtmlParser = async (data) => {
-  const html = minify(data, minifyOptions)
-  return HTMLToJSON(html)
-}
 /**
  * WebTaleScript パーサー CLI
  */
-
-const exec = (targetScript) => {
+const exec = (targetScript: string): void => {
   // ファイル名を取得する。（拡張子を除く）
   const fileName = path.basename(targetScript).split('.')[0]
   let outputPath = process.argv.slice(2)[1] || ''
@@ -54,7 +35,7 @@ const exec = (targetScript) => {
     }
     // 構文エラーがある場合、エラーを出力して終了する
     if (syntaxErrors.length > 0) {
-      syntaxErrors.forEach((err) => console.error(`Syntax Error in ${targetScript}: ${err.message}`))
+      syntaxErrors.forEach((syntaxError) => console.error(`Syntax Error in ${targetScript}: ${syntaxError.message}`))
       process.exit(1)
     }
     // jsディレクトリがない場合、作成する
@@ -65,9 +46,9 @@ const exec = (targetScript) => {
     fs.writeFile(
       `${outputPath}${fileName}.${lang == 'text/typescript' ? 'ts' : 'js'}`,
       `${script};\nexport const scenario = ${JSON.stringify(scenario)}; `,
-      (err) => {
-        if (err) {
-          console.error(err)
+      (writeErr) => {
+        if (writeErr) {
+          console.error(writeErr)
           return
         }
         console.log(`Output: ${outputPath}${fileName}.${lang == 'text/typescript' ? 'ts' : 'js'}`)

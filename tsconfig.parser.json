@@ -1,0 +1,14 @@
+{
+  // parser/はNode CLI（wtc）として実行されるため、本体（module: es2020）と別プロジェクトで
+  // CommonJSにコンパイルしてdist/parser/へ出力する
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2020",
+    "outDir": "./dist/parser",
+    "rootDir": "./parser",
+    "sourceMap": false
+  },
+  "include": ["parser/checker.ts", "parser/parser.ts", "parser/nodeHtmlParser.ts", "parser/cli.ts", "parser/html-minifier.d.ts"],
+  "exclude": ["node_modules", "dist", "parser/checker.test.ts"]
+}

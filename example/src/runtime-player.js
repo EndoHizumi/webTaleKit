@@ -1,8 +1,9 @@
 import { Core } from 'webtalekit-alpha/src/core/'
 import { domParserAdapter } from 'webtalekit-alpha/src/editor/domParserAdapter.js'
 import engineConfig from '../engineConfig.json'
+// parser.tsはwebpackのts-loaderで解決されるため拡張子なしで参照する
+import parseScene from '../../parser/parser'
 
-const parseScene = require('../../parser/parser.js')
 const TYPESCRIPT_COMPILER_PATH = './vendor/typescript.js'
 
 const RUNTIME_CONTAINER_SELECTOR = '#gameContainer'

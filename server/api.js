@@ -1,5 +1,8 @@
 const express = require('express')
-const parse = require('../parser/parser')
+// parser本体はTypeScript化されたため、コンパイル済みのdist/parserを参照する
+// （npm run api が事前に tsc -p tsconfig.parser.json を実行する）
+const parse = require('../dist/parser/parser').default
+const { nodeHtmlParser } = require('../dist/parser/nodeHtmlParser')
 
 const app = express()
 const port = Number(process.env.PORT || 3001)
@@ -21,7 +24,8 @@ app.post('/parse', async (req, res) => {
   }
 
   try {
-    const result = await parse(source)
+    // 旧実装はhtmlParser未指定でparseを呼んでおり常に500エラーになっていた
+    const result = await parse(source, nodeHtmlParser)
     return res.json({ ok: true, ...result })
   } catch (error) {
     return res.status(500).json({

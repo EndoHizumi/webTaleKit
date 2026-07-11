@@ -1,7 +1,28 @@
-'use strict'
+/**
+ * パース・フラット化済みのシナリオノード。
+ * タグ属性はflattenAttributesでトップレベルに展開されるため自由形式。
+ */
+export interface ParsedNode {
+  type?: string
+  content?: Array<ParsedNode | string>
+  [key: string]: unknown
+}
 
 /**
- * トップレベルコマンドの一覧 (core/index.js の Core.commandList から抽出)。
+ * チェッカーが返す結果オブジェクト。
+ * - invalid_parent: 構造エラー (不正な親子関係)
+ * - unknown_attribute: 警告 (エンジンが読み取らない属性)
+ */
+export interface CheckResult {
+  type: 'invalid_parent' | 'unknown_attribute'
+  node: string
+  parent?: string | null
+  attribute?: string
+  message: string
+}
+
+/**
+ * トップレベルコマンドの一覧 (core/index.ts の Core.commandList から抽出)。
  * HTTP サブタグはこれらのコマンドいずれかの子要素として使用できる。
  */
 const TOP_LEVEL_COMMANDS = [
@@ -13,7 +34,7 @@ const TOP_LEVEL_COMMANDS = [
  * 各ノードタイプが配置できる親タイプを定義する。
  * キー: 子ノードタイプ、値: 許可された親タイプの配列
  */
-const ALLOWED_PARENTS = {
+export const ALLOWED_PARENTS: Record<string, string[]> = {
   // choice 構造
   item: ['choice'],
   // dialog 構造
@@ -41,10 +62,10 @@ const ALLOWED_PARENTS = {
  * すべてのノードタイプに共通して有効な属性。
  * - type: タグタイプ自体
  * - content: 子ノードの配列
- * - if: 条件付き実行 (core/index.js の runScenario)
- * - get/post/put/delete: HTTP メソッド属性 (core/index.js の httpHandler)
+ * - if: 条件付き実行 (core/index.ts の runScenario)
+ * - get/post/put/delete: HTTP メソッド属性 (core/index.ts の httpHandler)
  */
-const GLOBAL_ATTRIBUTES = new Set(['type', 'content', 'if', 'get', 'post', 'put', 'delete'])
+export const GLOBAL_ATTRIBUTES: Set<string> = new Set(['type', 'content', 'if', 'get', 'post', 'put', 'delete'])
 
 /**
  * ノードタイプごとの既知の属性セット (GLOBAL_ATTRIBUTES を除く)。
@@ -52,8 +73,8 @@ const GLOBAL_ATTRIBUTES = new Set(['type', 'content', 'if', 'get', 'post', 'put'
  * このマップにないノードタイプは属性チェックをスキップする
  * (<header> や <data> の子要素のような自由形式の子要素に対応)。
  */
-const KNOWN_ATTRIBUTES = {
-  // トップレベルコマンド (core/index.js のハンドラ実装から取得)
+export const KNOWN_ATTRIBUTES: Record<string, Set<string>> = {
+  // トップレベルコマンド (core/index.ts のハンドラ実装から取得)
   text:     new Set(['name', 'speed', 'time']),
   say:      new Set(['name', 'speed', 'voice']),
   choice:   new Set(['prompt', 'position']),
@@ -92,12 +113,11 @@ const KNOWN_ATTRIBUTES = {
 
 /**
  * 親子関係が不正な場合のエラーメッセージを生成する。
- * @param {string} nodeType - 誤った位置に配置されたノードのタイプ
- * @param {string|null} parentType - 実際の親タイプ。ルートの場合は null
- * @param {string[]} allowedParents - 許可された親タイプの配列
- * @returns {string}
+ * @param nodeType - 誤った位置に配置されたノードのタイプ
+ * @param parentType - 実際の親タイプ。ルートの場合は null
+ * @param allowedParents - 許可された親タイプの配列
  */
-const buildInvalidParentMessage = (nodeType, parentType, allowedParents) => {
+const buildInvalidParentMessage = (nodeType: string, parentType: string | null, allowedParents: string[]): string => {
   const allowed = allowedParents.map((p) => `<${p}>`).join(' or ')
   const actual = parentType ? `<${parentType}>` : 'scenario root'
   return `<${nodeType}> must be inside ${allowed}, but found inside ${actual}`
@@ -105,21 +125,18 @@ const buildInvalidParentMessage = (nodeType, parentType, allowedParents) => {
 
 /**
  * 未知の属性 (エンジンに無視される属性) の警告メッセージを生成する。
- * @param {string} nodeType
- * @param {string} attrName
- * @returns {string}
  */
-const buildUnknownAttributeMessage = (nodeType, attrName) => {
+const buildUnknownAttributeMessage = (nodeType: string, attrName: string): string => {
   return `<${nodeType}> has unknown attribute "${attrName}" which will be ignored`
 }
 
 /**
  * エンジンで認識されない属性をノード単位でチェックする。
  * 該当する属性ごとに unknown_attribute 警告を結果配列に追加する。
- * @param {Object} node
- * @param {Array} results - 結果オブジェクトを蓄積する配列
+ * @param node
+ * @param results - 結果オブジェクトを蓄積する配列
  */
-const checkAttributes = (node, results) => {
+const checkAttributes = (node: ParsedNode, results: CheckResult[]): void => {
   const nodeType = node.type
   if (!nodeType) return
   const knownForType = KNOWN_ATTRIBUTES[nodeType]
@@ -138,11 +155,11 @@ const checkAttributes = (node, results) => {
 
 /**
  * ノードの親子関係の違反と未知の属性を再帰的にチェックする。
- * @param {Array} nodes - パース済みシナリオノードの配列
- * @param {string|null} parentType - 親ノードのタイプ。ルートの場合は null
- * @param {Array} results - 結果オブジェクトを蓄積する配列
+ * @param nodes - パース済みシナリオノードの配列
+ * @param parentType - 親ノードのタイプ。ルートの場合は null
+ * @param results - 結果オブジェクトを蓄積する配列
  */
-const checkNodes = (nodes, parentType, results) => {
+const checkNodes = (nodes: Array<ParsedNode | string>, parentType: string | null, results: CheckResult[]): void => {
   if (!Array.isArray(nodes)) return
   for (const node of nodes) {
     if (typeof node !== 'object' || node === null) continue
@@ -150,7 +167,7 @@ const checkNodes = (nodes, parentType, results) => {
     if (!nodeType) continue
 
     const allowedParents = ALLOWED_PARENTS[nodeType]
-    if (allowedParents && !allowedParents.includes(parentType)) {
+    if (allowedParents && !allowedParents.includes(parentType ?? '')) {
       results.push({
         type: 'invalid_parent',
         node: nodeType,
@@ -172,13 +189,10 @@ const checkNodes = (nodes, parentType, results) => {
  * 結果オブジェクトの配列を返す:
  *   - type 'invalid_parent': 構造エラー (不正な親子関係)
  *   - type 'unknown_attribute': 警告 (エンジンが読み取らない属性)
- * @param {Array} scenario - パース・フラット化されたシナリオ配列
- * @returns {Array}
+ * @param scenario - パース・フラット化されたシナリオ配列
  */
-const check = (scenario) => {
-  const results = []
+export const check = (scenario: Array<ParsedNode | string>): CheckResult[] => {
+  const results: CheckResult[] = []
   checkNodes(scenario, null, results)
   return results
 }
-
-module.exports = { check, ALLOWED_PARENTS, KNOWN_ATTRIBUTES, GLOBAL_ATTRIBUTES }

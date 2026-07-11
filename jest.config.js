@@ -7,4 +7,5 @@ module.exports = {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: { module: 'commonjs' } }],
   },
   testMatch: ['**/*.test.ts'],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
 }

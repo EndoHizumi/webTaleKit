@@ -18,8 +18,9 @@ webTaleKit is a TypeScript-based visual novel game engine that allows creating i
 - `npm run docs:build` - Build documentation site
 
 ### CLI Tool
-- `wtc` - WebTaleScript parser CLI (available via `parser/cli.js`)
+- `wtc` - WebTaleScript parser CLI (source: `parser/cli.ts`, compiled to `dist/parser/cli.js` via `tsconfig.parser.json`)
 - Usage: `wtc <scene-file> [output-directory]` to convert .scene files to .js/.ts files
+- Parser sources (`parser/*.ts`) are environment-agnostic except `nodeHtmlParser.ts` (Node adapter shared by CLI and `server/api.js`); the browser uses `src/editor/domParserAdapter.js` instead
 
 ## Architecture
 
@@ -121,5 +122,6 @@ All commands support conditional execution with an `if` attribute — the comman
 ## Build Process
 
 1. Compiles TypeScript files to JavaScript (`module: es2020` so dynamic `import()` and webpack magic comments survive; Jest overrides to CommonJS in `jest.config.js`)
-2. Copies `package.json`, `README.md`, `engineConfig.json`, `parser/`
-3. Outputs to `dist/`; `src/core/index.ts` compiles to the main entry point `dist/src/core/index.js`
+2. Compiles `parser/*.ts` separately via `tsconfig.parser.json` (`module: commonjs` for the Node CLI) into `dist/parser/`
+3. Copies `package.json`, `README.md`, `engineConfig.json`
+4. Outputs to `dist/`; `src/core/index.ts` compiles to the main entry point `dist/src/core/index.js`

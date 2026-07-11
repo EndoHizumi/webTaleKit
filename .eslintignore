@@ -4,3 +4,5 @@ coverage
 docs/.vitepress/dist
 docs/.vitepress/cache
 *.min.js
+example/src/js
+example/dist

@@ -8,8 +8,8 @@
     "test": "jest",
     "setup": "npm install && cd example && npm install",
     "dev": "npm run build && cd example && npm run dev",
-    "api": "node server/api.js",
-    "build": "rimraf ./dist/ && tsc && cp -r package.json README.md engineConfig.json parser/ dist/",
+    "api": "tsc -p tsconfig.parser.json && node server/api.js",
+    "build": "rimraf ./dist/ && tsc && tsc -p tsconfig.parser.json && cp -r package.json README.md engineConfig.json dist/",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
