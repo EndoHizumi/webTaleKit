@@ -1,0 +1,39 @@
+<scene>
+  <scenario>
+    <text>triggerタグのデモです。この部屋にはクリックできるスポットが3つ隠されています。</text>
+    <text>「部屋の左側」「部屋の中央」「画面の右上」をクリックしてみてください。右上の隠しスポットを見つけると探索終了です。</text>
+
+    <trigger id="bell" event="click" rect="(40,180,360,360)" cooldown="1500">
+      <sound mode="se" src="./src/resource/se/doorbell.mp3" play />
+      <text>部屋の左側を調べた。ベルが鳴った！（このスポットはcooldown="1500"付きで、何度でも反応します）</text>
+    </trigger>
+
+    <trigger id="sofa" event="click" rect="(460,240,360,300)">
+      <text>部屋の中央を調べた。ソファのすき間から10円玉が出てきた。</text>
+    </trigger>
+
+    <trigger id="secret" event="click" rect="(950,60,290,260)" once>
+      <text>画面右上の隠しスポットを発見！（once指定なので、このトリガーは1回で自動解除されます）</text>
+      <call method="found = true" />
+    </trigger>
+
+    <text>どこを調べる？（スポット以外をクリックすると、この案内に戻ります）</text>
+    <wait />
+    <jump index="5" if="!found" />
+
+    <untrigger all />
+    <text>untriggerタグで残りのトリガーをすべて解除しました。探索終了です！</text>
+    <route to="title" />
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'trigger-test',
+      background: './src/resource/background/living_room.jpg',
+      bgm: './src/resource/bgm/title_theme.mp3',
+      template: './src/screen/title.html'
+    }
+
+    export let found = false;
+  </script>
+</scene>
