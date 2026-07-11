@@ -40,6 +40,7 @@ export class DomElementHandler {
 
     const element = document.createElement(line.target);
     element.id = name;
+    element.style.position = 'absolute';
 
     if (line.class) {
       element.className = line.class;

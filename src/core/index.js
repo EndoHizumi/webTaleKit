@@ -9,7 +9,7 @@ import { getDefaultDialogTemplate } from '../utils/fallbackTemplate'
 import { generateStore } from '../utils/store'
 import { EventBus } from '../utils/eventBus'
 import { DefaultUIHandler } from './defaultUIHandler'
-import DomElementHandler from './domElementHandler'
+import { DomElementHandler } from './domElementHandler'
 import { logError } from '../utils/logger'
 
 export class Core {
