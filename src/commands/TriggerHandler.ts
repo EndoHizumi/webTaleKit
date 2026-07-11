@@ -160,7 +160,35 @@ export class TriggerHandler implements CommandHandler {
       el.style.height = `${r * 2}px`
       el.style.borderRadius = '50%'
     }
+    this.applyHoverEffect(el, command.style || 'none')
     return el
+  }
+
+  /**
+   * style属性に応じて、マウスオーバー時にホットスポットを視覚的に強調する。
+   * RenderBackend（Canvas層）の視覚表示が実装されるまでのDOM層での対応。
+   * style="none"（デフォルト）は透明のまま（隠しスポット用）。
+   * box-shadowベースなのでborderRadius（circle）にも追従する。
+   */
+  private applyHoverEffect(el: HTMLElement, style: string): void {
+    if (style === 'none') return
+    el.style.transition = 'box-shadow 0.15s ease, background-color 0.15s ease'
+    const on = () => {
+      if (style === 'border') {
+        el.style.boxShadow = 'inset 0 0 0 3px rgba(255, 240, 150, 0.95)'
+      } else if (style === 'glow') {
+        el.style.boxShadow =
+          '0 0 24px 8px rgba(255, 240, 150, 0.65), inset 0 0 18px 4px rgba(255, 240, 150, 0.45)'
+      } else if (style === 'highlight') {
+        el.style.background = 'rgba(255, 240, 150, 0.28)'
+      }
+    }
+    const off = () => {
+      el.style.boxShadow = ''
+      el.style.background = 'transparent'
+    }
+    el.addEventListener('mouseenter', on)
+    el.addEventListener('mouseleave', off)
   }
 
   /** トリガーを解除する（リスナー解除・透明divの削除・視覚表示の消去） */

@@ -1,18 +1,18 @@
 // Mock browser APIs needed by ImageObject (ScenarioManager経由で読み込まれる)
+// と TriggerHandler のホットスポット生成 (document.createElement)
 class MockImage {
   src: string = ''
   onload: (() => void) | null = null
 }
 
-class MockCanvas {
-  getContext() {
-    return null
-  }
-}
-
 ;(global as any).Image = MockImage
 ;(global as any).document = {
-  createElement: () => new MockCanvas(),
+  // ImageObject用のcanvas兼TriggerHandler用のdivとして振る舞う疑似要素を返す
+  createElement: () => {
+    const el = new FakeElement()
+    ;(el as any).getContext = () => null
+    return el
+  },
 }
 
 import { TriggerHandler } from './TriggerHandler'
@@ -21,8 +21,12 @@ import { ExecutionContext } from '../core/CommandRegistry'
 import { ScenarioManager } from '../core/scenarioManager'
 import { EventBus } from '../utils/eventBus'
 
-/** addEventListener/removeEventListenerだけを持つ疑似DOM要素（gameContainer代用） */
+/** イベントリスナーと子要素だけを扱う疑似DOM要素（gameContainer / 透明div代用） */
 class FakeElement {
+  id = ''
+  style: Record<string, string> = {}
+  parentNode: FakeElement | null = null
+  children: FakeElement[] = []
   private listeners = new Map<string, EventListener[]>()
 
   addEventListener(event: string, handler: EventListener): void {
@@ -34,6 +38,16 @@ class FakeElement {
     const handlers = this.listeners.get(event) || []
     const index = handlers.indexOf(handler)
     if (index !== -1) handlers.splice(index, 1)
+  }
+
+  appendChild(el: FakeElement): void {
+    el.parentNode = this
+    this.children.push(el)
+  }
+
+  removeChild(el: FakeElement): void {
+    el.parentNode = null
+    this.children = this.children.filter((child) => child !== el)
   }
 
   fire(event: string): void {
@@ -201,6 +215,69 @@ describe('TriggerHandler', () => {
     el.fire('click')
 
     expect(scenarioManager.getScenario()).toHaveLength(2)
+  })
+
+  it('rect指定で透明ホットスポットdivが生成され、解除時に削除される', async () => {
+    const handler = new TriggerHandler()
+    const container = new FakeElement()
+    const { context } = createContext(container)
+    await handler.execute({ type: 'trigger', id: 'chest', event: 'click', rect: '(10,30,200,150)' }, context)
+
+    expect(container.children).toHaveLength(1)
+    const hotspot = container.children[0]
+    expect(hotspot.id).toBe('trigger-chest')
+    expect(hotspot.style.left).toBe('10px')
+    expect(hotspot.style.top).toBe('30px')
+    expect(hotspot.style.width).toBe('200px')
+    expect(hotspot.style.height).toBe('150px')
+
+    handler.remove('chest')
+    expect(container.children).toHaveLength(0)
+  })
+
+  it('style指定ありはマウスオーバーで視覚効果が付き、離れると戻る', async () => {
+    const handler = new TriggerHandler()
+    const container = new FakeElement()
+    const { context } = createContext(container)
+    await handler.execute(
+      { type: 'trigger', id: 'chest', event: 'click', rect: '(10,30,200,150)', style: 'glow' },
+      context,
+    )
+    const hotspot = container.children[0]
+
+    hotspot.fire('mouseenter')
+    expect(hotspot.style.boxShadow).toContain('rgba(255, 240, 150')
+
+    hotspot.fire('mouseleave')
+    expect(hotspot.style.boxShadow).toBe('')
+  })
+
+  it('style="highlight"はマウスオーバーで背景が変わる', async () => {
+    const handler = new TriggerHandler()
+    const container = new FakeElement()
+    const { context } = createContext(container)
+    await handler.execute(
+      { type: 'trigger', id: 'sofa', event: 'click', rect: '(0,0,100,100)', style: 'highlight' },
+      context,
+    )
+    const hotspot = container.children[0]
+
+    hotspot.fire('mouseenter')
+    expect(hotspot.style.background).toContain('rgba(255, 240, 150')
+
+    hotspot.fire('mouseleave')
+    expect(hotspot.style.background).toBe('transparent')
+  })
+
+  it('style未指定（none）はマウスオーバーしても透明のまま', async () => {
+    const handler = new TriggerHandler()
+    const container = new FakeElement()
+    const { context } = createContext(container)
+    await handler.execute({ type: 'trigger', id: 'secret', event: 'click', rect: '(0,0,100,100)' }, context)
+    const hotspot = container.children[0]
+
+    expect(hotspot.listenerCount('mouseenter')).toBe(0)
+    expect(hotspot.style.background).toBe('transparent')
   })
 
   it('id未指定はtrigger_付きのidが自動採番される', async () => {
