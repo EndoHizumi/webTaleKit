@@ -71,4 +71,27 @@ export class DomElementHandler {
       console.warn(`Element with name "${name}" not found.`);
     }
   }
+
+  /**
+   * 要素の表示・非表示を切り替える
+   * @param line 操作する要素の情報
+   * @param line.name 管理名 (必須)
+   * @param line.show 表示するかどうか (任意)
+   */
+  setVisibility(line: { name: string; show?: boolean }): void {
+    const name = line.name;
+    const element = this.extraElements[name];
+
+    if (element) {
+      element.style.display = line.show === false ? 'none' : 'block';
+    } else {
+      // 管理外の要素（既存のDOMなど）の場合、IDで直接検索を試みる
+      const fallbackElement = document.getElementById(name);
+      if (fallbackElement) {
+        fallbackElement.style.display = line.show === false ? 'none' : 'block';
+      } else {
+        console.warn(`Element with name "${name}" not found for setVisibility.`);
+      }
+    }
+  }
 }

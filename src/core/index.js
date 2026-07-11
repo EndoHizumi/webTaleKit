@@ -349,6 +349,15 @@ export class Core {
     Object.keys(line).forEach((item) => {
       line[item] = this.expandVariable(line[item])
     })
+
+    if (line.mode === 'dom') {
+      this.domElementHandler.setVisibility({
+        name: line.name,
+        show: true
+      })
+      return
+    }
+
     // 表示する画像の情報を管理オブジェクトに追加
     const modeList = { bg: 'background', cutin: '', chara: '', cg: 'background', effect: 'effect' }
     const key = Object.keys(modeList).includes(line.mode) ? modeList[line.mode] : line.name || line.src.split('/').pop()
@@ -423,6 +432,14 @@ export class Core {
   }
 
   async hideHandler(line) {
+    if (line.mode === 'dom') {
+      this.domElementHandler.setVisibility({
+        name: line.name,
+        show: false
+      })
+      return
+    }
+
     const targetImage = this.displayedImages[line.name]
     if (line.mode === 'cg') {
       this.displayedImages = { ...this.tempImages }
