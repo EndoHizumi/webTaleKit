@@ -9,6 +9,7 @@ import { getDefaultDialogTemplate } from '../utils/fallbackTemplate'
 import { generateStore } from '../utils/store'
 import { EventBus } from '../utils/eventBus'
 import { DefaultUIHandler } from './defaultUIHandler'
+import { DomElementHandler } from './domElementHandler'
 import { logError } from '../utils/logger'
 
 export class Core {
@@ -38,6 +39,8 @@ export class Core {
       dialog: this.dialogHandler,
       save: this.saveHandler,
       load: this.loadHandler,
+      add: (args) => this.domElementHandler.addElement(args),
+      remove: (args) => this.domElementHandler.removeElement(args),
     }
     // gameContainerの初期化（HTMLのgameContainerを取得する）
     this.gameContainer = document.getElementById('gameContainer')
@@ -45,6 +48,8 @@ export class Core {
     this.drawer = new Drawer(this.gameContainer)
     // ScenarioManagerの初期化（変数の初期値設定）
     this.scenarioManager = new ScenarioManager()
+    // DomElementHandlerの初期化
+    this.domElementHandler = new DomElementHandler(this.gameContainer, (content) => this.scenarioManager.addScenario(content))
     // ResourceManagerの初期化（引数にconfigを渡して、リソース管理配列を作る）
     this.resourceManager = new ResourceManager(import(/* webpackIgnore: true */ '/src/resource/config.js')) //  webpackIgnoreでバンドルを無視する
     this.displayedImages = {}
@@ -344,6 +349,15 @@ export class Core {
     Object.keys(line).forEach((item) => {
       line[item] = this.expandVariable(line[item])
     })
+
+    if (line.mode === 'dom') {
+      this.domElementHandler.setVisibility({
+        name: line.name,
+        show: true
+      })
+      return
+    }
+
     // 表示する画像の情報を管理オブジェクトに追加
     const modeList = { bg: 'background', cutin: '', chara: '', cg: 'background', effect: 'effect' }
     const key = Object.keys(modeList).includes(line.mode) ? modeList[line.mode] : line.name || line.src.split('/').pop()
@@ -418,6 +432,14 @@ export class Core {
   }
 
   async hideHandler(line) {
+    if (line.mode === 'dom') {
+      this.domElementHandler.setVisibility({
+        name: line.name,
+        show: false
+      })
+      return
+    }
+
     const targetImage = this.displayedImages[line.name]
     if (line.mode === 'cg') {
       this.displayedImages = { ...this.tempImages }
