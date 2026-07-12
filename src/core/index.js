@@ -338,13 +338,14 @@ export class Core {
   }
 
   async getSoundObject(line) {
-    const name = line.name || line.src.split('/').pop()
+    const name = line.name || (line.src || line.voice).split('/').pop()
     let resource
+    let soundObjectPath = line.src || line.voice
 
     // ファイルの存在確認
-    if (line.src) {
-      if (!(await this.checkResourceExists(line.src))) {
-        throw new Error(`Sound file not found: ${line.src}`)
+    if (line.src  || line.voice) {
+      if (!(await this.checkResourceExists(soundObjectPath))) {
+        throw new Error(`Sound file not found: ${soundObjectPath}`)
       }
     }
 
@@ -352,9 +353,9 @@ export class Core {
     if (Object.hasOwn(this.usedSounds, name)) {
       const targetResource = this.usedSounds[name]
       const soundObject = targetResource ? targetResource.audio : new SoundObject()
-      resource = await soundObject.setAudioAsync(line.src)
+      resource = await soundObject.setAudioAsync(soundObjectPath)
     } else {
-      resource = await new SoundObject().setAudioAsync(line.src)
+      resource = await new SoundObject().setAudioAsync(soundObjectPath)
     }
     return resource
   }
@@ -414,6 +415,7 @@ export class Core {
       this.sceneFile.res = json
       line.then = line.content.filter((content) => content.type === 'then')[0].content
     } else {
+      const json = await response.json()
       this.sceneFile.res = json
       line.error = line.content.filter((content) => content.type === 'error')[0].content
     }
