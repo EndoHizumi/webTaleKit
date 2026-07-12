@@ -5,6 +5,9 @@ export class HideHandler implements CommandHandler {
     const { core, drawer } = context
     const line: any = command
     const targetImage = core.displayedImages[line.name]
+    if (!targetImage) {
+      throw new Error(`Image not found: ${line.name}`)
+    }
     if (line.mode === 'cg') {
       core.displayedImages = { ...core.tempImages }
       core.tempImages = {}
