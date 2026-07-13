@@ -164,7 +164,7 @@ export function validateScenarioObjects(
 
   for (let i = 0; i < sanitizedScenario.length; i++) {
     const obj = sanitizedScenario[i]
-    const type: string = obj.type ?? 'text'
+    const type: string = String(obj.type ?? 'text').toLowerCase()
 
     if (!hasCommand(type)) {
       errors.push({ index: i, type, message: `未知のコマンドタイプ "${type}" が指定されています` })
