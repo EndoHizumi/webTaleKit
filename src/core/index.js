@@ -8,6 +8,7 @@ import { sleep } from '../utils/waitUtil'
 import { generateStore } from '../utils/store'
 import { EventBus } from '../utils/eventBus'
 import { DefaultUIHandler } from './defaultUIHandler'
+import { DomElementHandler } from './domElementHandler'
 import { logError } from '../utils/logger'
 import { CommandRegistry } from './CommandRegistry'
 import { registerBuiltinCommands } from '../commands'
@@ -34,6 +35,8 @@ export class Core {
     this.drawer = new Drawer(this.gameContainer)
     // ScenarioManagerの初期化（変数の初期値設定）
     this.scenarioManager = new ScenarioManager()
+    // DomElementHandlerの初期化
+    this.domElementHandler = new DomElementHandler(this.gameContainer, (content) => this.scenarioManager.addScenario(content))
     // ResourceManagerの初期化（引数にconfigを渡して、リソース管理配列を作る）
     this.resourceManager = new ResourceManager(import(/* webpackIgnore: true */ '/src/resource/config.js')) //  webpackIgnoreでバンドルを無視する
     this.displayedImages = {}

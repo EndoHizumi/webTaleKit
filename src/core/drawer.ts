@@ -114,7 +114,7 @@ export class Drawer {
     }
   }
 
-  createDecoratedElement(element: any): HTMLElement {
+  static createDecoratedElement(element: any): HTMLElement {
     switch (element.type) {
       case 'color':
         const span = document.createElement('span')

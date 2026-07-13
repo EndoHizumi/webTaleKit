@@ -1,5 +1,8 @@
 <scene>
     <scenario>
+        <add target="button" name="demo-btn">デモ:クリックでセリフ
+            <onclick><text>ボタンから割り込みテキスト!</text></onclick>
+        </add>
         <text>ダイアログのテスト</text>
         <say name="ナレーター">このシーンでは、ダイアログの基本的な使い方をデモンストレーションします。</say>
         <say name="ナレーター">まずは、シンプルなダイアログから始めましょう。</say>
