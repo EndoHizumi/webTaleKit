@@ -152,7 +152,7 @@ export function validateScenarioObjects(
   commandList: Record<string, Function> | CommandLookup,
 ): ValidationResult {
   const hasCommand = (type: string): boolean =>
-    isCommandLookup(commandList) ? commandList.has(type) : type in commandList
+    isCommandLookup(commandList) ? commandList.has(type) : Object.prototype.hasOwnProperty.call(commandList, type)
   const errors: ValidationMessage[] = []
   const warnings: ValidationMessage[] = []
   const { sanitizedScenario, sanitized } = sanitizeScenarioObjects(scenarioObjects)
