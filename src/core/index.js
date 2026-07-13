@@ -5,12 +5,13 @@ import { ResourceManager } from './resourceManager'
 import { SoundObject } from '../resource/soundObject'
 import engineConfig from '../../engineConfig.json'
 import { sleep } from '../utils/waitUtil'
-import { getDefaultDialogTemplate } from '../utils/fallbackTemplate'
 import { generateStore } from '../utils/store'
 import { EventBus } from '../utils/eventBus'
 import { DefaultUIHandler } from './defaultUIHandler'
 import { DomElementHandler } from './domElementHandler'
 import { logError } from '../utils/logger'
+import { CommandRegistry } from './CommandRegistry'
+import { registerBuiltinCommands } from '../commands'
 
 export class Core {
   constructor(options = {}) {
@@ -22,26 +23,12 @@ export class Core {
     this.onNextHandler = null
     this.sceneFile = {}
     this.sceneConfig = {}
-    this.commandList = {
-      text: this.textHandler,
-      choice: this.choiceHandler,
-      show: this.showHandler,
-      newpage: this.newpageHandler,
-      hide: this.hideHandler,
-      jump: this.jumpHandler,
-      sound: this.soundHandler,
-      say: this.sayHandler,
-      if: this.ifHandler,
-      call: this.callHandler,
-      moveto: this.moveToHandler,
-      route: this.routeHandler,
-      wait: this.waitHandler,
-      dialog: this.dialogHandler,
-      save: this.saveHandler,
-      load: this.loadHandler,
-      add: (args) => this.domElementHandler.addElement(args),
-      remove: (args) => this.domElementHandler.removeElement(args),
-    }
+    this.engineConfig = engineConfig
+    // CommandRegistryの初期化（タグ→ハンドラのマッピングを登録制で管理する）
+    this.commandRegistry = new CommandRegistry()
+    const builtinHandlers = registerBuiltinCommands(this.commandRegistry)
+    // triggerハンドラはシーン遷移時の全解除のために参照を保持する
+    this.triggerHandler = builtinHandlers.trigger
     // gameContainerの初期化（HTMLのgameContainerを取得する）
     this.gameContainer = document.getElementById('gameContainer')
     // Drawerの初期化（canvasタグのサイズを設定する)
@@ -53,6 +40,7 @@ export class Core {
     // ResourceManagerの初期化（引数にconfigを渡して、リソース管理配列を作る）
     this.resourceManager = new ResourceManager(import(/* webpackIgnore: true */ '/src/resource/config.js')) //  webpackIgnoreでバンドルを無視する
     this.displayedImages = {}
+    this.tempImages = {}
     this.usedSounds = {}
     // ストレージの初期化
     this.store = generateStore()
@@ -60,20 +48,47 @@ export class Core {
     this.eventBus = new EventBus()
     // DefaultUIHandlerの登録（customUI: trueの場合はスキップ）
     if (!options.customUI) {
-      DefaultUIHandler.register(this.eventBus, this.drawer, this.gameContainer, engineConfig.resolution)
+      DefaultUIHandler.register(this.eventBus, this.drawer, this.gameContainer, this.engineConfig.resolution)
     }
   }
 
   setConfig(config) {
     // ゲームの設定情報をセットする
-    engineConfig = config
+    this.engineConfig = config
+  }
+
+  // ハンドラに渡す実行コンテキスト（依存注入）を生成する
+  getExecutionContext() {
+    return {
+      eventBus: this.eventBus,
+      scenarioManager: this.scenarioManager,
+      drawer: this.drawer,
+      core: this,
+    }
+  }
+
+  // タグ名を指定してCommandRegistry経由でハンドラを実行する（内部ディスパッチ用）
+  dispatch(type, line = {}) {
+    return this.commandRegistry.execute({ ...line, type }, this.getExecutionContext())
+  }
+
+  // カスタムタグの公式登録API
+  registerCommand(tagName, handler) {
+    this.commandRegistry.register(tagName, handler)
+  }
+
+  // 全トリガーを解除する（<route>によるシーン遷移時に呼ばれる）
+  clearAllTriggers() {
+    if (this.triggerHandler) {
+      this.triggerHandler.removeAll()
+    }
   }
 
   async start(initScene) {
     try {
     // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
     // titleタグの内容を書き換える
-    document.title = engineConfig.title
+    document.title = this.engineConfig.title
     // sceneファイルを読み込む
     await this.loadScene(initScene || 'title')
     // 画面を表示する
@@ -188,17 +203,15 @@ export class Core {
     if (!scenarioObject) {
       return
     }
-    // シナリオオブジェクトのtypeプロパティに応じて、対応する関数を実行する
-    const commandType = scenarioObject.type || 'text'
-    const commandFunction = this.commandList[commandType]
+    // シナリオオブジェクトのtypeプロパティに応じて、対応するハンドラをCommandRegistryから実行する
+    const commandType = (scenarioObject.type || 'text').toLowerCase()
 
     // コマンドが存在しない場合のエラーハンドリング
-    if (!commandFunction) {
+    if (!this.commandRegistry.has(commandType)) {
       const errorMessage = `Error: Command type "${commandType}" is not defined`
       throw new Error(errorMessage)
     }
 
-    const boundFunction = commandFunction.bind(this)
     scenarioObject = await this.httpHandler(scenarioObject)
 
     // ifグローバル属性の処理
@@ -211,35 +224,15 @@ export class Core {
       }
     }
 
-    await boundFunction(scenarioObject)
+    await this.commandRegistry.execute(scenarioObject, this.getExecutionContext())
   }
 
+  // 以下のxxxHandlerは、src/commands/ 配下の各CommandHandlerへ委譲する薄いラッパー。
+  // getAPIForScript()やハンドラ間の相互呼び出しの互換性のために残している。
   async textHandler(scenarioObject) {
     // 文章だけの場合は、contentプロパティに配列として設定する
     if (typeof scenarioObject === 'string') scenarioObject = { content: [scenarioObject] }
-    // httpレスポンスがある場合は、list.contentに追加して、表示対象に加える
-    if (scenarioObject.then || scenarioObject.error) {
-      scenarioObject.content = scenarioObject.content.concat(scenarioObject.then || scenarioObject.error)
-    }
-
-    //prettier-ignore
-    this.onNextHandler = () => { this.drawer.isSkip = true }
-
-    // text:clearイベントを発行してテキスト表示領域をクリアする
-    await this.eventBus.emit('text:clear')
-
-    // text:showイベントを発行してテキスト表示をDefaultUIHandlerに委譲する
-    await this.eventBus.emit('text:show', {
-      name: scenarioObject.name || '',
-      content: scenarioObject.content,
-      speed: this.isSkip ? 1 : scenarioObject.speed || 25,
-      expandVariable: this.expandVariable.bind(this),
-      waitFn: this.waitHandler.bind(this),
-    })
-
-    await this.waitHandler({ wait: scenarioObject.time })
-    this.drawer.isSkip = false
-    this.scenarioManager.setHistory(scenarioObject.content)
+    return this.dispatch('text', scenarioObject)
   }
 
   expandVariable(text) {
@@ -300,167 +293,27 @@ export class Core {
   }
 
   async sayHandler(line) {
-    // say(name:string, pattern: string, voice: {playの引数},  ...text)
-    if (line.voice) await this.soundHandler({ path: line.voice, play: true })
-    await this.textHandler({ content: line.content, name: line.name, speed: line.speed || 25 })
-    this.scenarioManager.setHistory(line)
+    return this.dispatch('say', line)
   }
 
   async choiceHandler(line) {
-    if (line.prompt) this.textHandler(line.prompt)
-    // ムスタッシュ構文があるときは、変数の展開
-    line.content.forEach((choice) => {
-      choice.label = this.expandVariable(choice.label)
-    })
-    // choice:showイベントを発行して選択肢の表示と選択結果の取得をDefaultUIHandlerに委譲する
-    const [result] = await this.eventBus.emit('choice:show', line)
-    const { selectId, onSelect: selectHandler } = result || {}
-    if (selectHandler !== undefined) {
-      this.scenarioManager.addScenario(selectHandler)
-    }
-    this.scenarioManager.setHistory({ line, ...selectId })
-    this.isNext = false
+    return this.dispatch('choice', line)
   }
 
   jumpHandler(line) {
-    // ジャンプ先が現在の行より小さいときは、今の行とジャンプ先の行の間で、sub=falseの行を抽出して、scenarioManagerに追加する
-    if (line.index < this.scenarioManager.getIndex()) {
-      // scenarioManagerからシナリオを取得
-      const scenario = this.scenarioManager.getScenario()
-      // 結合用に、ジャンプ先までのインデックスを取得
-      const noEditScenarioList = {
-        before: scenario.slice(0, line.index),
-        after: scenario.slice(this.scenarioManager.getIndex()),
-      }
-      // ジャンプ先のインデックスまでのシナリオを取得
-      const scenarioList = scenario.slice(line.index, this.scenarioManager.getIndex())
-      // sub=falseの行だけを取得
-      const subFalseScenario = scenarioList.filter((line) => !line.sub)
-      // after に残っている sub=true の要素を除去（前回の選択肢の残骸を除去する）
-      const filteredAfter = noEditScenarioList.after.filter((item) => !item.sub)
-      // scenarioManagerに追加
-      this.scenarioManager.setScenario([...noEditScenarioList.before, ...subFalseScenario, ...filteredAfter])
-    }
-    this.scenarioManager.setIndex(Number(line.index))
+    return this.dispatch('jump', line)
   }
 
   async showHandler(line) {
-    // ムスタッシュ構文があるときは、変数の展開
-    Object.keys(line).forEach((item) => {
-      line[item] = this.expandVariable(line[item])
-    })
-
-    if (line.mode === 'dom') {
-      this.domElementHandler.setVisibility({
-        name: line.name,
-        show: true
-      })
-      return
-    }
-
-    // 表示する画像の情報を管理オブジェクトに追加
-    const modeList = { bg: 'background', cutin: '', chara: '', cg: 'background', effect: 'effect' }
-    const key = Object.keys(modeList).includes(line.mode) ? modeList[line.mode] : line.name || line.src.split('/').pop()
-    const baseLine = engineConfig.resolution.height / 2
-    const centerPoint = {
-      left: { x: engineConfig.resolution.width * 0.25, y: baseLine },
-      center: { x: engineConfig.resolution.width * 0.5, y: baseLine },
-      right: { x: engineConfig.resolution.width * 0.75, y: baseLine },
-    }
-    line.src = this.expandVariable(line.src) || line.name
-
-    const image = await this.getImageObject(line)
-    // 画像の表示位置を設定
-    let position = { x: line.x || 0, y: line.y || 0 }
-    // prettier-ignore
-    let size = line.width && line.height ? { width: line.width, height: line.height } : { width: image.getSize().width, height: image.getSize().height }
-
-    // line.modeが'cutin'の場合、center:middleのエイリアスを強制する
-    if (line.mode === 'cutin') {
-      line.pos = 'center:middle'
-    }
-
-    if (line.mode === 'cg') {
-      this.tempImages = { ...this.displayedImages }
-      this.displayedImages = { background: line.src }
-      size = { width: engineConfig.resolution.width, height: engineConfig.resolution.height }
-    }
-
-    if (line.pos) {
-      const pos = line.pos.split(':')
-      const baseLines = {
-        top: 0 + size.height,
-        middle: engineConfig.resolution.height / 2,
-        bottom: engineConfig.resolution.height - size.height,
-      }
-      // エイリアスが設定されている場合、画像の中心点を求めて、画像の表示位置を設定する
-      position.x = centerPoint[pos[0]].x - size.width / 2
-      if (pos[1] === 'middle') {
-        position.y = baseLines[pos[1]] - size.width / 2
-      } else if (pos[1]) {
-        position.y = baseLines[pos[1]]
-      } else {
-        position.y = baseLine / 2
-      }
-    }
-    this.displayedImages[key] = {
-      image,
-      pos: position,
-      size: size,
-      look: line.look,
-      entry: line.entry,
-    }
-
-    if (line.sepia) this.displayedImages[key].image.setSepia(line.sepia)
-    if (line.mono) this.displayedImages[key].image.setMonochrome(line.mono)
-    if (line.blur) this.displayedImages[key].image.setBlur(line.blur)
-    if (line.opacity) this.displayedImages[key].image.setOpacity(line.opacity)
-
-    if (line.transition === 'fade') {
-      // フェードイン効果で表示
-      await this.drawer.fadeIn(line.duration || 2000, await this.getImageObject(line), {
-        pos: position,
-        size,
-        look: line.look,
-        entry: line.entry,
-      })
-      this.drawer.show(this.displayedImages)
-    } else {
-      // 通常の表示処理
-      this.drawer.show(this.displayedImages)
-    }
+    return this.dispatch('show', line)
   }
 
   async hideHandler(line) {
-    if (line.mode === 'dom') {
-      this.domElementHandler.setVisibility({
-        name: line.name,
-        show: false
-      })
-      return
-    }
-
-    const targetImage = this.displayedImages[line.name]
-    if (line.mode === 'cg') {
-      this.displayedImages = { ...this.tempImages }
-      this.tempImages = {}
-    } else {
-      delete this.displayedImages[line.name]
-    }
-    this.drawer.show(this.displayedImages)
-    if (line.transition === 'fade') {
-      // フェードアウト効果で非表示
-      await this.drawer.fadeOut(line.duration || 1000, targetImage.image, {
-        pos: targetImage.pos,
-        size: targetImage.size,
-        look: targetImage.look,
-      })
-    }
+    return this.dispatch('hide', line)
   }
 
   async moveToHandler(line) {
-    const key = line.name
-    await this.drawer.moveTo(key, this.displayedImages, { x: line.x, y: line.y }, line.duration | 1)
+    return this.dispatch('moveto', line)
   }
 
   async getImageObject(line) {
@@ -484,42 +337,18 @@ export class Core {
   }
 
   async soundHandler(line) {
-    const soundObject = await this.getSoundObject(line)
-
-    if (line.mode === 'bgm') {
-      // BGMの場合、既存のBGMを停止して、新しいBGMをセットする
-      if (this.bgm && this.bgm.isPlaying) {
-        this.bgm.stop()
-      }
-      this.bgm = soundObject
-      this.bgm.play(true)
-    } else {
-      if ('play' in line) {
-        'loop' in line ? soundObject.play(true) : soundObject.play()
-      }
-    }
-
-    if ('stop' in line) {
-      soundObject.stop()
-    } else if ('pause' in line) {
-      soundObject.pause()
-    }
-
-    // soundObjectを管理オブジェクトに追加
-    const key = line.name || line.src.split('/').pop()
-    this.usedSounds[key] = {
-      audio: soundObject,
-    }
+    return this.dispatch('sound', line)
   }
 
   async getSoundObject(line) {
-    const name = line.name || line.src.split('/').pop()
+    const name = line.name || (line.src || line.voice).split('/').pop()
     let resource
+    let soundObjectPath = line.src || line.voice
 
     // ファイルの存在確認
-    if (line.src) {
-      if (!(await this.checkResourceExists(line.src))) {
-        throw new Error(`Sound file not found: ${line.src}`)
+    if (line.src  || line.voice) {
+      if (!(await this.checkResourceExists(soundObjectPath))) {
+        throw new Error(`Sound file not found: ${soundObjectPath}`)
       }
     }
 
@@ -527,58 +356,27 @@ export class Core {
     if (Object.hasOwn(this.usedSounds, name)) {
       const targetResource = this.usedSounds[name]
       const soundObject = targetResource ? targetResource.audio : new SoundObject()
-      resource = await soundObject.setAudioAsync(line.src)
+      resource = await soundObject.setAudioAsync(soundObjectPath)
     } else {
-      resource = await new SoundObject().setAudioAsync(line.src)
+      resource = await new SoundObject().setAudioAsync(soundObjectPath)
     }
     return resource
   }
 
-  newpageHandler() {
-    this.displayedImages = {
-      background: {
-        image: this.getBackground(),
-        size: {
-          width: this.gameContainer.clientWidth,
-          height: this.gameContainer.clientHeight,
-        },
-      },
-    }
-    this.drawer.clear()
-    this.drawer.show(this.displayedImages)
+  newpageHandler(line) {
+    return this.dispatch('newpage', line)
   }
 
   async ifHandler(line) {
-    const isTrue = this.executeCode(`return ${line.condition}`)
-    const appendScenario = isTrue ? line.content[0].content : line.content[1].content
-    this.scenarioManager.addScenario(appendScenario)
+    return this.dispatch('if', line)
   }
 
   async routeHandler(line) {
-    this.newpageHandler()
-    if (this.sceneFile.cleanUp) {
-      // 終了処理を実行する
-      this.sceneFile.cleanUp()
-    }
-    // sceneファイルを読み込む
-    await this.loadScene(line.to)
-    // 画面を表示する
-    await this.loadScreen(this.sceneConfig)
-    // BGMを再生する
-    this.soundHandler({
-      mode: 'bgm',
-      src: this.sceneConfig.bgm,
-      loop: true,
-      play: true,
-    })
+    return this.dispatch('route', line)
   }
 
-  // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？
   async callHandler(line) {
-    const result = this.executeCode(line.method)
-    if (result && typeof result.then === 'function') {
-      await result
-    }
+    return this.dispatch('call', line)
   }
 
   async httpHandler(line) {
@@ -620,6 +418,7 @@ export class Core {
       this.sceneFile.res = json
       line.then = line.content.filter((content) => content.type === 'then')[0].content
     } else {
+      const json = await response.json()
       this.sceneFile.res = json
       line.error = line.content.filter((content) => content.type === 'error')[0].content
     }
@@ -640,24 +439,7 @@ export class Core {
   }
 
   async dialogHandler(scenarioObject) {
-    if (!scenarioObject || !scenarioObject.content) {
-      throw new Error('Invalid scenario object for dialog handler.')
-    }
-    // ダイアログのテンプレートを読み込む
-    // screen:loadイベント(isDialog:true)ハンドラ内で既存ダイアログの閉鎖も行われる
-    await this.loadScreen(scenarioObject, {
-      isDialog: true,
-      skipBackground: true,
-      skipBgm: true,
-      fallbackTemplate: getDefaultDialogTemplate,
-    })
-    // dialog:showイベントを発行してダイアログのDOM操作をDefaultUIHandlerに委譲する
-    const [result] = await this.eventBus.emit('dialog:show', {
-      content: scenarioObject.content,
-      expandVariable: this.expandVariable.bind(this),
-      addScenario: this.scenarioManager.addScenario.bind(this.scenarioManager),
-    })
-    return result
+    return this.dispatch('dialog', scenarioObject)
   }
 
   setBackground(image) {
@@ -792,111 +574,11 @@ export class Core {
   }
 
   async saveHandler(line) {
-    const slot = line.slot || 'auto'
-    const name = line.name || `セーブ${slot}`
-
-    const saveData = {
-      slot: slot,
-      name: name,
-      timestamp: new Date().toISOString(),
-      scenarioManager: {
-        progress: JSON.parse(JSON.stringify(this.scenarioManager.progress)),
-        sceneName: this.scenarioManager.getSceneName() || this.sceneConfig.name,
-        currentIndex: this.scenarioManager.getIndex(),
-        history: this.scenarioManager.getHistory ? [...this.scenarioManager.getHistory()] : [],
-      },
-      sceneConfig: this.sceneConfig,
-      displayedImages: Object.keys(this.displayedImages).reduce((acc, key) => {
-        if (key !== 'background') {
-          acc[key] = {
-            src: this.displayedImages[key].image?.src || null,
-            pos: this.displayedImages[key].pos,
-            size: this.displayedImages[key].size,
-            look: this.displayedImages[key].look,
-            entry: this.displayedImages[key].entry,
-          }
-        }
-        return acc
-      }, {}),
-      backgroundImage: this.displayedImages.background?.image?.getImage()?.src || null,
-      usedSounds: Object.keys(this.usedSounds).reduce((acc, key) => {
-        acc[key] = {
-          src: this.usedSounds[key].audio?.src || null,
-        }
-        return acc
-      }, {}),
-      bgmSrc: this.bgm?.src || null,
-    }
-
-    this.store.set(`save_${slot}`, saveData)
-
-    if (line.message !== false) {
-      await this.textHandler(`ゲームをセーブしました: ${name}`)
-    }
+    return this.dispatch('save', line)
   }
 
   async loadHandler(line) {
-    const slot = line.slot || 'auto'
-
-    const saveDataRaw = this.store.get(`save_${slot}`)
-    if (!saveDataRaw) {
-      throw new Error(`セーブデータが見つかりません: スロット${slot}`)
-    }
-
-    // ディープコピーで循環参照を回避
-    const saveData = JSON.parse(JSON.stringify(saveDataRaw))
-
-    const sceneName = saveData.scenarioManager.sceneName || saveData.sceneConfig.name
-    if (!sceneName) {
-      throw new Error('Scene name not found in save data')
-    }
-
-    // シーンとプログレスを復元
-    await this.loadScene(sceneName)
-    await this.loadScreen(saveData.sceneConfig, { skipBackground: true, skipBgm: true })
-
-    // 読んだところまで復元
-    this.scenarioManager.setSceneName(saveData.scenarioManager.sceneName)
-    this.scenarioManager.setIndex(saveData.scenarioManager.currentIndex)
-    this.scenarioManager.setHistory(saveData.scenarioManager.history || [])
-    this.scenarioManager.progress = { ...this.scenarioManager.progress, ...saveData.scenarioManager.progress }
-
-    // 画面の復元
-    this.displayedImages = {}
-    if (saveData.backgroundImage) {
-      const background = await new ImageObject().setImageAsync(saveData.backgroundImage)
-      this.displayedImages['background'] = {
-        image: background,
-        size: {
-          width: this.gameContainer.clientWidth,
-          height: this.gameContainer.clientHeight,
-        },
-      }
-    }
-
-    for (const [key, imageData] of Object.entries(saveData.displayedImages)) {
-      if (imageData.src) {
-        const image = await new ImageObject().setImageAsync(imageData.src)
-        this.displayedImages[key] = {
-          image: image,
-          pos: imageData.pos,
-          size: imageData.size,
-          look: imageData.look,
-          entry: imageData.entry,
-        }
-      }
-    }
-
-    // BGMの復元
-    if (saveData.bgmSrc) {
-      this.soundHandler({ mode: 'bgm', src: saveData.bgmSrc, loop: true, play: true })
-    }
-
-    this.drawer.show(this.displayedImages)
-
-    if (line.message !== false) {
-      await this.textHandler(`ゲームをロードしました: ${saveData.name}`)
-    }
+    return this.dispatch('load', line)
   }
 
   getSaveData() {

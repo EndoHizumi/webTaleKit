@@ -36,13 +36,13 @@ export class ScenarioManager {
     this.progress.currentIndex = 0
   }
 
-  addScenario (scenario: any, index: number): void {
+  addScenario (scenario: any, index?: number): void {
     // 区別にsub=trueを追加
     const _scenario =  scenario.map((item: any) => ({ ...item, sub: true }))
     // この行を消すと動く(原因があまりにも単純でまぬけすぎたので、残しておく)
     // ('call','debug', {scenario, index})
     // index指定がある場合はその値に挿入する
-    if(index) {
+    if(index !== undefined) {
       this.scenarioData.splice(index, 0, ..._scenario)
     } else {
       // 現在の位置に挿入する
@@ -90,7 +90,7 @@ export class ScenarioManager {
     return this.progress.currentScene
   }
 
-  setHistory (text: string): void {
+  setHistory (text: any): void {
     this.backlist.push(text)
   }
 

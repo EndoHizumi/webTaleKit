@@ -7,6 +7,7 @@
 const TOP_LEVEL_COMMANDS = [
   'text', 'choice', 'show', 'newpage', 'hide', 'jump', 'sound', 'say',
   'if', 'call', 'moveto', 'route', 'wait', 'dialog', 'save', 'load', 'add', 'remove',
+  'trigger', 'untrigger',
 ]
 
 /**
@@ -72,6 +73,8 @@ const KNOWN_ATTRIBUTES = {
   dialog:   new Set(['name', 'template']),
   save:     new Set(['slot', 'name', 'message']),
   load:     new Set(['slot', 'message']),
+  trigger:  new Set(['id', 'event', 'target', 'rect', 'circle', 'style', 'cursor', 'once', 'cooldown']),
+  untrigger: new Set(['id', 'all']),
   add:      new Set(['target', 'name', 'class']),
   remove:   new Set(['name']),
   // サブノード
