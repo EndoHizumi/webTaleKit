@@ -47,7 +47,7 @@ export class ShowHandler implements CommandHandler {
       // エイリアスが設定されている場合、画像の中心点を求めて、画像の表示位置を設定する
       position.x = centerPoint[pos[0]].x - size.width / 2
       if (pos[1] === 'middle') {
-        position.y = baseLines[pos[1]] - size.width / 2
+        position.y = baseLines[pos[1]] - size.height / 2
       } else if (pos[1]) {
         position.y = baseLines[pos[1]]
       } else {
