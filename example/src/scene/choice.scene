@@ -5,11 +5,11 @@
     <choice prompt="どちらの道を選びますか？">
       <item label="左の道" onSelect="leftPath">
         <say name="ナレーター">左の道を選びました。森に続く道のようです。</say>
-        <show src="./src/resource/background/forest.jpg" />
+        <show mode="bg" src="./src/resource/background/forest.jpg" />
       </item>
       <item label="右の道" onSelect="rightPath">
         <say name="ナレーター">右の道を選びました。海に続く道のようです。</say>
-        <show src="./src/resource/background/beach.jpg" />
+        <show mode="bg" src="./src/resource/background/beach.jpg" />
       </item>
     </choice>
     <say name="ナレーター">次に、3つ以上の選択肢を試してみましょう。</say>

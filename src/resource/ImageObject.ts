@@ -1,6 +1,6 @@
 export class ImageObject {
   // 表示済みの画像を管理するクラス
-  private image: any = null
+  private image: HTMLImageElement 
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
   private filter: string[] = []
@@ -32,7 +32,7 @@ export class ImageObject {
   }
 
   getSize(){
-    return {width: this.image.width, height: this.image.height}
+    return {width: this.image ? this.image.width : 0, height: this.image ? this.image.height : 0}
   }
 
   async setImageAsync(src: string): Promise<ImageObject> {
@@ -47,7 +47,7 @@ export class ImageObject {
         this.canvas.height = this.image.height
         resolve(this)
       }
-      this.image.onError = () => {
+      this.image.onerror = () => {
         reject(new Error('画像の読み込みに失敗しました'));
       }
     })
