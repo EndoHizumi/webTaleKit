@@ -1,0 +1,39 @@
+<scene>
+  <scenario>
+    <text>triggerタグのデモです。この部屋にはクリックできるスポットが3つ隠されています。</text>
+    <text>マウスを動かすと光る場所が2つあります。クリックして調べてみましょう。どこにも反応しない「隠しスポット」が画面の右上にあり、それを見つけると探索終了です。</text>
+
+    <trigger id="bell" event="click" rect="(40,180,360,360)" style="glow" cooldown="1500">
+      <sound mode="se" src="./src/resource/se/doorbell.mp3" play />
+      <text>部屋の左側を調べた。ベルが鳴った！（style="glow"で発光表示、cooldown="1500"付きで何度でも反応します）</text>
+    </trigger>
+
+    <trigger id="sofa" event="click" rect="(460,240,360,300)" style="highlight">
+      <text>部屋の中央を調べた。ソファのすき間から10円玉が出てきた。（style="highlight"で面が明るくなります）</text>
+    </trigger>
+
+    <trigger id="secret" event="click" rect="(950,60,290,260)" once>
+      <text>画面右上の隠しスポットを発見！（style未指定なので見た目の手がかりなし・once指定なので1回で自動解除されます）</text>
+      <call method="found = true" />
+    </trigger>
+
+    <text>どこを調べる？（スポット以外をクリックすると、この案内に戻ります）</text>
+    <wait />
+    <jump index="5" if="!found" />
+
+    <untrigger all />
+    <text>untriggerタグで残りのトリガーをすべて解除しました。探索終了です！</text>
+    <route to="title" />
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'trigger-test',
+      background: './src/resource/background/living_room.jpg',
+      bgm: './src/resource/bgm/title_theme.mp3',
+      template: './src/screen/title.html'
+    }
+
+    export let found = false;
+  </script>
+</scene>

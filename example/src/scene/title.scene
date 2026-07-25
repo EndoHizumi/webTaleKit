@@ -40,6 +40,9 @@
       <item label="選択肢オーバーフローテスト" onSelect="overflow_test">
         <route to="overflow-test" />
       </item>
+      <item label="triggerタグデモ" onSelect="trigger_test">
+        <route to="trigger-test" />
+      </item>
     </choice>
   </scenario>
 
