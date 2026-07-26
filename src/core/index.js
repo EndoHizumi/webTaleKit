@@ -8,6 +8,7 @@ import { sleep } from '../utils/waitUtil'
 import { generateStore } from '../utils/store'
 import { EventBus } from '../utils/eventBus'
 import { DefaultUIHandler } from './defaultUIHandler'
+import { DomElementHandler } from './domElementHandler'
 import { logError } from '../utils/logger'
 import { CommandRegistry } from './CommandRegistry'
 import { registerBuiltinCommands } from '../commands'
@@ -34,6 +35,8 @@ export class Core {
     this.drawer = new Drawer(this.gameContainer)
     // ScenarioManagerの初期化（変数の初期値設定）
     this.scenarioManager = new ScenarioManager()
+    // DomElementHandlerの初期化
+    this.domElementHandler = new DomElementHandler(this.gameContainer, (content) => this.scenarioManager.addScenario(content))
     // ResourceManagerの初期化（引数にconfigを渡して、リソース管理配列を作る）
     this.resourceManager = new ResourceManager(import(/* webpackIgnore: true */ '/src/resource/config.js')) //  webpackIgnoreでバンドルを無視する
     this.displayedImages = {}
@@ -340,13 +343,14 @@ export class Core {
   }
 
   async getSoundObject(line) {
-    const name = line.name || line.src.split('/').pop()
+    const name = line.name || (line.src || line.voice).split('/').pop()
     let resource
+    let soundObjectPath = line.src || line.voice
 
     // ファイルの存在確認
-    if (line.src) {
-      if (!(await this.checkResourceExists(line.src))) {
-        throw new Error(`Sound file not found: ${line.src}`)
+    if (line.src  || line.voice) {
+      if (!(await this.checkResourceExists(soundObjectPath))) {
+        throw new Error(`Sound file not found: ${soundObjectPath}`)
       }
     }
 
@@ -354,9 +358,9 @@ export class Core {
     if (Object.hasOwn(this.usedSounds, name)) {
       const targetResource = this.usedSounds[name]
       const soundObject = targetResource ? targetResource.audio : new SoundObject()
-      resource = await soundObject.setAudioAsync(line.src)
+      resource = await soundObject.setAudioAsync(soundObjectPath)
     } else {
-      resource = await new SoundObject().setAudioAsync(line.src)
+      resource = await new SoundObject().setAudioAsync(soundObjectPath)
     }
     return resource
   }
@@ -416,6 +420,7 @@ export class Core {
       this.sceneFile.res = json
       line.then = line.content.filter((content) => content.type === 'then')[0].content
     } else {
+      const json = await response.json()
       this.sceneFile.res = json
       line.error = line.content.filter((content) => content.type === 'error')[0].content
     }

@@ -5,6 +5,6 @@ export class MoveToHandler implements CommandHandler {
     const { core, drawer } = context
     const line: any = command
     const key = line.name
-    await drawer.moveTo(key, core.displayedImages, { x: line.x, y: line.y }, line.duration | 1)
+    await drawer.moveTo(key, core.displayedImages, { x: line.x, y: line.y }, line.duration || 1)
   }
 }

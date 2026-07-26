@@ -152,7 +152,7 @@ export function validateScenarioObjects(
   commandList: Record<string, Function> | CommandLookup,
 ): ValidationResult {
   const hasCommand = (type: string): boolean =>
-    isCommandLookup(commandList) ? commandList.has(type) : type in commandList
+    isCommandLookup(commandList) ? commandList.has(type) : Object.prototype.hasOwnProperty.call(commandList, type)
   const errors: ValidationMessage[] = []
   const warnings: ValidationMessage[] = []
   const { sanitizedScenario, sanitized } = sanitizeScenarioObjects(scenarioObjects)
@@ -164,7 +164,7 @@ export function validateScenarioObjects(
 
   for (let i = 0; i < sanitizedScenario.length; i++) {
     const obj = sanitizedScenario[i]
-    const type: string = obj.type ?? 'text'
+    const type: string = String(obj.type ?? 'text').toLowerCase()
 
     if (!hasCommand(type)) {
       errors.push({ index: i, type, message: `未知のコマンドタイプ "${type}" が指定されています` })

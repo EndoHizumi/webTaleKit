@@ -42,7 +42,7 @@ export class ScenarioManager {
     // この行を消すと動く(原因があまりにも単純でまぬけすぎたので、残しておく)
     // ('call','debug', {scenario, index})
     // index指定がある場合はその値に挿入する
-    if(index) {
+    if(index !== undefined) {
       this.scenarioData.splice(index, 0, ..._scenario)
     } else {
       // 現在の位置に挿入する
