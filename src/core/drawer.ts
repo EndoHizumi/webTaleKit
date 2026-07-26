@@ -2,6 +2,28 @@ import { ImageObject } from '../resource/ImageObject'
 import { sleep } from '../utils/waitUtil'
 import { gsap } from 'gsap'
 
+const getImageLayerOrder = (imageData: any) => {
+  const zIndex = Number(imageData?.['z-index'])
+  if (Number.isFinite(zIndex)) return zIndex
+  return 0
+}
+
+export const sortDisplayedImageEntries = (displayedImages: any): Array<[string, any]> => {
+  return Object.entries(displayedImages)
+    .map((entry, index) => ({
+      entry,
+      index,
+      layerOrder: getImageLayerOrder(entry[1]),
+    }))
+    .sort((a, b) => {
+      if (a.layerOrder === b.layerOrder) {
+        return a.index - b.index
+      }
+      return a.layerOrder - b.layerOrder
+    })
+    .map((item) => item.entry)
+}
+
 /*
  drawerの目的
   UIのHTMLとcanvasを描画する。
@@ -279,15 +301,15 @@ export class Drawer {
 
   show(displayedImages: any) {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
-    for (let key in displayedImages) {
-      const img: ImageObject = displayedImages[key].image
-      const pos: { x: number; y: number } = displayedImages[key].pos || {
+    for (const [, imageData] of sortDisplayedImageEntries(displayedImages)) {
+      const img: ImageObject = imageData.image
+      const pos: { x: number; y: number } = imageData.pos || {
         x: 0,
         y: 0,
       }
-      const size: { width: number; height: number } = displayedImages[key].size
-      const reverse: boolean = displayedImages[key].look || false
-      const entry: { time: number; wait: boolean } = displayedImages[key].entry || { time: 1, wait: false }
+      const size: { width: number; height: number } = imageData.size
+      const reverse: boolean = imageData.look || false
+      const entry: { time: number; wait: boolean } = imageData.entry || { time: 1, wait: false }
       if (entry.wait) {
         // 表示開始までの遅延処理
         setTimeout(() => {

@@ -60,7 +60,7 @@ const KNOWN_ATTRIBUTES = {
   text:     new Set(['name', 'speed', 'time']),
   say:      new Set(['name', 'speed', 'voice']),
   choice:   new Set(['prompt', 'position']),
-  show:     new Set(['src', 'name', 'mode', 'x', 'y', 'width', 'height', 'pos', 'look', 'entry', 'sepia', 'mono', 'blur', 'opacity', 'transition', 'duration']),
+  show:     new Set(['src', 'name', 'mode', 'x', 'y', 'width', 'height', 'pos', 'look', 'entry', 'sepia', 'mono', 'blur', 'opacity', 'transition', 'duration', 'z-index']),
   hide:     new Set(['name', 'mode', 'transition', 'duration']),
   moveto:   new Set(['name', 'x', 'y', 'duration']),
   sound:    new Set(['src', 'name', 'mode', 'play', 'loop', 'stop', 'pause']),

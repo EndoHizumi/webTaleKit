@@ -86,23 +86,29 @@ export class Core {
 
   async start(initScene) {
     try {
-    // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
-    // titleタグの内容を書き換える
-    document.title = this.engineConfig.title
-    // sceneファイルを読み込む
-    await this.loadScene(initScene || 'title')
-    // 画面を表示する
-    await this.loadScreen(this.sceneConfig)
-    // 入力イベントを設定する（DefaultUIHandlerに委譲）
-    await this.eventBus.emit('input:bind', {
-      onNext: () => { if (this.onNextHandler) this.onNextHandler() },
-      setSkip: (drawerSkip, coreNext) => {
-        this.drawer.isSkip = drawerSkip
-        this.isNext = coreNext
-      },
-      toggleAuto: () => { this.isAuto = !this.isAuto },
-      toggleSkip: () => { this.isSkip = !this.isSkip },
-    })
+      // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
+      // titleタグの内容を書き換える
+      document.title = engineConfig.title
+      // sceneファイルを読み込む
+      await this.loadScene(initScene || 'title')
+      // 画面を表示する
+      await this.loadScreen(this.sceneConfig)
+      // 入力イベントを設定する（DefaultUIHandlerに委譲）
+      await this.eventBus.emit('input:bind', {
+        onNext: () => {
+          if (this.onNextHandler) this.onNextHandler()
+        },
+        setSkip: (drawerSkip, coreNext) => {
+          this.drawer.isSkip = drawerSkip
+          this.isNext = coreNext
+        },
+        toggleAuto: () => {
+          this.isAuto = !this.isAuto
+        },
+        toggleSkip: () => {
+          this.isSkip = !this.isSkip
+        },
+      })
 
       await this.textHandler('タップでスタート')
       // BGMを再生する
@@ -119,7 +125,7 @@ export class Core {
     } catch (error) {
       // エラーをログに記録（スタックトレース付き）
       await logError(error, 'Error in runScenario')
-       // エラーをアラートで表示
+      // エラーをアラートで表示
       alert(`システムエラーが発生しました。\n詳細はコンソールで確認してください。:\n${error.message}`)
       throw error
     }
@@ -178,7 +184,6 @@ export class Core {
     })
 
     if (!skipBackground) {
-      console.info(`background: ${await this.checkResourceExists(sceneConfig.background)}`)
       // 背景画像の存在確認
       if (!(await this.checkResourceExists(sceneConfig.background))) {
         throw new Error(`Background image not found: ${sceneConfig.background}`)
@@ -198,7 +203,6 @@ export class Core {
   }
 
   async runScenario() {
-
     let scenarioObject = this.scenarioManager.next()
     if (!scenarioObject) {
       return
@@ -326,10 +330,8 @@ export class Core {
     }
 
     // 既にインスタンスがある場合は、それを使う
-    if (Object.hasOwn(this.displayedImages, name)) {
-      const targetImage = this.displayedImages[name]
-      const imageObject = targetImage ? targetImage.image : new ImageObject()
-      image = await imageObject.setImageAsync(line.src)
+    if (Object.hasOwn(this.displayedImages, name) && this.displayedImages[name].image) {
+      image = this.displayedImages[name].image
     } else {
       image = await new ImageObject().setImageAsync(line.src)
     }
@@ -560,11 +562,19 @@ export class Core {
       },
       store: this.store,
       playback: {
-        toggleAuto: () => { this.isAuto = !this.isAuto },
-        setAuto: (value) => { this.isAuto = value },
+        toggleAuto: () => {
+          this.isAuto = !this.isAuto
+        },
+        setAuto: (value) => {
+          this.isAuto = value
+        },
         getAuto: () => this.isAuto,
-        toggleSkip: () => { this.isSkip = !this.isSkip },
-        setSkip: (value) => { this.isSkip = value },
+        toggleSkip: () => {
+          this.isSkip = !this.isSkip
+        },
+        setSkip: (value) => {
+          this.isSkip = value
+        },
         getSkip: () => this.isSkip,
       },
       sandbox: {
