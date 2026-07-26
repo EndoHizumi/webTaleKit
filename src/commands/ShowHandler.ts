@@ -19,22 +19,37 @@ export class ShowHandler implements CommandHandler {
       center: { x: engineConfig.resolution.width * 0.5, y: baseLine },
       right: { x: engineConfig.resolution.width * 0.75, y: baseLine },
     }
-    line.src = core.expandVariable(line.src) || line.name
+    line.src = core.expandVariable(line.src)
 
     const sourceImage = core.displayedImages[key]
     const activeImage = sourceImage
       ? { ...sourceImage, pos: { ...sourceImage.pos }, size: { ...sourceImage.size } }
       : { image: null, pos: { x: 0, y: 0 }, size: { width: 0, height: 0 }, look: '', entry: '', 'z-index': 0 }
-    // srcが変わっていない場合のみ既存の画像インスタンスを再利用し、それ以外は読み込み直す
-    if (!activeImage.image || activeImage.src !== line.src) {
-      activeImage.image = await core.getImageObject(line)
+    // srcが指定されておらず既存画像がある場合はそのまま再利用し、srcが変わった場合のみ読み込み直す
+    if (!activeImage.image || (line.src && activeImage.src !== line.src)) {
+      activeImage.image = await core.getImageObject({ ...line, src: line.src || activeImage.src })
     }
-    activeImage.src = line.src
+    activeImage.src = line.src ? line.src : activeImage.src
     // 画像の表示位置を設定（座標指定がある場合はそれを優先、ない場合はdisplayImages.posの値を参照して設定）
     activeImage.pos.x = line.x || activeImage.pos.x || 0
     activeImage.pos.y = line.y || activeImage.pos.y || 0
     activeImage.size.width = line.width || activeImage.size.width || activeImage.image.getSize().width
     activeImage.size.height = line.height || activeImage.size.height || activeImage.image.getSize().height
+
+    // charaモード（modeが未指定の場合も含む、bg/cg/cutin/effect以外）でwidth/heightが未指定の場合、
+    // 解像度に収まるようアスペクト比を保って自動縮小する（拡大はしない）
+    const isCharaLikeMode = !['bg', 'cg', 'cutin', 'effect'].includes(line.mode)
+    if (isCharaLikeMode && !line.width && !line.height) {
+      const naturalSize = activeImage.image.getSize()
+      const fitScale = Math.min(
+        engineConfig.resolution.width / naturalSize.width,
+        engineConfig.resolution.height / naturalSize.height,
+        1
+      )
+      activeImage.size.width = naturalSize.width * fitScale
+      activeImage.size.height = naturalSize.height * fitScale
+    }
+
     activeImage.look = line.look || activeImage.look || ''
     activeImage.entry = line.entry || activeImage.entry || ''
     activeImage['z-index'] = line['z-index'] || activeImage['z-index'] || 0

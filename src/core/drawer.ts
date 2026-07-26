@@ -354,8 +354,8 @@ export class Drawer {
       ctx = this.ctx
     }
     const canvas = img.draw(reverse).getCanvas()
-    // canvasから画像を取得して、this.ctxに描画
-    ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, pos.x, pos.y, canvas.width, canvas.height) //CanvasRenderingContext2D.drawImage: Passed-in canvas is empty
+    // canvasから画像を取得して、this.ctxに描画（sizeを描画先サイズとして使用し、解像度に合わせて拡縮する）
+    ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, pos.x, pos.y, size.width, size.height)
   }
 
   adjustScale(targetElement: HTMLElement) {
