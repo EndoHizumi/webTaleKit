@@ -88,14 +88,10 @@ export class ShowHandler implements CommandHandler {
     core.displayedImages[key] = activeImage
 
     if (line.transition === 'fade') {
-      // フェードイン効果で表示
-      await drawer.fadeIn(line.duration || 2000, await core.getImageObject(line), {
-        pos: activeImage.pos,
-        size: activeImage.size,
-        look: line.look,
-        entry: line.entry,
-      })
-      drawer.show(core.displayedImages)
+      // フェードイン効果で表示（他の画像とのz-index順を保ったまま対象画像だけをフェードさせる）
+      // 同じキーに既存表示があった場合は、それを下地にクロスフェードさせ、切り替え中に画面が
+      // 何も表示されない状態（黒画面）になることを防ぐ
+      await drawer.fadeImageIn(key, core.displayedImages, line.duration || 2000, sourceImage)
     } else {
       // 通常の表示処理
       drawer.show(core.displayedImages)
