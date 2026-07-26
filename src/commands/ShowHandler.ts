@@ -68,20 +68,16 @@ export class ShowHandler implements CommandHandler {
 
     if (line.pos) {
       const pos = line.pos.split(':')
+      // top/middle/bottomは、画像の中心をどのY座標に合わせるかを示す基準点
+      // （topを指定すると画像中心が画面上端に来るため、上半身が画面からはみ出す構図になる）
       const baseLines: Record<string, number> = {
-        top: 0 + activeImage.size.height,
+        top: 0,
         middle: engineConfig.resolution.height / 2,
-        bottom: engineConfig.resolution.height - activeImage.size.height,
+        bottom: engineConfig.resolution.height,
       }
       // エイリアスが設定されている場合、画像の中心点を求めて、画像の表示位置を設定する
       activeImage.pos.x = centerPoint[pos[0]].x - activeImage.size.width / 2
-      if (pos[1] === 'middle') {
-        activeImage.pos.y = baseLines[pos[1]] - activeImage.size.height / 2
-      } else if (pos[1]) {
-        activeImage.pos.y = baseLines[pos[1]]
-      } else {
-        activeImage.pos.y = baseLines['middle'] - activeImage.size.height / 2
-      }
+      activeImage.pos.y = baseLines[pos[1] || 'middle'] - activeImage.size.height / 2
     }
 
     if (line.sepia) activeImage.image.setSepia(line.sepia)
