@@ -26,7 +26,9 @@ webTaleKit is a TypeScript-based visual novel game engine that allows creating i
 
 ### Core Components
 
-- **Core** (`src/core/index.ts`): Main command dispatcher and state orchestrator. Holds `displayedImages` (currently shown images), `sceneFile` (loaded scene exports), and `sceneConfig`. Shared types (`ScenarioLine`, `SceneFile`, `DisplayedImage`, etc.) live in `src/core/types.ts`.
+- **Core** (`src/core/index.ts`): State orchestrator and thin dispatch layer. Holds `displayedImages` (currently shown images), `sceneFile` (loaded scene exports), and `sceneConfig`. Shared types (`ScenarioLine`, `SceneFile`, `DisplayedImage`, etc.) live in `src/core/types.ts`.
+- **CommandRegistry** (`src/core/CommandRegistry.ts`): Tag-name → handler registry. Defines `CommandHandler`, `ExecutionContext` (DI container passed to handlers), and `CoreFacade` (the surface of Core that handlers may touch). `ScenarioCommand` is an alias of `ScenarioLine`. Custom tags register via `core.registerCommand()`.
+- **Command handlers** (`src/commands/*.ts`): One class per tag, bulk-registered by `registerBuiltinCommands()`. Core keeps thin `xxxHandler` wrappers that delegate via `dispatch()` for `getAPIForScript()` compatibility.
 - **ScenarioManager** (`src/core/scenarioManager.ts`): Tracks execution index, injects dynamic choice branches (marked `sub=true`), manages text history/backlog.
 - **Drawer** (`src/core/drawer.ts`): Canvas-based rendering — text animation, choice buttons, image compositing, fade transitions, responsive scaling.
 - **ResourceManager** (`src/core/resourceManager.ts`): Lightweight asset registry (currently underdeveloped; actual loading happens inline in command handlers).
@@ -47,7 +49,7 @@ core.start(initScene)
 
 ### Command System
 
-Command handlers are methods on Core, dispatched by `commandList[type]`:
+Command handlers are classes in `src/commands/`, dispatched through `CommandRegistry.execute()`:
 
 | Command | Notes |
 |---------|-------|
@@ -63,6 +65,10 @@ Command handlers are methods on Core, dispatched by `commandList[type]`:
 | `wait` | Timed pause; respects auto-advance mode |
 | `moveto` | Animated image position change |
 | `newpage` | Clears text + resets displayedImages to background only |
+| `trigger` | Non-blocking DOM event hook (target selector or rect/circle hotspot); fires child commands as sub-scenario. `untrigger` removes by id or all; `route` clears all triggers |
+| `save/load` | Slot-based save data via store; restores scene, progress, images, BGM |
+
+`show` also accepts `z-index` (draw order; ties keep insertion order). `add`/`remove`/`onclick` tags are declared in the parser/checker (DOM element injection via `DomElementHandler`/`nodeToDomConverter`) but not yet registered in the registry.
 
 ### Sub-Scenario System (Critical for Choice/Jump)
 
@@ -121,7 +127,7 @@ All commands support conditional execution with an `if` attribute — the comman
 
 ## Build Process
 
-1. Compiles TypeScript files to JavaScript (`module: es2020` so dynamic `import()` and webpack magic comments survive; Jest overrides to CommonJS in `jest.config.js`)
-2. Compiles `parser/*.ts` separately via `tsconfig.parser.json` (`module: commonjs` for the Node CLI) into `dist/parser/`
+1. Compiles TypeScript files to JavaScript (`module: es2020` so dynamic `import()` and webpack magic comments survive; Jest overrides to CommonJS in `jest.config.js`). `rootDir` is the repo root because `nodeToDomConverter.ts` imports `parser/checker`; the emit layout (`dist/src/...`) is unchanged
+2. Compiles `parser/*.ts` separately via `tsconfig.parser.json` (`module: commonjs` for the Node CLI) into `dist/parser/`, overwriting the ES-module `checker.js` emitted by step 1
 3. Copies `package.json`, `README.md`, `engineConfig.json`
 4. Outputs to `dist/`; `src/core/index.ts` compiles to the main entry point `dist/src/core/index.js`
