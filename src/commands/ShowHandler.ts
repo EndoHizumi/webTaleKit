@@ -26,10 +26,14 @@ export class ShowHandler implements CommandHandler {
       ? { ...sourceImage, pos: { ...sourceImage.pos }, size: { ...sourceImage.size } }
       : { image: null, pos: { x: 0, y: 0 }, size: { width: 0, height: 0 }, look: '', entry: '', 'z-index': 0 }
     // srcが指定されておらず既存画像がある場合はそのまま再利用し、srcが変わった場合のみ読み込み直す
+    const resolvedSrc = line.src || activeImage.src
     if (!activeImage.image || (line.src && activeImage.src !== line.src)) {
-      activeImage.image = await core.getImageObject({ ...line, src: line.src || activeImage.src })
+      if (!resolvedSrc) {
+        throw new Error(`[ShowHandler] src is required: no src specified and no existing image found for key "${key}"`)
+      }
+      activeImage.image = await core.getImageObject({ ...line, src: resolvedSrc })
     }
-    activeImage.src = line.src ? line.src : activeImage.src
+    activeImage.src = resolvedSrc || activeImage.src
     // 画像の表示位置を設定（座標指定がある場合はそれを優先、ない場合はdisplayImages.posの値を参照して設定）
     activeImage.pos.x = line.x || activeImage.pos.x || 0
     activeImage.pos.y = line.y || activeImage.pos.y || 0
