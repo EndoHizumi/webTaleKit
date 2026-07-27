@@ -8,6 +8,10 @@ export class HideHandler implements CommandHandler {
     if (!targetImage) {
       throw new Error(`Image not found: ${line.name}`)
     }
+    if (line.transition === 'fade') {
+      // フェードアウト効果で非表示（他の画像とのz-index順を保ったまま対象画像だけをフェードさせる）
+      await drawer.fadeImageOut(line.name, core.displayedImages, line.duration || 1000)
+    }
     if (line.mode === 'cg') {
       core.displayedImages = { ...core.tempImages }
       core.tempImages = {}
@@ -15,13 +19,5 @@ export class HideHandler implements CommandHandler {
       delete core.displayedImages[line.name]
     }
     drawer.show(core.displayedImages)
-    if (line.transition === 'fade') {
-      // フェードアウト効果で非表示
-      await drawer.fadeOut(line.duration || 1000, targetImage.image, {
-        pos: targetImage.pos,
-        size: targetImage.size,
-        look: targetImage.look,
-      })
-    }
   }
 }

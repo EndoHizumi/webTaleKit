@@ -322,6 +322,64 @@ export class Drawer {
     this.adjustScale(this.gameScreen)
   }
 
+  // previousImage: 同じキーに既存表示があった場合の差し替え前の画像。フェードイン中はこれを下地として
+  // 常時全不透明で描画し、新しい画像をその上にクロスフェードさせることで、切り替え中に何も表示されない
+  // (黒画面になる)瞬間が生じないようにする。
+  async fadeImageIn(
+    name: string,
+    displayedImages: any,
+    duration: number = 1000,
+    previousImage?: { image: any; pos: any; size: any; look?: any }
+  ): Promise<void> {
+    return this.animateImageAlpha(name, displayedImages, 0, 1, duration, previousImage)
+  }
+
+  async fadeImageOut(name: string, displayedImages: any, duration: number = 1000): Promise<void> {
+    return this.animateImageAlpha(name, displayedImages, 1, 0, duration)
+  }
+
+  // displayedImagesをz-index順に描画しつつ、対象(name)の画像だけ透明度をアニメーションさせる。
+  // fade()の別キャンバス合成と異なり同一キャンバスに描くため、対象画像が常に最前面になってしまう問題を避けられる。
+  private animateImageAlpha(
+    name: string,
+    displayedImages: any,
+    start: number,
+    end: number,
+    duration: number,
+    previousImage?: { image: any; pos: any; size: any; look?: any }
+  ): Promise<void> {
+    return new Promise<void>((resolve) => {
+      const startTime = performance.now()
+
+      const animate = (currentTime: number) => {
+        const elapsedTime = currentTime - startTime
+        const progress = Math.min(elapsedTime / duration, 1)
+        const currentAlpha = start + (end - start) * progress
+
+        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+        for (const [key, imageData] of sortDisplayedImageEntries(displayedImages)) {
+          if (!imageData?.image) continue
+          if (key === name && previousImage?.image) {
+            this.ctx.globalAlpha = 1
+            this.drawCanvas(previousImage.image, previousImage.pos || { x: 0, y: 0 }, previousImage.size, previousImage.look)
+          }
+          const pos = imageData.pos || { x: 0, y: 0 }
+          this.ctx.globalAlpha = key === name ? currentAlpha : 1
+          this.drawCanvas(imageData.image, pos, imageData.size, imageData.look)
+        }
+        this.ctx.globalAlpha = 1
+
+        if (progress < 1) {
+          requestAnimationFrame(animate)
+        } else {
+          resolve()
+        }
+      }
+
+      requestAnimationFrame(animate)
+    })
+  }
+
   moveTo(name: string, displayedImages: any, pos: { x: number; y: number }, durning: number) {
     return new Promise((resolve) => {
       const target = displayedImages[name]
@@ -354,8 +412,11 @@ export class Drawer {
       ctx = this.ctx
     }
     const canvas = img.draw(reverse).getCanvas()
-    // canvasから画像を取得して、this.ctxに描画
-    ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, pos.x, pos.y, canvas.width, canvas.height) //CanvasRenderingContext2D.drawImage: Passed-in canvas is empty
+    // canvasから画像を取得して、this.ctxに描画（sizeを描画先サイズとして使用し、解像度に合わせて拡縮する）
+    // sizeが未指定の場合はcanvas自体のサイズにフォールバックして後方互換を保つ
+    const destWidth = size?.width ?? canvas.width
+    const destHeight = size?.height ?? canvas.height
+    ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, pos.x, pos.y, destWidth, destHeight)
   }
 
   adjustScale(targetElement: HTMLElement) {

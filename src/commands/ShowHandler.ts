@@ -19,22 +19,41 @@ export class ShowHandler implements CommandHandler {
       center: { x: engineConfig.resolution.width * 0.5, y: baseLine },
       right: { x: engineConfig.resolution.width * 0.75, y: baseLine },
     }
-    line.src = core.expandVariable(line.src) || line.name
+    line.src = core.expandVariable(line.src)
 
     const sourceImage = core.displayedImages[key]
     const activeImage = sourceImage
       ? { ...sourceImage, pos: { ...sourceImage.pos }, size: { ...sourceImage.size } }
       : { image: null, pos: { x: 0, y: 0 }, size: { width: 0, height: 0 }, look: '', entry: '', 'z-index': 0 }
-    // srcが変わっていない場合のみ既存の画像インスタンスを再利用し、それ以外は読み込み直す
-    if (!activeImage.image || activeImage.src !== line.src) {
-      activeImage.image = await core.getImageObject(line)
+    // srcが指定されておらず既存画像がある場合はそのまま再利用し、srcが変わった場合のみ読み込み直す
+    const resolvedSrc = line.src || activeImage.src
+    if (!activeImage.image || (line.src && activeImage.src !== line.src)) {
+      if (!resolvedSrc) {
+        throw new Error(`[ShowHandler] src is required: no src specified and no existing image found for key "${key}"`)
+      }
+      activeImage.image = await core.getImageObject({ ...line, src: resolvedSrc })
     }
-    activeImage.src = line.src
+    activeImage.src = resolvedSrc
     // 画像の表示位置を設定（座標指定がある場合はそれを優先、ない場合はdisplayImages.posの値を参照して設定）
     activeImage.pos.x = line.x || activeImage.pos.x || 0
     activeImage.pos.y = line.y || activeImage.pos.y || 0
     activeImage.size.width = line.width || activeImage.size.width || activeImage.image.getSize().width
     activeImage.size.height = line.height || activeImage.size.height || activeImage.image.getSize().height
+
+    // charaモード（modeが未指定の場合も含む、bg/cg/cutin/effect以外）でwidth/heightが未指定の場合、
+    // 解像度に収まるようアスペクト比を保って自動縮小する（拡大はしない）
+    const isCharaLikeMode = !['bg', 'cg', 'cutin', 'effect'].includes(line.mode)
+    if (isCharaLikeMode && !line.width && !line.height) {
+      const naturalSize = activeImage.image.getSize()
+      const fitScale = Math.min(
+        engineConfig.resolution.width / naturalSize.width,
+        engineConfig.resolution.height / naturalSize.height,
+        1
+      )
+      activeImage.size.width = naturalSize.width * fitScale
+      activeImage.size.height = naturalSize.height * fitScale
+    }
+
     activeImage.look = line.look || activeImage.look || ''
     activeImage.entry = line.entry || activeImage.entry || ''
     activeImage['z-index'] = line['z-index'] || activeImage['z-index'] || 0
@@ -53,20 +72,16 @@ export class ShowHandler implements CommandHandler {
 
     if (line.pos) {
       const pos = line.pos.split(':')
+      // top/middle/bottomは、画像の中心をどのY座標に合わせるかを示す基準点
+      // （topを指定すると画像中心が画面上端に来るため、上半身が画面からはみ出す構図になる）
       const baseLines: Record<string, number> = {
-        top: 0 + activeImage.size.height,
+        top: 0,
         middle: engineConfig.resolution.height / 2,
-        bottom: engineConfig.resolution.height - activeImage.size.height,
+        bottom: engineConfig.resolution.height,
       }
       // エイリアスが設定されている場合、画像の中心点を求めて、画像の表示位置を設定する
       activeImage.pos.x = centerPoint[pos[0]].x - activeImage.size.width / 2
-      if (pos[1] === 'middle') {
-        activeImage.pos.y = baseLines[pos[1]] - activeImage.size.height / 2
-      } else if (pos[1]) {
-        activeImage.pos.y = baseLines[pos[1]]
-      } else {
-        activeImage.pos.y = baseLines['middle'] - activeImage.size.height / 2
-      }
+      activeImage.pos.y = baseLines[pos[1] || 'middle'] - activeImage.size.height / 2
     }
 
     if (line.sepia) activeImage.image.setSepia(line.sepia)
@@ -77,14 +92,10 @@ export class ShowHandler implements CommandHandler {
     core.displayedImages[key] = activeImage
 
     if (line.transition === 'fade') {
-      // フェードイン効果で表示
-      await drawer.fadeIn(line.duration || 2000, await core.getImageObject(line), {
-        pos: activeImage.pos,
-        size: activeImage.size,
-        look: line.look,
-        entry: line.entry,
-      })
-      drawer.show(core.displayedImages)
+      // フェードイン効果で表示（他の画像とのz-index順を保ったまま対象画像だけをフェードさせる）
+      // 同じキーに既存表示があった場合は、それを下地にクロスフェードさせ、切り替え中に画面が
+      // 何も表示されない状態（黒画面）になることを防ぐ
+      await drawer.fadeImageIn(key, core.displayedImages, line.duration || 2000, sourceImage)
     } else {
       // 通常の表示処理
       drawer.show(core.displayedImages)
