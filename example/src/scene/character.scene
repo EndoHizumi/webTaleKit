@@ -7,6 +7,8 @@
     <say name="ゲスト">そうですね。複数のキャラクターを同時に表示することもできます！</say>
     <moveTo name="ガイド" x="500" y="400" duration="2" />
     <say name="ガイド">このように、滑らかに動くこともできます。</say>
+    <show name="ガイド" z-index="1" />
+    <say name="ガイド">このように、表示順番を変更することもできます。</say>
     <hide name="ゲスト" transition="fade" />
     <say name="ガイド">必要がなくなったキャラクターは非表示にすることもできますね。</say>
     <choice prompt="">

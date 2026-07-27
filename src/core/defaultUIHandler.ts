@@ -141,7 +141,7 @@ export class DefaultUIHandler {
               await waitFn({ wait: text.time })
             }
           } else {
-            const container = drawer.createDecoratedElement(text)
+            const container = Drawer.createDecoratedElement(text)
             await drawer.drawText(expandVariable(text.content![0] as string), Number(text.speed) || speed, container)
           }
         }

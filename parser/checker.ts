@@ -27,7 +27,8 @@ export interface CheckResult {
  */
 const TOP_LEVEL_COMMANDS = [
   'text', 'choice', 'show', 'newpage', 'hide', 'jump', 'sound', 'say',
-  'if', 'call', 'moveto', 'route', 'wait', 'dialog', 'save', 'load',
+  'if', 'call', 'moveto', 'route', 'wait', 'dialog', 'save', 'load', 'add', 'remove',
+  'trigger', 'untrigger',
 ]
 
 /**
@@ -56,6 +57,8 @@ export const ALLOWED_PARENTS: Record<string, string[]> = {
   data: TOP_LEVEL_COMMANDS,
   error: TOP_LEVEL_COMMANDS,
   progress: TOP_LEVEL_COMMANDS,
+  // addタグ配下でのみ使用可能なイベント定義
+  onclick: ['add'],
 }
 
 /**
@@ -78,7 +81,7 @@ export const KNOWN_ATTRIBUTES: Record<string, Set<string>> = {
   text:     new Set(['name', 'speed', 'time']),
   say:      new Set(['name', 'speed', 'voice']),
   choice:   new Set(['prompt', 'position']),
-  show:     new Set(['src', 'name', 'mode', 'x', 'y', 'width', 'height', 'pos', 'look', 'entry', 'sepia', 'mono', 'blur', 'opacity', 'transition', 'duration']),
+  show:     new Set(['src', 'name', 'mode', 'x', 'y', 'width', 'height', 'pos', 'look', 'entry', 'sepia', 'mono', 'blur', 'opacity', 'transition', 'duration', 'z-index']),
   hide:     new Set(['name', 'mode', 'transition', 'duration']),
   moveto:   new Set(['name', 'x', 'y', 'duration']),
   sound:    new Set(['src', 'name', 'mode', 'play', 'loop', 'stop', 'pause']),
@@ -91,6 +94,10 @@ export const KNOWN_ATTRIBUTES: Record<string, Set<string>> = {
   dialog:   new Set(['name', 'template']),
   save:     new Set(['slot', 'name', 'message']),
   load:     new Set(['slot', 'message']),
+  trigger:  new Set(['id', 'event', 'target', 'rect', 'circle', 'style', 'cursor', 'once', 'cooldown']),
+  untrigger: new Set(['id', 'all']),
+  add:      new Set(['target', 'name', 'class']),
+  remove:   new Set(['name']),
   // サブノード
   item:     new Set(['label', 'id', 'default', 'hover', 'select', 'color', 'position']),
   action:   new Set(['id', 'label', 'value']),
@@ -109,6 +116,8 @@ export const KNOWN_ATTRIBUTES: Record<string, Set<string>> = {
   data:     new Set([]),
   error:    new Set([]),
   progress: new Set([]),
+  // onclick自体は属性を持たない。中身は子要素のWTSコマンド
+  onclick:  new Set([]),
 }
 
 /**

@@ -32,7 +32,7 @@ export class ImageObject {
   }
 
   getSize(){
-    return {width: this.image.width, height: this.image.height}
+    return {width: this.image ? this.image.width : 0, height: this.image ? this.image.height : 0}
   }
 
   async setImageAsync(src?: string): Promise<ImageObject> {

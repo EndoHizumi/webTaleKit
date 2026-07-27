@@ -41,6 +41,8 @@ export interface DisplayedImage {
   size?: Size
   look?: boolean
   entry?: EntryOption
+  // 描画順（<show z-index=...>）。未指定は0扱いで、同値なら登録順を維持する
+  'z-index'?: number | string
 }
 
 export type DisplayedImageMap = Record<string, DisplayedImage>
@@ -116,6 +118,7 @@ export interface ScenarioLine {
   opacity?: number
   transition?: string
   duration?: number | string
+  'z-index'?: number | string
 
   // sound
   play?: boolean | string

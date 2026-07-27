@@ -171,6 +171,7 @@ describe('checker', () => {
           opacity: 1,
           transition: 'fade',
           duration: 1000,
+          'z-index': 20,
           content: [],
         },
       ]

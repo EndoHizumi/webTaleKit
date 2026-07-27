@@ -2,7 +2,11 @@
   "compilerOptions": {
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "outDir": "./dist/src/",
+    // nodeToDomConverterがparser/checkerを参照するため、rootDirはリポジトリルート。
+    // 出力レイアウト（dist/src/...）は従来と同じで、dist/parser/checker.jsが追加で出力される
+    // （後続の tsc -p tsconfig.parser.json がCommonJS版で上書きする）
+    "rootDir": ".",
+    "outDir": "./dist",
     "sourceMap": true,
     "noImplicitAny": true,
     "module": "es2020",
@@ -19,9 +23,12 @@
     "src/utils/waitUtil.ts",
     "src/utils/fallbackTemplate.ts",
     "src/utils/eventBus.ts",
+    "src/utils/validateScenario.ts",
     "src/core/index.ts",
     "src/core/types.ts",
     "src/core/drawer.ts",
+    "src/core/CommandRegistry.ts",
+    "src/commands/**/*.ts",
     "src/core/resourceManager.ts",
     "src/core/scenarioManager.ts",
     "src/core/defaultUIHandler.ts",

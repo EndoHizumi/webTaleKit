@@ -1,7 +1,7 @@
 import { ImageObject } from '../resource/ImageObject'
 import { sleep } from '../utils/waitUtil'
 import { gsap } from 'gsap'
-import { ChoiceItem, ChoiceResult, DisplayedImageMap, EntryOption, Position, ScenarioLine, Size } from './types'
+import { ChoiceItem, ChoiceResult, DisplayedImage, DisplayedImageMap, EntryOption, Position, ScenarioLine, Size } from './types'
 
 // フェード描画のオプション
 interface FadeOption {
@@ -9,6 +9,36 @@ interface FadeOption {
   size?: Size
   look?: boolean
   entry?: EntryOption
+}
+
+// クロスフェードの下地に使う差し替え前画像
+interface FadeSourceImage {
+  image: ImageObject
+  pos?: Position
+  size?: Size
+  look?: boolean
+}
+
+const getImageLayerOrder = (imageData: DisplayedImage | undefined): number => {
+  const zIndex = Number(imageData?.['z-index'])
+  if (Number.isFinite(zIndex)) return zIndex
+  return 0
+}
+
+export const sortDisplayedImageEntries = (displayedImages: DisplayedImageMap): Array<[string, DisplayedImage]> => {
+  return Object.entries(displayedImages)
+    .map((entry, index) => ({
+      entry,
+      index,
+      layerOrder: getImageLayerOrder(entry[1]),
+    }))
+    .sort((a, b) => {
+      if (a.layerOrder === b.layerOrder) {
+        return a.index - b.index
+      }
+      return a.layerOrder - b.layerOrder
+    })
+    .map((item) => item.entry)
 }
 
 /*
@@ -122,7 +152,7 @@ export class Drawer {
     }
   }
 
-  createDecoratedElement(element: ScenarioLine): HTMLElement {
+  static createDecoratedElement(element: ScenarioLine): HTMLElement {
     switch (element.type) {
       case 'color': {
         const span = document.createElement('span')
@@ -288,15 +318,15 @@ export class Drawer {
 
   show(displayedImages: DisplayedImageMap) {
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
-    for (const key in displayedImages) {
-      const img: ImageObject = displayedImages[key].image
-      const pos: { x: number; y: number } = displayedImages[key].pos || {
+    for (const [, imageData] of sortDisplayedImageEntries(displayedImages)) {
+      const img: ImageObject = imageData.image
+      const pos: { x: number; y: number } = imageData.pos || {
         x: 0,
         y: 0,
       }
-      const size: Size | undefined = displayedImages[key].size
-      const reverse: boolean = displayedImages[key].look || false
-      const entry: { time: number; wait: boolean } = displayedImages[key].entry || { time: 1, wait: false }
+      const size: Size | undefined = imageData.size
+      const reverse: boolean = imageData.look || false
+      const entry: { time: number; wait: boolean } = imageData.entry || { time: 1, wait: false }
       if (entry.wait) {
         // 表示開始までの遅延処理
         setTimeout(() => {
@@ -307,6 +337,64 @@ export class Drawer {
       }
     }
     this.adjustScale(this.gameScreen)
+  }
+
+  // previousImage: 同じキーに既存表示があった場合の差し替え前の画像。フェードイン中はこれを下地として
+  // 常時全不透明で描画し、新しい画像をその上にクロスフェードさせることで、切り替え中に何も表示されない
+  // (黒画面になる)瞬間が生じないようにする。
+  async fadeImageIn(
+    name: string,
+    displayedImages: DisplayedImageMap,
+    duration: number = 1000,
+    previousImage?: FadeSourceImage,
+  ): Promise<void> {
+    return this.animateImageAlpha(name, displayedImages, 0, 1, duration, previousImage)
+  }
+
+  async fadeImageOut(name: string, displayedImages: DisplayedImageMap, duration: number = 1000): Promise<void> {
+    return this.animateImageAlpha(name, displayedImages, 1, 0, duration)
+  }
+
+  // displayedImagesをz-index順に描画しつつ、対象(name)の画像だけ透明度をアニメーションさせる。
+  // fade()の別キャンバス合成と異なり同一キャンバスに描くため、対象画像が常に最前面になってしまう問題を避けられる。
+  private animateImageAlpha(
+    name: string,
+    displayedImages: DisplayedImageMap,
+    start: number,
+    end: number,
+    duration: number,
+    previousImage?: FadeSourceImage,
+  ): Promise<void> {
+    return new Promise<void>((resolve) => {
+      const startTime = performance.now()
+
+      const animate = (currentTime: number) => {
+        const elapsedTime = currentTime - startTime
+        const progress = Math.min(elapsedTime / duration, 1)
+        const currentAlpha = start + (end - start) * progress
+
+        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+        for (const [key, imageData] of sortDisplayedImageEntries(displayedImages)) {
+          if (!imageData?.image) continue
+          if (key === name && previousImage?.image) {
+            this.ctx.globalAlpha = 1
+            this.drawCanvas(previousImage.image, previousImage.pos || { x: 0, y: 0 }, previousImage.size, previousImage.look || false)
+          }
+          const pos = imageData.pos || { x: 0, y: 0 }
+          this.ctx.globalAlpha = key === name ? currentAlpha : 1
+          this.drawCanvas(imageData.image, pos, imageData.size, imageData.look || false)
+        }
+        this.ctx.globalAlpha = 1
+
+        if (progress < 1) {
+          requestAnimationFrame(animate)
+        } else {
+          resolve()
+        }
+      }
+
+      requestAnimationFrame(animate)
+    })
   }
 
   moveTo(name: string, displayedImages: DisplayedImageMap, pos: { x: number; y: number }, durning: number) {
@@ -342,8 +430,11 @@ export class Drawer {
       ctx = this.ctx
     }
     const canvas = img.draw(reverse).getCanvas()
-    // canvasから画像を取得して、this.ctxに描画
-    ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, pos.x, pos.y, canvas.width, canvas.height) //CanvasRenderingContext2D.drawImage: Passed-in canvas is empty
+    // canvasから画像を取得して、this.ctxに描画（sizeを描画先サイズとして使用し、解像度に合わせて拡縮する）
+    // sizeが未指定の場合はcanvas自体のサイズにフォールバックして後方互換を保つ
+    const destWidth = size?.width ?? canvas.width
+    const destHeight = size?.height ?? canvas.height
+    ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, pos.x, pos.y, destWidth, destHeight)
   }
 
   adjustScale(targetElement: HTMLElement) {

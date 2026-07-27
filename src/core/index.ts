@@ -5,26 +5,23 @@ import { ResourceManager } from './resourceManager'
 import { SoundObject } from '../resource/soundObject'
 import engineConfig from '../../engineConfig.json'
 import { sleep } from '../utils/waitUtil'
-import { getDefaultDialogTemplate } from '../utils/fallbackTemplate'
 import { generateStore, Store } from '../utils/store'
 import { EventBus } from '../utils/eventBus'
 import { DefaultUIHandler } from './defaultUIHandler'
+import { DomElementHandler } from './domElementHandler'
 import { logError } from '../utils/logger'
+import { CommandHandler, CommandRegistry } from './CommandRegistry'
+import { registerBuiltinCommands, TriggerHandler } from '../commands'
 import {
-  ChoiceItem,
-  ChoiceResult,
   DisplayedImage,
   DisplayedImageMap,
   EngineConfig,
-  Position,
   Progress,
   SaveData,
-  SavedImageData,
   SceneConfig,
   SceneFile,
   ScenarioContent,
   ScenarioLine,
-  Size,
   UsedSound,
   UsedSoundMap,
 } from './types'
@@ -57,10 +54,12 @@ export class Core {
   sceneFile: SceneFile
   sceneConfig: SceneConfig
   engineConfig: EngineConfig
-  commandList: Record<string, (line: ScenarioLine) => unknown>
+  commandRegistry: CommandRegistry
+  triggerHandler: TriggerHandler
   gameContainer: HTMLElement
   drawer: Drawer
   scenarioManager: ScenarioManager
+  domElementHandler: DomElementHandler
   resourceManager: ResourceManager
   displayedImages: DisplayedImageMap
   tempImages: DisplayedImageMap
@@ -78,30 +77,19 @@ export class Core {
     this.sceneFile = {}
     this.sceneConfig = {}
     this.engineConfig = engineConfig
-    this.commandList = {
-      text: this.textHandler,
-      choice: this.choiceHandler,
-      show: this.showHandler,
-      newpage: this.newpageHandler,
-      hide: this.hideHandler,
-      jump: this.jumpHandler,
-      sound: this.soundHandler,
-      say: this.sayHandler,
-      if: this.ifHandler,
-      call: this.callHandler,
-      moveto: this.moveToHandler,
-      route: this.routeHandler,
-      wait: this.waitHandler,
-      dialog: this.dialogHandler,
-      save: this.saveHandler,
-      load: this.loadHandler,
-    }
+    // CommandRegistryの初期化（タグ→ハンドラのマッピングを登録制で管理する）
+    this.commandRegistry = new CommandRegistry()
+    const builtinHandlers = registerBuiltinCommands(this.commandRegistry)
+    // triggerハンドラはシーン遷移時の全解除のために参照を保持する
+    this.triggerHandler = builtinHandlers.trigger as TriggerHandler
     // gameContainerの初期化（HTMLのgameContainerを取得する）
     this.gameContainer = document.getElementById('gameContainer') as HTMLElement
     // Drawerの初期化（canvasタグのサイズを設定する)
     this.drawer = new Drawer(this.gameContainer)
     // ScenarioManagerの初期化（変数の初期値設定）
     this.scenarioManager = new ScenarioManager()
+    // DomElementHandlerの初期化
+    this.domElementHandler = new DomElementHandler(this.gameContainer, (content) => this.scenarioManager.addScenario(content))
     // ResourceManagerの初期化（引数にconfigを渡して、リソース管理配列を作る）
     this.resourceManager = new ResourceManager(import(/* webpackIgnore: true */ RESOURCE_CONFIG_PATH)) //  webpackIgnoreでバンドルを無視する
     this.displayedImages = {}
@@ -122,25 +110,58 @@ export class Core {
     this.engineConfig = config
   }
 
+  // ハンドラに渡す実行コンテキスト（依存注入）を生成する
+  getExecutionContext() {
+    return {
+      eventBus: this.eventBus,
+      scenarioManager: this.scenarioManager,
+      drawer: this.drawer,
+      core: this,
+    }
+  }
+
+  // タグ名を指定してCommandRegistry経由でハンドラを実行する（内部ディスパッチ用）
+  dispatch(type: string, line: ScenarioLine = {}): Promise<void> {
+    return this.commandRegistry.execute({ ...line, type }, this.getExecutionContext())
+  }
+
+  // カスタムタグの公式登録API
+  registerCommand(tagName: string, handler: CommandHandler): void {
+    this.commandRegistry.register(tagName, handler)
+  }
+
+  // 全トリガーを解除する（<route>によるシーン遷移時に呼ばれる）
+  clearAllTriggers(): void {
+    if (this.triggerHandler) {
+      this.triggerHandler.removeAll()
+    }
+  }
+
   async start(initScene?: string): Promise<void> {
     try {
-    // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
-    // titleタグの内容を書き換える
-    document.title = this.engineConfig.title
-    // sceneファイルを読み込む
-    await this.loadScene(initScene || 'title')
-    // 画面を表示する
-    await this.loadScreen(this.sceneConfig)
-    // 入力イベントを設定する（DefaultUIHandlerに委譲）
-    await this.eventBus.emit('input:bind', {
-      onNext: () => { if (this.onNextHandler) this.onNextHandler() },
-      setSkip: (drawerSkip: boolean, coreNext: boolean) => {
-        this.drawer.isSkip = drawerSkip
-        this.isNext = coreNext
-      },
-      toggleAuto: () => { this.isAuto = !this.isAuto },
-      toggleSkip: () => { this.isSkip = !this.isSkip },
-    })
+      // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
+      // titleタグの内容を書き換える
+      document.title = this.engineConfig.title
+      // sceneファイルを読み込む
+      await this.loadScene(initScene || 'title')
+      // 画面を表示する
+      await this.loadScreen(this.sceneConfig)
+      // 入力イベントを設定する（DefaultUIHandlerに委譲）
+      await this.eventBus.emit('input:bind', {
+        onNext: () => {
+          if (this.onNextHandler) this.onNextHandler()
+        },
+        setSkip: (drawerSkip: boolean, coreNext: boolean) => {
+          this.drawer.isSkip = drawerSkip
+          this.isNext = coreNext
+        },
+        toggleAuto: () => {
+          this.isAuto = !this.isAuto
+        },
+        toggleSkip: () => {
+          this.isSkip = !this.isSkip
+        },
+      })
 
       await this.textHandler('タップでスタート')
       // BGMを再生する
@@ -158,7 +179,7 @@ export class Core {
       const err = error instanceof Error ? error : new Error(String(error))
       // エラーをログに記録（スタックトレース付き）
       await logError(err, 'Error in runScenario')
-       // エラーをアラートで表示
+      // エラーをアラートで表示
       alert(`システムエラーが発生しました。\n詳細はコンソールで確認してください。:\n${err.message}`)
       throw error
     }
@@ -217,7 +238,6 @@ export class Core {
     })
 
     if (!skipBackground) {
-      console.info(`background: ${await this.checkResourceExists(sceneConfig.background)}`)
       // 背景画像の存在確認
       if (!(await this.checkResourceExists(sceneConfig.background))) {
         throw new Error(`Background image not found: ${sceneConfig.background}`)
@@ -237,22 +257,19 @@ export class Core {
   }
 
   async runScenario(): Promise<void> {
-
     let scenarioObject = this.scenarioManager.next()
     if (!scenarioObject) {
       return
     }
-    // シナリオオブジェクトのtypeプロパティに応じて、対応する関数を実行する
-    const commandType = scenarioObject.type || 'text'
-    const commandFunction = this.commandList[commandType]
+    // シナリオオブジェクトのtypeプロパティに応じて、対応するハンドラをCommandRegistryから実行する
+    const commandType = (scenarioObject.type || 'text').toLowerCase()
 
     // コマンドが存在しない場合のエラーハンドリング
-    if (!commandFunction) {
+    if (!this.commandRegistry.has(commandType)) {
       const errorMessage = `Error: Command type "${commandType}" is not defined`
       throw new Error(errorMessage)
     }
 
-    const boundFunction = commandFunction.bind(this)
     scenarioObject = await this.httpHandler(scenarioObject)
 
     // ifグローバル属性の処理
@@ -265,35 +282,15 @@ export class Core {
       }
     }
 
-    await boundFunction(scenarioObject)
+    await this.commandRegistry.execute(scenarioObject, this.getExecutionContext())
   }
 
+  // 以下のxxxHandlerは、src/commands/ 配下の各CommandHandlerへ委譲する薄いラッパー。
+  // getAPIForScript()やハンドラ間の相互呼び出しの互換性のために残している。
   async textHandler(scenarioObject: string | ScenarioLine): Promise<void> {
     // 文章だけの場合は、contentプロパティに配列として設定する
     const line: ScenarioLine = typeof scenarioObject === 'string' ? { content: [scenarioObject] } : scenarioObject
-    // httpレスポンスがある場合は、list.contentに追加して、表示対象に加える
-    if (line.then || line.error) {
-      line.content = line.content!.concat((line.then || line.error)!)
-    }
-
-    //prettier-ignore
-    this.onNextHandler = () => { this.drawer.isSkip = true }
-
-    // text:clearイベントを発行してテキスト表示領域をクリアする
-    await this.eventBus.emit('text:clear')
-
-    // text:showイベントを発行してテキスト表示をDefaultUIHandlerに委譲する
-    await this.eventBus.emit('text:show', {
-      name: line.name || '',
-      content: line.content,
-      speed: this.isSkip ? 1 : Number(line.speed) || 25,
-      expandVariable: this.expandVariable.bind(this),
-      waitFn: this.waitHandler.bind(this),
-    })
-
-    await this.waitHandler({ wait: line.time })
-    this.drawer.isSkip = false
-    this.scenarioManager.setHistory(line.content)
+    return this.dispatch('text', line)
   }
 
   expandVariable<T>(text: T): T | string {
@@ -354,157 +351,27 @@ export class Core {
   }
 
   async sayHandler(line: ScenarioLine): Promise<void> {
-    // say(name:string, pattern: string, voice: {playの引数},  ...text)
-    if (line.voice) await this.soundHandler({ path: line.voice, play: true })
-    await this.textHandler({ content: line.content, name: line.name, speed: line.speed || 25 })
-    this.scenarioManager.setHistory(line)
+    return this.dispatch('say', line)
   }
 
   async choiceHandler(line: ScenarioLine): Promise<void> {
-    if (line.prompt) this.textHandler(line.prompt)
-    // ムスタッシュ構文があるときは、変数の展開
-    const choices = (line.content ?? []) as ChoiceItem[]
-    choices.forEach((choice) => {
-      choice.label = this.expandVariable(choice.label)
-    })
-    // choice:showイベントを発行して選択肢の表示と選択結果の取得をDefaultUIHandlerに委譲する
-    const [result] = (await this.eventBus.emit('choice:show', line)) as Array<ChoiceResult | undefined>
-    const { selectId, onSelect: selectHandler } = result || {}
-    if (selectHandler !== undefined) {
-      this.scenarioManager.addScenario(selectHandler)
-    }
-    // 元実装の { line, ...selectId } と同じ挙動（selectIdは数値なのでスプレッドしても何も追加されない）
-    this.scenarioManager.setHistory(Object.assign({ line }, selectId))
-    this.isNext = false
+    return this.dispatch('choice', line)
   }
 
-  jumpHandler(line: ScenarioLine): void {
-    // ジャンプ先が現在の行より小さいときは、今の行とジャンプ先の行の間で、sub=falseの行を抽出して、scenarioManagerに追加する
-    if (Number(line.index) < this.scenarioManager.getIndex()) {
-      // scenarioManagerからシナリオを取得
-      const scenario = this.scenarioManager.getScenario()
-      // 結合用に、ジャンプ先までのインデックスを取得
-      const noEditScenarioList = {
-        before: scenario.slice(0, Number(line.index)),
-        after: scenario.slice(this.scenarioManager.getIndex()),
-      }
-      // ジャンプ先のインデックスまでのシナリオを取得
-      const scenarioList = scenario.slice(Number(line.index), this.scenarioManager.getIndex())
-      // sub=falseの行だけを取得
-      const subFalseScenario = scenarioList.filter((line) => !line.sub)
-      // after に残っている sub=true の要素を除去（前回の選択肢の残骸を除去する）
-      const filteredAfter = noEditScenarioList.after.filter((item) => !item.sub)
-      // scenarioManagerに追加
-      this.scenarioManager.setScenario([...noEditScenarioList.before, ...subFalseScenario, ...filteredAfter])
-    }
-    this.scenarioManager.setIndex(Number(line.index))
+  jumpHandler(line: ScenarioLine): Promise<void> {
+    return this.dispatch('jump', line)
   }
 
   async showHandler(line: ScenarioLine): Promise<void> {
-    // ムスタッシュ構文があるときは、変数の展開
-    const record = line as Record<string, unknown>
-    Object.keys(record).forEach((item) => {
-      record[item] = this.expandVariable(record[item])
-    })
-    // 表示する画像の情報を管理オブジェクトに追加
-    const modeList: Record<string, string> = { bg: 'background', cutin: '', chara: '', cg: 'background', effect: 'effect' }
-    const key =
-      line.mode !== undefined && Object.keys(modeList).includes(line.mode)
-        ? modeList[line.mode]
-        : line.name || line.src!.split('/').pop()!
-    const baseLine = this.engineConfig.resolution.height / 2
-    const centerPoint: Record<string, Position> = {
-      left: { x: this.engineConfig.resolution.width * 0.25, y: baseLine },
-      center: { x: this.engineConfig.resolution.width * 0.5, y: baseLine },
-      right: { x: this.engineConfig.resolution.width * 0.75, y: baseLine },
-    }
-    line.src = this.expandVariable(line.src) || line.name
-
-    const image = await this.getImageObject(line)
-    // 画像の表示位置を設定
-    const position: Position = { x: Number(line.x) || 0, y: Number(line.y) || 0 }
-    // prettier-ignore
-    let size: Size = line.width && line.height ? { width: Number(line.width), height: Number(line.height) } : { width: image.getSize().width, height: image.getSize().height }
-
-    // line.modeが'cutin'の場合、center:middleのエイリアスを強制する
-    if (line.mode === 'cutin') {
-      line.pos = 'center:middle'
-    }
-
-    if (line.mode === 'cg') {
-      this.tempImages = { ...this.displayedImages }
-      // keyは'background'になるため、下のdisplayedImages[key]への代入で背景として登録される
-      this.displayedImages = {}
-      size = { width: this.engineConfig.resolution.width, height: this.engineConfig.resolution.height }
-    }
-
-    if (line.pos) {
-      const pos = line.pos.split(':')
-      const baseLines: Record<string, number> = {
-        top: 0 + size.height,
-        middle: this.engineConfig.resolution.height / 2,
-        bottom: this.engineConfig.resolution.height - size.height,
-      }
-      // エイリアスが設定されている場合、画像の中心点を求めて、画像の表示位置を設定する
-      position.x = centerPoint[pos[0]].x - size.width / 2
-      if (pos[1] === 'middle') {
-        position.y = baseLines[pos[1]] - size.width / 2
-      } else if (pos[1]) {
-        position.y = baseLines[pos[1]]
-      } else {
-        position.y = baseLine / 2
-      }
-    }
-    this.displayedImages[key] = {
-      image,
-      pos: position,
-      size: size,
-      look: line.look,
-      entry: line.entry,
-    }
-
-    if (line.sepia) this.displayedImages[key].image.setSepia(line.sepia)
-    if (line.mono) this.displayedImages[key].image.setMonochrome(line.mono)
-    if (line.blur) this.displayedImages[key].image.setBlur(line.blur)
-    if (line.opacity) this.displayedImages[key].image.setOpacity(line.opacity)
-
-    if (line.transition === 'fade') {
-      // フェードイン効果で表示
-      await this.drawer.fadeIn(Number(line.duration) || 2000, await this.getImageObject(line), {
-        pos: position,
-        size,
-        look: line.look,
-        entry: line.entry,
-      })
-      this.drawer.show(this.displayedImages)
-    } else {
-      // 通常の表示処理
-      this.drawer.show(this.displayedImages)
-    }
+    return this.dispatch('show', line)
   }
 
   async hideHandler(line: ScenarioLine): Promise<void> {
-    const targetImage = this.displayedImages[line.name!]
-    if (line.mode === 'cg') {
-      this.displayedImages = { ...this.tempImages }
-      this.tempImages = {}
-    } else {
-      delete this.displayedImages[line.name!]
-    }
-    this.drawer.show(this.displayedImages)
-    if (line.transition === 'fade') {
-      // フェードアウト効果で非表示
-      await this.drawer.fadeOut(Number(line.duration) || 1000, targetImage.image, {
-        pos: targetImage.pos,
-        size: targetImage.size,
-        look: targetImage.look,
-      })
-    }
+    return this.dispatch('hide', line)
   }
 
   async moveToHandler(line: ScenarioLine): Promise<void> {
-    const key = line.name!
-    await this.drawer.moveTo(key, this.displayedImages, { x: Number(line.x), y: Number(line.y) }, Number(line.duration) | 1)
+    return this.dispatch('moveto', line)
   }
 
   async getImageObject(line: ScenarioLine): Promise<ImageObject> {
@@ -517,10 +384,8 @@ export class Core {
     }
 
     // 既にインスタンスがある場合は、それを使う
-    if (Object.hasOwn(this.displayedImages, name)) {
-      const targetImage = this.displayedImages[name]
-      const imageObject = targetImage ? targetImage.image : new ImageObject()
-      image = await imageObject.setImageAsync(line.src)
+    if (Object.hasOwn(this.displayedImages, name) && this.displayedImages[name].image) {
+      image = this.displayedImages[name].image
     } else {
       image = await new ImageObject().setImageAsync(line.src)
     }
@@ -528,42 +393,18 @@ export class Core {
   }
 
   async soundHandler(line: ScenarioLine): Promise<void> {
-    const soundObject = await this.getSoundObject(line)
-
-    if (line.mode === 'bgm') {
-      // BGMの場合、既存のBGMを停止して、新しいBGMをセットする
-      if (this.bgm && this.bgm.playing) {
-        this.bgm.stop()
-      }
-      this.bgm = soundObject
-      this.bgm.play(true)
-    } else {
-      if ('play' in line) {
-        'loop' in line ? soundObject.play(true) : soundObject.play()
-      }
-    }
-
-    if ('stop' in line) {
-      soundObject.stop()
-    } else if ('pause' in line) {
-      soundObject.pause()
-    }
-
-    // soundObjectを管理オブジェクトに追加
-    const key = line.name || line.src!.split('/').pop()!
-    this.usedSounds[key] = {
-      audio: soundObject,
-    }
+    return this.dispatch('sound', line)
   }
 
   async getSoundObject(line: ScenarioLine): Promise<SoundObject> {
-    const name = line.name || line.src!.split('/').pop()!
+    const name = line.name || (line.src || line.voice)!.split('/').pop()!
     let resource: SoundObject
+    const soundObjectPath = line.src || line.voice
 
     // ファイルの存在確認
-    if (line.src) {
-      if (!(await this.checkResourceExists(line.src))) {
-        throw new Error(`Sound file not found: ${line.src}`)
+    if (line.src  || line.voice) {
+      if (!(await this.checkResourceExists(soundObjectPath))) {
+        throw new Error(`Sound file not found: ${soundObjectPath}`)
       }
     }
 
@@ -571,59 +412,27 @@ export class Core {
     if (Object.hasOwn(this.usedSounds, name)) {
       const targetResource = this.usedSounds[name]
       const soundObject = targetResource ? targetResource.audio : new SoundObject()
-      resource = await soundObject.setAudioAsync(line.src)
+      resource = await soundObject.setAudioAsync(soundObjectPath)
     } else {
-      resource = await new SoundObject().setAudioAsync(line.src)
+      resource = await new SoundObject().setAudioAsync(soundObjectPath)
     }
     return resource
   }
 
-  newpageHandler(): void {
-    this.displayedImages = {
-      background: {
-        image: this.getBackground(),
-        size: {
-          width: this.gameContainer.clientWidth,
-          height: this.gameContainer.clientHeight,
-        },
-      },
-    }
-    this.drawer.clear()
-    this.drawer.show(this.displayedImages)
+  newpageHandler(line: ScenarioLine = {}): Promise<void> {
+    return this.dispatch('newpage', line)
   }
 
   async ifHandler(line: ScenarioLine): Promise<void> {
-    const isTrue = this.executeCode(`return ${line.condition}`)
-    const branches = (line.content ?? []) as ScenarioLine[]
-    const appendScenario = isTrue ? branches[0].content : branches[1].content
-    this.scenarioManager.addScenario(appendScenario as ScenarioLine[])
+    return this.dispatch('if', line)
   }
 
   async routeHandler(line: ScenarioLine): Promise<void> {
-    this.newpageHandler()
-    if (this.sceneFile.cleanUp) {
-      // 終了処理を実行する
-      this.sceneFile.cleanUp()
-    }
-    // sceneファイルを読み込む
-    await this.loadScene(line.to!)
-    // 画面を表示する
-    await this.loadScreen(this.sceneConfig)
-    // BGMを再生する
-    this.soundHandler({
-      mode: 'bgm',
-      src: this.sceneConfig.bgm,
-      loop: true,
-      play: true,
-    })
+    return this.dispatch('route', line)
   }
 
-  // Sceneファイルに、ビルド時に実行処理を追加して、そこに処理をお願いしたほうがいいかも？
   async callHandler(line: ScenarioLine): Promise<void> {
-    const result = this.executeCode(line.method!)
-    if (result && typeof (result as PromiseLike<unknown>).then === 'function') {
-      await result
-    }
+    return this.dispatch('call', line)
   }
 
   async httpHandler(line: ScenarioLine): Promise<ScenarioLine> {
@@ -688,25 +497,8 @@ export class Core {
     return line
   }
 
-  async dialogHandler(scenarioObject: ScenarioLine): Promise<unknown> {
-    if (!scenarioObject || !scenarioObject.content) {
-      throw new Error('Invalid scenario object for dialog handler.')
-    }
-    // ダイアログのテンプレートを読み込む
-    // screen:loadイベント(isDialog:true)ハンドラ内で既存ダイアログの閉鎖も行われる
-    await this.loadScreen(scenarioObject as SceneConfig, {
-      isDialog: true,
-      skipBackground: true,
-      skipBgm: true,
-      fallbackTemplate: getDefaultDialogTemplate,
-    })
-    // dialog:showイベントを発行してダイアログのDOM操作をDefaultUIHandlerに委譲する
-    const [result] = await this.eventBus.emit('dialog:show', {
-      content: scenarioObject.content,
-      expandVariable: this.expandVariable.bind(this),
-      addScenario: this.scenarioManager.addScenario.bind(this.scenarioManager),
-    })
-    return result
+  async dialogHandler(scenarioObject: ScenarioLine): Promise<void> {
+    return this.dispatch('dialog', scenarioObject)
   }
 
   setBackground(image: DisplayedImage): void {
@@ -828,11 +620,19 @@ export class Core {
       },
       store: this.store,
       playback: {
-        toggleAuto: () => { this.isAuto = !this.isAuto },
-        setAuto: (value: boolean) => { this.isAuto = value },
+        toggleAuto: () => {
+          this.isAuto = !this.isAuto
+        },
+        setAuto: (value: boolean) => {
+          this.isAuto = value
+        },
         getAuto: () => this.isAuto,
-        toggleSkip: () => { this.isSkip = !this.isSkip },
-        setSkip: (value: boolean) => { this.isSkip = value },
+        toggleSkip: () => {
+          this.isSkip = !this.isSkip
+        },
+        setSkip: (value: boolean) => {
+          this.isSkip = value
+        },
         getSkip: () => this.isSkip,
       },
       sandbox: {
@@ -842,112 +642,11 @@ export class Core {
   }
 
   async saveHandler(line: ScenarioLine): Promise<void> {
-    const slot = line.slot || 'auto'
-    const name = line.name || `セーブ${slot}`
-
-    const saveData: SaveData = {
-      slot: slot,
-      name: name,
-      timestamp: new Date().toISOString(),
-      scenarioManager: {
-        progress: JSON.parse(JSON.stringify(this.scenarioManager.progress)) as Progress,
-        sceneName: this.scenarioManager.getSceneName() || this.sceneConfig.name || '',
-        currentIndex: this.scenarioManager.getIndex(),
-        history: this.scenarioManager.getHistory ? [...this.scenarioManager.getHistory()] : [],
-      },
-      sceneConfig: this.sceneConfig,
-      displayedImages: Object.keys(this.displayedImages).reduce<Record<string, SavedImageData>>((acc, key) => {
-        if (key !== 'background') {
-          acc[key] = {
-            // ImageObjectはsrcを公開していないため、JS版と同様に常にnullが保存される
-            src: (this.displayedImages[key].image as unknown as { src?: string })?.src || null,
-            pos: this.displayedImages[key].pos,
-            size: this.displayedImages[key].size,
-            look: this.displayedImages[key].look,
-            entry: this.displayedImages[key].entry,
-          }
-        }
-        return acc
-      }, {}),
-      backgroundImage: this.displayedImages.background?.image?.getImage()?.src || null,
-      usedSounds: Object.keys(this.usedSounds).reduce<Record<string, { src: string | null }>>((acc, key) => {
-        acc[key] = {
-          src: this.usedSounds[key].audio?.src || null,
-        }
-        return acc
-      }, {}),
-      bgmSrc: this.bgm?.src || null,
-    }
-
-    this.store.set(`save_${slot}`, saveData)
-
-    if (line.message !== false) {
-      await this.textHandler(`ゲームをセーブしました: ${name}`)
-    }
+    return this.dispatch('save', line)
   }
 
   async loadHandler(line: ScenarioLine): Promise<void> {
-    const slot = line.slot || 'auto'
-
-    const saveDataRaw = this.store.get(`save_${slot}`)
-    if (!saveDataRaw) {
-      throw new Error(`セーブデータが見つかりません: スロット${slot}`)
-    }
-
-    // ディープコピーで循環参照を回避
-    const saveData = JSON.parse(JSON.stringify(saveDataRaw)) as SaveData
-
-    const sceneName = saveData.scenarioManager.sceneName || saveData.sceneConfig.name
-    if (!sceneName) {
-      throw new Error('Scene name not found in save data')
-    }
-
-    // シーンとプログレスを復元
-    await this.loadScene(sceneName)
-    await this.loadScreen(saveData.sceneConfig, { skipBackground: true, skipBgm: true })
-
-    // 読んだところまで復元
-    this.scenarioManager.setSceneName(saveData.scenarioManager.sceneName)
-    this.scenarioManager.setIndex(saveData.scenarioManager.currentIndex)
-    this.scenarioManager.setHistory(saveData.scenarioManager.history || [])
-    this.scenarioManager.progress = { ...this.scenarioManager.progress, ...saveData.scenarioManager.progress }
-
-    // 画面の復元
-    this.displayedImages = {}
-    if (saveData.backgroundImage) {
-      const background = await new ImageObject().setImageAsync(saveData.backgroundImage)
-      this.displayedImages['background'] = {
-        image: background,
-        size: {
-          width: this.gameContainer.clientWidth,
-          height: this.gameContainer.clientHeight,
-        },
-      }
-    }
-
-    for (const [key, imageData] of Object.entries(saveData.displayedImages)) {
-      if (imageData.src) {
-        const image = await new ImageObject().setImageAsync(imageData.src)
-        this.displayedImages[key] = {
-          image: image,
-          pos: imageData.pos,
-          size: imageData.size,
-          look: imageData.look,
-          entry: imageData.entry,
-        }
-      }
-    }
-
-    // BGMの復元
-    if (saveData.bgmSrc) {
-      this.soundHandler({ mode: 'bgm', src: saveData.bgmSrc, loop: true, play: true })
-    }
-
-    this.drawer.show(this.displayedImages)
-
-    if (line.message !== false) {
-      await this.textHandler(`ゲームをロードしました: ${saveData.name}`)
-    }
+    return this.dispatch('load', line)
   }
 
   getSaveData(): SaveData[] {
