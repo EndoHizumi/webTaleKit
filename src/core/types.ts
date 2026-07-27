@@ -37,6 +37,8 @@ export interface EntryOption {
 // 表示中画像の管理エントリ（Core.displayedImages の値）
 export interface DisplayedImage {
   image: ImageObject
+  // 表示元のsrc（ShowHandlerが同一キーへの再表示判定に使用）
+  src?: string
   pos?: Position
   size?: Size
   look?: boolean
@@ -141,6 +143,21 @@ export interface ScenarioLine {
   post?: string
   put?: string
   delete?: string
+
+  // trigger / untrigger
+  id?: string | number
+  event?: string
+  target?: string
+  rect?: string
+  circle?: string
+  style?: string
+  cursor?: string
+  once?: boolean | string
+  cooldown?: number | string
+  all?: boolean | string
+
+  // add / remove（DOM要素の動的追加・削除）
+  class?: string
 
   // dialog（loadScreenへsceneConfig相当として渡される）
   template?: string

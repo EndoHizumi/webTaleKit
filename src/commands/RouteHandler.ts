@@ -3,7 +3,7 @@ import { CommandHandler, ExecutionContext, ScenarioCommand } from '../core/Comma
 export class RouteHandler implements CommandHandler {
   async execute(command: ScenarioCommand, context: ExecutionContext): Promise<void> {
     const { core } = context
-    const line: any = command
+    const line = command
     // シーン遷移時は全トリガーを自動解除する（リスナーリーク防止）
     core.clearAllTriggers()
     core.newpageHandler()
@@ -12,7 +12,7 @@ export class RouteHandler implements CommandHandler {
       core.sceneFile.cleanUp()
     }
     // sceneファイルを読み込む
-    await core.loadScene(line.to)
+    await core.loadScene(line.to!)
     // 画面を表示する
     await core.loadScreen(core.sceneConfig)
     // BGMを再生する

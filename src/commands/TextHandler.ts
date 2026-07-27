@@ -3,12 +3,12 @@ import { CommandHandler, ExecutionContext, ScenarioCommand } from '../core/Comma
 export class TextHandler implements CommandHandler {
   async execute(command: ScenarioCommand, context: ExecutionContext): Promise<void> {
     const { core, eventBus, drawer, scenarioManager } = context
-    // 文章だけの場合は、contentプロパティに配列として設定する
-    let scenarioObject: any = command
-    if (typeof scenarioObject === 'string') scenarioObject = { content: [scenarioObject] }
+    // 文章だけの場合は、contentプロパティに配列として設定する（registry経由では常にオブジェクトだが互換のため維持）
+    let scenarioObject: ScenarioCommand = command
+    if (typeof (scenarioObject as unknown) === 'string') scenarioObject = { content: [scenarioObject as unknown as string] }
     // httpレスポンスがある場合は、list.contentに追加して、表示対象に加える
     if (scenarioObject.then || scenarioObject.error) {
-      scenarioObject.content = scenarioObject.content.concat(scenarioObject.then || scenarioObject.error)
+      scenarioObject.content = (scenarioObject.content ?? []).concat((scenarioObject.then || scenarioObject.error)!)
     }
 
     //prettier-ignore
@@ -21,7 +21,7 @@ export class TextHandler implements CommandHandler {
     await eventBus.emit('text:show', {
       name: scenarioObject.name || '',
       content: scenarioObject.content,
-      speed: core.isSkip ? 1 : scenarioObject.speed || 25,
+      speed: core.isSkip ? 1 : Number(scenarioObject.speed) || 25,
       expandVariable: core.expandVariable.bind(core),
       waitFn: core.waitHandler.bind(core),
     })

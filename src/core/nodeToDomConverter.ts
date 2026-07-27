@@ -1,19 +1,20 @@
-import { KNOWN_ATTRIBUTES } from '../../parser/checker';
-import { Drawer } from './drawer';
+import { KNOWN_ATTRIBUTES } from '../../parser/checker'
+import { Drawer } from './drawer'
+import { ScenarioLine } from './types'
 
 /**
  * パース済みシナリオのJSONノード配列を、DOM(DocumentFragment)に再帰変換する。
- * 
+ *
  * @param nodes - シナリオのノード配列
  * @param onAction - onclickノードが実行されたときに呼ばれるコールバック
  * @returns 変換されたDocumentFragment
  */
 export function convertNodesToDom(
-  nodes: Array<string | Record<string, any>>,
-  onAction: (content: any[]) => void,
+  nodes: Array<string | ScenarioLine>,
+  onAction: (content: ScenarioLine[]) => void,
   rootElement?: HTMLElement,
 ): DocumentFragment {
-  const fragment = document.createDocumentFragment();
+  const fragment = document.createDocumentFragment()
 
   /**
    * ノードを再帰的に処理する内部関数
@@ -22,26 +23,26 @@ export function convertNodesToDom(
    * @param lastElement - 直近で生成されたHTML要素
    */
   function processNodes(
-    nodesToProcess: Array<string | Record<string, any>>,
+    nodesToProcess: Array<string | ScenarioLine>,
     parentElement: HTMLElement | DocumentFragment,
     lastElement: HTMLElement | null,
   ): void {
-    let currentLastElement = lastElement;
+    let currentLastElement = lastElement
 
     for (const node of nodesToProcess) {
       if (typeof node === 'string') {
-        parentElement.appendChild(document.createTextNode(node));
-        continue;
+        parentElement.appendChild(document.createTextNode(node))
+        continue
       }
 
-      const { type, content, ...attributes } = node;
+      const { type, content, ...attributes } = node
 
       // 2. type が color / ruby / b / i のオブジェクト
-      if (['color', 'ruby', 'b', 'i'].includes(type)) {
-        const decorated = Drawer.createDecoratedElement(node);
-        parentElement.appendChild(decorated);
-        currentLastElement = decorated;
-        continue;
+      if (['color', 'ruby', 'b', 'i'].includes(type as string)) {
+        const decorated = Drawer.createDecoratedElement(node)
+        parentElement.appendChild(decorated)
+        currentLastElement = decorated
+        continue
       }
 
       // 3. type が 'onclick' のオブジェクト
@@ -49,48 +50,47 @@ export function convertNodesToDom(
         if (currentLastElement) {
           currentLastElement.addEventListener('click', () => {
             if (Array.isArray(content)) {
-              onAction(content);
+              onAction(content as ScenarioLine[])
             }
-          });
+          })
         }
-        continue;
+        continue
       }
 
       // 4. type が KNOWN_ATTRIBUTES に存在するその他のWTSタグ
       // 5. type が KNOWN_ATTRIBUTES にない未知タグ
-      // @ts-ignore: KNOWN_ATTRIBUTES is from a JS file
-      const isKnownType = type in KNOWN_ATTRIBUTES;
+      const isKnownType = String(type) in KNOWN_ATTRIBUTES
 
       if (isKnownType) {
-        console.warn(`[nodeToDomConverter] <${type}> is a known WTS tag but not supported in <add> tags.`);
-        continue;
+        console.warn(`[nodeToDomConverter] <${type}> is a known WTS tag but not supported in <add> tags.`)
+        continue
       }
 
       // 5. type が KNOWN_ATTRIBUTES にない未知タグ -> HTML要素として処理
-      const element = document.createElement(type);
+      const element = document.createElement(String(type))
 
       // type/content 以外の属性を setAttribute で透過。
       // ただし属性名が on で始まるもの(onclick等の生JS属性)は透過せず console.warn を出して無視する
       for (const [key, value] of Object.entries(attributes)) {
         if (key.startsWith('on')) {
-          console.warn(`[nodeToDomConverter] Skipping prohibited attribute "${key}" on <${type}>`);
-          continue;
+          console.warn(`[nodeToDomConverter] Skipping prohibited attribute "${key}" on <${type}>`)
+          continue
         }
-        element.setAttribute(key, String(value));
+        element.setAttribute(key, String(value))
       }
 
-      parentElement.appendChild(element);
-      currentLastElement = element;
+      parentElement.appendChild(element)
+      currentLastElement = element
 
       // content があれば再帰変換して子として追加
       if (Array.isArray(content)) {
-        processNodes(content, element, currentLastElement);
+        processNodes(content, element, currentLastElement)
         // 再帰呼び出し後に currentLastElement を親要素に戻す
-        currentLastElement = element;
+        currentLastElement = element
       }
     }
   }
 
-  processNodes(nodes, fragment, rootElement ?? null);
-  return fragment;
+  processNodes(nodes, fragment, rootElement ?? null)
+  return fragment
 }

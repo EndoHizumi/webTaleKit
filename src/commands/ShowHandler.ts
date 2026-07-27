@@ -1,17 +1,33 @@
 import { CommandHandler, ExecutionContext, ScenarioCommand } from '../core/CommandRegistry'
+import { ImageObject } from '../resource/ImageObject'
+import { DisplayedImage, EntryOption } from '../core/types'
+
+// 構築途中はimage未確定・座標が文字列のことがあるため、DisplayedImageを緩めたローカル型で組み立てる
+interface ActiveImage {
+  image: ImageObject | null
+  src?: string
+  pos: { x?: number | string; y?: number | string }
+  size: { width?: number | string; height?: number | string }
+  look?: boolean | string
+  entry?: EntryOption | string
+  'z-index'?: number | string
+}
 
 export class ShowHandler implements CommandHandler {
   async execute(command: ScenarioCommand, context: ExecutionContext): Promise<void> {
     const { core, drawer } = context
-    const line: any = command
+    const line = command
     const engineConfig = core.engineConfig
     // ムスタッシュ構文があるときは、変数の展開
-    Object.keys(line).forEach((item) => {
-      line[item] = core.expandVariable(line[item])
+    const record = line as Record<string, unknown>
+    Object.keys(record).forEach((item) => {
+      record[item] = core.expandVariable(record[item])
     })
     // 表示する画像の情報を管理オブジェクトに追加
     const modeList: Record<string, string> = { bg: 'background', cutin: '', chara: '', cg: 'background', effect: 'effect' }
-    const key = Object.keys(modeList).includes(line.mode) ? modeList[line.mode] : line.name || line.src.split('/').pop()
+    const key = Object.keys(modeList).includes(line.mode as string)
+      ? modeList[line.mode as string]
+      : line.name || line.src!.split('/').pop()!
     // 画像の表示位置を設定するための画面上の基準点を定義
     const baseLine = engineConfig.resolution.height / 2
     const centerPoint: Record<string, { x: number; y: number }> = {
@@ -21,8 +37,8 @@ export class ShowHandler implements CommandHandler {
     }
     line.src = core.expandVariable(line.src)
 
-    const sourceImage = core.displayedImages[key]
-    const activeImage = sourceImage
+    const sourceImage = core.displayedImages[key] as (DisplayedImage & { src?: string }) | undefined
+    const activeImage: ActiveImage = sourceImage
       ? { ...sourceImage, pos: { ...sourceImage.pos }, size: { ...sourceImage.size } }
       : { image: null, pos: { x: 0, y: 0 }, size: { width: 0, height: 0 }, look: '', entry: '', 'z-index': 0 }
     // srcが指定されておらず既存画像がある場合はそのまま再利用し、srcが変わった場合のみ読み込み直す
@@ -42,7 +58,7 @@ export class ShowHandler implements CommandHandler {
 
     // charaモード（modeが未指定の場合も含む、bg/cg/cutin/effect以外）でwidth/heightが未指定の場合、
     // 解像度に収まるようアスペクト比を保って自動縮小する（拡大はしない）
-    const isCharaLikeMode = !['bg', 'cg', 'cutin', 'effect'].includes(line.mode)
+    const isCharaLikeMode = !['bg', 'cg', 'cutin', 'effect'].includes(line.mode as string)
     if (isCharaLikeMode && !line.width && !line.height) {
       const naturalSize = activeImage.image.getSize()
       const fitScale = Math.min(
@@ -66,7 +82,8 @@ export class ShowHandler implements CommandHandler {
     // line.modeが'cg'の場合、表示済み画像を一時的に保存して、表示する画像を背景画像として設定する
     if (line.mode === 'cg') {
       core.tempImages = { ...core.displayedImages }
-      core.displayedImages = { background: line.src }
+      // keyは'background'になるため、下のdisplayedImages[key]への代入で背景として登録される
+      core.displayedImages = {}
       activeImage.size = { width: engineConfig.resolution.width, height: engineConfig.resolution.height }
     }
 
@@ -80,8 +97,8 @@ export class ShowHandler implements CommandHandler {
         bottom: engineConfig.resolution.height,
       }
       // エイリアスが設定されている場合、画像の中心点を求めて、画像の表示位置を設定する
-      activeImage.pos.x = centerPoint[pos[0]].x - activeImage.size.width / 2
-      activeImage.pos.y = baseLines[pos[1] || 'middle'] - activeImage.size.height / 2
+      activeImage.pos.x = centerPoint[pos[0]].x - Number(activeImage.size.width) / 2
+      activeImage.pos.y = baseLines[pos[1] || 'middle'] - Number(activeImage.size.height) / 2
     }
 
     if (line.sepia) activeImage.image.setSepia(line.sepia)
@@ -89,13 +106,13 @@ export class ShowHandler implements CommandHandler {
     if (line.blur) activeImage.image.setBlur(line.blur)
     if (line.opacity) activeImage.image.setOpacity(line.opacity)
 
-    core.displayedImages[key] = activeImage
+    core.displayedImages[key] = activeImage as DisplayedImage
 
     if (line.transition === 'fade') {
       // フェードイン効果で表示（他の画像とのz-index順を保ったまま対象画像だけをフェードさせる）
       // 同じキーに既存表示があった場合は、それを下地にクロスフェードさせ、切り替え中に画面が
       // 何も表示されない状態（黒画面）になることを防ぐ
-      await drawer.fadeImageIn(key, core.displayedImages, line.duration || 2000, sourceImage)
+      await drawer.fadeImageIn(key, core.displayedImages, Number(line.duration) || 2000, sourceImage)
     } else {
       // 通常の表示処理
       drawer.show(core.displayedImages)

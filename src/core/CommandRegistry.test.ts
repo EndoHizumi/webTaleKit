@@ -1,4 +1,4 @@
-import { CommandRegistry, CommandHandler, ExecutionContext } from './CommandRegistry'
+import { CommandRegistry, ExecutionContext } from './CommandRegistry'
 import { registerBuiltinCommands, TriggerHandler, UntriggerHandler } from '../commands'
 import { isTruthyAttr } from '../commands/TriggerHandler'
 

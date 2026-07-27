@@ -3,12 +3,13 @@ import { CommandHandler, ExecutionContext, ScenarioCommand } from '../core/Comma
 export class SoundHandler implements CommandHandler {
   async execute(command: ScenarioCommand, context: ExecutionContext): Promise<void> {
     const { core } = context
-    const line: any = command
+    const line = command
     const soundObject = await core.getSoundObject(line)
 
     if (line.mode === 'bgm') {
       // BGMの場合、既存のBGMを停止して、新しいBGMをセットする
-      if (core.bgm && core.bgm.isPlaying) {
+      // （isPlayingはprivateのため公開getterのplayingを参照する）
+      if (core.bgm && core.bgm.playing) {
         core.bgm.stop()
       }
       core.bgm = soundObject
@@ -26,7 +27,7 @@ export class SoundHandler implements CommandHandler {
     }
 
     // soundObjectを管理オブジェクトに追加
-    const key = line.name || line.src.split('/').pop()
+    const key = line.name || line.src!.split('/').pop()!
     core.usedSounds[key] = {
       audio: soundObject,
     }

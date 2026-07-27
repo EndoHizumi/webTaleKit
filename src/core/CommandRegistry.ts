@@ -1,13 +1,22 @@
 import { EventBus } from '../utils/eventBus'
 import { ScenarioManager } from './scenarioManager'
 import { Drawer } from './drawer'
+import { ImageObject } from '../resource/ImageObject'
+import { SoundObject } from '../resource/soundObject'
+import { Store } from '../utils/store'
+import type { LoadScreenOptions } from './index'
+import {
+  DisplayedImage,
+  DisplayedImageMap,
+  EngineConfig,
+  SceneConfig,
+  SceneFile,
+  ScenarioLine,
+  UsedSoundMap,
+} from './types'
 
 /** パーサーが生成するシナリオオブジェクト1件。エンジンはこれを逐次実行する */
-export interface ScenarioCommand {
-  type?: string // タグ名（省略時は 'text' 扱い）
-  content?: (string | ScenarioCommand)[] // 子要素・テキスト
-  [attr: string]: any // タグの属性（src, name, if 等）
-}
+export type ScenarioCommand = ScenarioLine
 
 /**
  * ハンドラから参照できるCoreの公開サーフェス。
@@ -16,36 +25,36 @@ export interface ScenarioCommand {
  */
 export interface CoreFacade {
   // 共通ユーティリティ
-  expandVariable(text: any): any
-  executeCode(code: string): any
-  waitHandler(line: any): Promise<void>
+  expandVariable<T>(text: T): T | string
+  executeCode(code: string): unknown
+  waitHandler(line: ScenarioLine): Promise<void>
   clickWait(): Promise<null>
-  checkResourceExists(url: string): Promise<boolean>
-  getImageObject(line: any): Promise<any>
-  getSoundObject(line: any): Promise<any>
+  checkResourceExists(url: string | undefined): Promise<boolean>
+  getImageObject(line: ScenarioLine): Promise<ImageObject>
+  getSoundObject(line: ScenarioLine): Promise<SoundObject>
   // タグディスパッチ用の薄いラッパー（ハンドラ間の相互呼び出しに使用）
-  textHandler(scenarioObject: any): Promise<void>
-  soundHandler(line: any): Promise<void>
-  newpageHandler(line?: any): Promise<void> | void
+  textHandler(scenarioObject: string | ScenarioLine): Promise<void>
+  soundHandler(line: ScenarioLine): Promise<void>
+  newpageHandler(line?: ScenarioLine): Promise<void> | void
   // シーン読み込み
   loadScene(sceneFileName: string): Promise<void>
-  loadScreen(sceneConfig: any, options?: any): Promise<void>
+  loadScreen(sceneConfig: SceneConfig, options?: LoadScreenOptions): Promise<void>
   // エンジン状態（StateManager導入までの暫定アクセス）
-  engineConfig: any
-  sceneFile: any
-  sceneConfig: any
-  displayedImages: Record<string, any>
-  tempImages: Record<string, any>
-  usedSounds: Record<string, any>
-  bgm: any
-  store: any
+  engineConfig: EngineConfig
+  sceneFile: SceneFile
+  sceneConfig: SceneConfig
+  displayedImages: DisplayedImageMap
+  tempImages: DisplayedImageMap
+  usedSounds: UsedSoundMap
+  bgm: SoundObject | null
+  store: Store
   gameContainer: HTMLElement
   isAuto: boolean
   isNext: boolean
   isSkip: boolean
   onNextHandler: (() => void) | null
-  setBackground(image: any): void
-  getBackground(): any
+  setBackground(image: DisplayedImage): void
+  getBackground(): ImageObject
   clearAllTriggers(): void
 }
 

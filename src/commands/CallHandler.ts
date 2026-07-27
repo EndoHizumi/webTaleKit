@@ -3,9 +3,8 @@ import { CommandHandler, ExecutionContext, ScenarioCommand } from '../core/Comma
 export class CallHandler implements CommandHandler {
   async execute(command: ScenarioCommand, context: ExecutionContext): Promise<void> {
     const { core } = context
-    const line: any = command
-    const result = core.executeCode(line.method)
-    if (result && typeof result.then === 'function') {
+    const result = core.executeCode(command.method!)
+    if (result && typeof (result as PromiseLike<unknown>).then === 'function') {
       await result
     }
   }

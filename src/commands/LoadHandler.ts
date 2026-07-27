@@ -1,10 +1,11 @@
 import { CommandHandler, ExecutionContext, ScenarioCommand } from '../core/CommandRegistry'
 import { ImageObject } from '../resource/ImageObject'
+import { SaveData } from '../core/types'
 
 export class LoadHandler implements CommandHandler {
   async execute(command: ScenarioCommand, context: ExecutionContext): Promise<void> {
     const { core, scenarioManager, drawer } = context
-    const line: any = command
+    const line = command
     const slot = line.slot || 'auto'
 
     const saveDataRaw = core.store.get(`save_${slot}`)
@@ -13,7 +14,7 @@ export class LoadHandler implements CommandHandler {
     }
 
     // ディープコピーで循環参照を回避
-    const saveData = JSON.parse(JSON.stringify(saveDataRaw))
+    const saveData = JSON.parse(JSON.stringify(saveDataRaw)) as SaveData
 
     const sceneName = saveData.scenarioManager.sceneName || saveData.sceneConfig.name
     if (!sceneName) {
@@ -28,7 +29,7 @@ export class LoadHandler implements CommandHandler {
     scenarioManager.setSceneName(saveData.scenarioManager.sceneName)
     scenarioManager.setIndex(saveData.scenarioManager.currentIndex)
     scenarioManager.setHistory(saveData.scenarioManager.history || [])
-    ;(scenarioManager as any).progress = { ...(scenarioManager as any).progress, ...saveData.scenarioManager.progress }
+    scenarioManager.progress = { ...scenarioManager.progress, ...saveData.scenarioManager.progress }
 
     // 画面の復元
     core.displayedImages = {}
@@ -43,7 +44,7 @@ export class LoadHandler implements CommandHandler {
       }
     }
 
-    for (const [key, imageData] of Object.entries<any>(saveData.displayedImages)) {
+    for (const [key, imageData] of Object.entries(saveData.displayedImages)) {
       if (imageData.src) {
         const image = await new ImageObject().setImageAsync(imageData.src)
         core.displayedImages[key] = {

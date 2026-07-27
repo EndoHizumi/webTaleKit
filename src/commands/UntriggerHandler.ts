@@ -9,7 +9,7 @@ export class UntriggerHandler implements CommandHandler {
     if (isTruthyAttr(command.all)) {
       this.triggerHandler.removeAll()
     } else if (command.id) {
-      this.triggerHandler.remove(command.id)
+      this.triggerHandler.remove(String(command.id))
     }
   }
 }

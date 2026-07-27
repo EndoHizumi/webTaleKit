@@ -2,9 +2,9 @@ import { CommandHandler, ExecutionContext, ScenarioCommand } from '../core/Comma
 import { EventBus } from '../utils/eventBus'
 
 /** rect="(x,y,w,h)" / circle="(cx,cy,r)" 形式の属性値を数値配列に変換する */
-function parseTuple(value: any, length: number, attrName: string): number[] | null {
+function parseTuple(value: unknown, length: number, attrName: string): number[] | null {
   if (value === undefined || value === null) return null
-  let parts: any[]
+  let parts: unknown[]
   if (Array.isArray(value)) {
     parts = value
   } else if (typeof value === 'string') {
@@ -20,7 +20,7 @@ function parseTuple(value: any, length: number, attrName: string): number[] | nu
 }
 
 /** once / all のようなブール属性の真偽判定（属性の存在＝true とみなす） */
-export function isTruthyAttr(value: any): boolean {
+export function isTruthyAttr(value: unknown): boolean {
   return value !== undefined && value !== null && value !== false && value !== 'false'
 }
 
@@ -48,7 +48,7 @@ export class TriggerHandler implements CommandHandler {
       throw new Error('Error: <trigger> requires an "event" attribute')
     }
 
-    const id: string = command.id || `trigger_${Date.now()}`
+    const id: string = command.id ? String(command.id) : `trigger_${Date.now()}`
     // 同一idの再登録は古いトリガーを解除して置き換える
     if (this.activeTriggers.has(id)) this.remove(id)
 
@@ -109,7 +109,7 @@ export class TriggerHandler implements CommandHandler {
       eventBus.emit(`trigger:fired:${id}`, { id, event: e })
       // 子要素をsub:true付きで現在行の次に挿入する（テキスト表示中には割り込まない）
       if (command.content) {
-        scenarioManager.addScenario(command.content as any)
+        scenarioManager.addScenario(command.content as ScenarioCommand[])
       }
       if (once) this.remove(id)
     }

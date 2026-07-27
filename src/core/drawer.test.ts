@@ -1,25 +1,30 @@
 import { Drawer, sortDisplayedImageEntries } from './drawer'
+import { DisplayedImageMap, Position, Size } from './types'
+import { ImageObject } from '../resource/ImageObject'
+
+// テストではImageObjectの実体を使わず、識別用idだけを持つ軽量モックで代用する
+const mockImage = (id?: string): ImageObject => (id ? { id } : {}) as unknown as ImageObject
 
 describe('sortDisplayedImageEntries', () => {
   test('z-index属性で昇順ソートされること', () => {
-    const displayedImages = {
-      a: { image: {}, 'z-index': 3 },
-      b: { image: {}, 'z-index': 1 },
-      c: { image: {}, 'z-index': 2 },
+    const displayedImages: DisplayedImageMap = {
+      a: { image: mockImage(), 'z-index': 3 },
+      b: { image: mockImage(), 'z-index': 1 },
+      c: { image: mockImage(), 'z-index': 2 },
     }
 
-    const keys = sortDisplayedImageEntries(displayedImages as any).map(([key]) => key)
+    const keys = sortDisplayedImageEntries(displayedImages).map(([key]) => key)
     expect(keys).toEqual(['b', 'c', 'a'])
   })
 
   test('同順位は元の挿入順を維持すること', () => {
-    const displayedImages = {
-      first: { image: {}, 'z-index': 1 },
-      second: { image: {}, 'z-index': 1 },
-      third: { image: {}, 'z-index': 1 },
+    const displayedImages: DisplayedImageMap = {
+      first: { image: mockImage(), 'z-index': 1 },
+      second: { image: mockImage(), 'z-index': 1 },
+      third: { image: mockImage(), 'z-index': 1 },
     }
 
-    const keys = sortDisplayedImageEntries(displayedImages as any).map(([key]) => key)
+    const keys = sortDisplayedImageEntries(displayedImages).map(([key]) => key)
     expect(keys).toEqual(['first', 'second', 'third'])
   })
 })
@@ -34,17 +39,31 @@ describe('animateImageAlpha', () => {
     jest.restoreAllMocks()
   })
 
+  // privateメソッドと内部プロパティへアクセスするための構造型
+  type TestDrawer = {
+    ctx: { canvas: { width: number; height: number }; clearRect: jest.Mock; globalAlpha: number }
+    drawCanvas: jest.Mock
+    animateImageAlpha: (
+      name: string,
+      displayedImages: DisplayedImageMap,
+      start: number,
+      end: number,
+      duration: number,
+      previousImage?: { image: ImageObject; pos?: Position; size?: Size },
+    ) => Promise<void>
+  }
+
   const createDrawerForAnimation = () => {
-    const drawer = Object.create(Drawer.prototype) as any
+    const drawer = Object.create(Drawer.prototype) as TestDrawer
     const ctx = {
       canvas: { width: 1280, height: 720 },
       clearRect: jest.fn(),
       globalAlpha: 1,
-    } as any
+    }
     const drawCalls: Array<{ id: string; alpha: number }> = []
     drawer.ctx = ctx
-    drawer.drawCanvas = jest.fn((img: any) => {
-      drawCalls.push({ id: img.id, alpha: ctx.globalAlpha })
+    drawer.drawCanvas = jest.fn((img: ImageObject) => {
+      drawCalls.push({ id: (img as unknown as { id: string }).id, alpha: ctx.globalAlpha })
     })
     return { drawer, drawCalls }
   }
@@ -62,12 +81,12 @@ describe('animateImageAlpha', () => {
     const { drawer, drawCalls } = createDrawerForAnimation()
     mockAnimationFrames([0, 1000])
     const displayedImages = {
-      front: { image: { id: 'front' }, size: {}, 'z-index': 3 },
-      target: { image: { id: 'target' }, size: {}, 'z-index': 2 },
-      back: { image: { id: 'back' }, size: {}, 'z-index': 1 },
-    }
+      front: { image: mockImage('front'), size: {}, 'z-index': 3 },
+      target: { image: mockImage('target'), size: {}, 'z-index': 2 },
+      back: { image: mockImage('back'), size: {}, 'z-index': 1 },
+    } as unknown as DisplayedImageMap
 
-    await drawer['animateImageAlpha']('target', displayedImages, 0, 1, 1000)
+    await drawer.animateImageAlpha('target', displayedImages, 0, 1, 1000)
 
     expect(drawCalls.slice(0, 3).map((call) => call.id)).toEqual(['back', 'target', 'front'])
     expect(drawCalls.slice(3, 6).map((call) => call.id)).toEqual(['back', 'target', 'front'])
@@ -79,13 +98,13 @@ describe('animateImageAlpha', () => {
     const { drawer, drawCalls } = createDrawerForAnimation()
     mockAnimationFrames([0, 1000])
     const displayedImages = {
-      back: { image: { id: 'back' }, size: {}, 'z-index': 1 },
-      target: { image: { id: 'target' }, size: {}, 'z-index': 2 },
-      front: { image: { id: 'front' }, size: {}, 'z-index': 3 },
-    }
+      back: { image: mockImage('back'), size: {}, 'z-index': 1 },
+      target: { image: mockImage('target'), size: {}, 'z-index': 2 },
+      front: { image: mockImage('front'), size: {}, 'z-index': 3 },
+    } as unknown as DisplayedImageMap
 
-    await drawer['animateImageAlpha']('target', displayedImages, 0, 1, 1000, {
-      image: { id: 'previous' },
+    await drawer.animateImageAlpha('target', displayedImages, 0, 1, 1000, {
+      image: mockImage('previous'),
       pos: { x: 0, y: 0 },
       size: { width: 100, height: 100 },
     })

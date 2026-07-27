@@ -5,12 +5,13 @@ class MockImage {
   onload: (() => void) | null = null
 }
 
-;(global as any).Image = MockImage
-;(global as any).document = {
+const globalRef = global as unknown as Record<string, unknown>
+globalRef.Image = MockImage
+globalRef.document = {
   // ImageObject用のcanvas兼TriggerHandler用のdivとして振る舞う疑似要素を返す
   createElement: () => {
-    const el = new FakeElement()
-    ;(el as any).getContext = () => null
+    const el = new FakeElement() as unknown as Record<string, unknown>
+    el.getContext = () => null
     return el
   },
 }
@@ -67,9 +68,9 @@ const createContext = (gameContainer: FakeElement) => {
   const context = {
     eventBus,
     scenarioManager,
-    drawer: {} as any,
-    core: { gameContainer } as any,
-  } as ExecutionContext
+    drawer: {},
+    core: { gameContainer },
+  } as unknown as ExecutionContext
   return { context, scenarioManager, eventBus }
 }
 
