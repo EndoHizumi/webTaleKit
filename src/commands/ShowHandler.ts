@@ -33,7 +33,7 @@ export class ShowHandler implements CommandHandler {
       }
       activeImage.image = await core.getImageObject({ ...line, src: resolvedSrc })
     }
-    activeImage.src = resolvedSrc || activeImage.src
+    activeImage.src = resolvedSrc
     // 画像の表示位置を設定（座標指定がある場合はそれを優先、ない場合はdisplayImages.posの値を参照して設定）
     activeImage.pos.x = line.x || activeImage.pos.x || 0
     activeImage.pos.y = line.y || activeImage.pos.y || 0
