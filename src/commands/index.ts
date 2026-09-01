@@ -17,6 +17,8 @@ import { SaveHandler } from './SaveHandler'
 import { LoadHandler } from './LoadHandler'
 import { TriggerHandler } from './TriggerHandler'
 import { UntriggerHandler } from './UntriggerHandler'
+import { AddHandler } from './AddHandler'
+import { RemoveHandler } from './RemoveHandler'
 
 export {
   TextHandler,
@@ -37,6 +39,8 @@ export {
   LoadHandler,
   TriggerHandler,
   UntriggerHandler,
+  AddHandler,
+  RemoveHandler,
 }
 
 /**
@@ -65,6 +69,8 @@ export function registerBuiltinCommands(registry: CommandRegistry): Record<strin
     load: new LoadHandler(),
     trigger: triggerHandler,
     untrigger: new UntriggerHandler(triggerHandler),
+    add: new AddHandler(),
+    remove: new RemoveHandler(),
   }
   registry.registerAll(handlers)
   return handlers
