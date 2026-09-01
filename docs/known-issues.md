@@ -73,7 +73,7 @@ Cannot find module '.../node_modules/webtalekit/src/core/drawer' imported from
 
 `src/core/index.js` の `httpHandler` （0.2.14系・ローカル0.3.0系どちらも同一コード）。
 
-### 2-1. GET/HEAD/DELETEでも常にリクエストボディを付けてしまう
+### 2-1. GET/HEADでも常にリクエストボディを付けてしまう
 
 ```js
 const response = await fetch(line.get || line.post || line.put || line.delete, {
