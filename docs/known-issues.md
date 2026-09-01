@@ -1,6 +1,6 @@
 # 既知の不具合メモ
 
-cafe-story（`C:\Users\endoh\Dropbox\Development\cafe-story`）の開発中に見つかった、
+cafe-story の開発中に見つかった、
 webtalekit本体の不具合をまとめる。
 
 ## 1. npm公開パッケージ `webtalekit@0.3.0` が壊れている
