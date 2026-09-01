@@ -392,29 +392,29 @@ export class Core {
       await this.textHandler({ content: [progressText.content][0], wait: 0 })
     }
     // get,post,put,delete属性を処理する
-    const headers = line.content
-      .filter((content) => content.type === 'header')[0]
-      .content.reduce(
-        (acc, header) => ({
-          ...acc,
-          [header.type]: header.content,
-        }),
-        {},
-      )
-    const body = line.content
-      .filter((content) => content.type === 'data')[0]
-      .content.reduce(
-        (acc, header) => ({
-          ...acc,
-          [header.type]: header.content,
-        }),
-        {},
-      )
-    const response = await fetch(line.get || line.post || line.put || line.delete, {
-      method: line.get ? 'GET' : line.post ? 'POST' : line.put ? 'PUT' : 'DELETE',
+    const headers = (line.content.filter((content) => content.type === 'header')[0]?.content || []).reduce(
+      (acc, header) => ({
+        ...acc,
+        [header.type]: header.content,
+      }),
+      {},
+    )
+    const body = (line.content.filter((content) => content.type === 'data')[0]?.content || []).reduce(
+      (acc, header) => ({
+        ...acc,
+        [header.type]: header.content,
+      }),
+      {},
+    )
+    const method = line.get ? 'GET' : line.post ? 'POST' : line.put ? 'PUT' : 'DELETE'
+    const fetchOptions = {
+      method,
       headers: headers,
-      body: JSON.stringify(body),
-    })
+    }
+    if (method !== 'GET' && method !== 'HEAD') {
+      fetchOptions.body = JSON.stringify(body)
+    }
+    const response = await fetch(line.get || line.post || line.put || line.delete, fetchOptions)
     if (response.ok) {
       const json = await response.json()
       this.sceneFile.res = json
