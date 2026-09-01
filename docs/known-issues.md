@@ -116,7 +116,7 @@ const headers = line.content
 
 ### 2-3. （0.2.14では未修正・ローカル0.3.0では修正済み）失敗時レスポンスの`json`未定義参照
 
-`webtalekit-alpha@0.2.14`（cafe-storyが現在使用しているバージョン）:
+`webtalekit@0.2.14`（cafe-storyが現在使用しているバージョン）:
 ```js
 } else {
   this.sceneFile.res = json  // ← elseブロック内では`json`が未定義（ReferenceError）
@@ -135,7 +135,7 @@ const headers = line.content
 
 ## 動作確認環境
 
-- cafe-story: `webtalekit-alpha@0.2.14`（npm公開版、正常動作）
+- cafe-story: `webtalekit@0.2.14`（npm公開版、正常動作）
 - 上記npm検証: `webtalekit@0.3.0`（npm公開版、ビルド不可）
 - HTTPタグの2-1/2-2は、ローカル`webTaleKit`リポジトリの`src/core/index.js`
   （0.3.0系ソース）で修正済み（2026-09-01対応）。

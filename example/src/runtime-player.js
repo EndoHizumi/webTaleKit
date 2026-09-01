@@ -1,5 +1,5 @@
-import { Core } from 'webtalekit-alpha/src/core/'
-import { domParserAdapter } from 'webtalekit-alpha/src/editor/domParserAdapter.js'
+import { Core } from 'webtalekit/src/core/'
+import { domParserAdapter } from 'webtalekit/src/editor/domParserAdapter.js'
 import engineConfig from '../engineConfig.json'
 
 const parseScene = require('../../parser/parser.js')

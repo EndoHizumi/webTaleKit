@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { Core } from 'webtalekit-alpha/src/core/'
+import { Core } from 'webtalekit/src/core/'
 import engineConfig from '../engineConfig.json'
 import App from './App.vue'
 
