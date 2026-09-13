@@ -1,6 +1,6 @@
 # 既知の不具合メモ
 
-cafe-story の開発中に見つかった、
+cafe-story（`C:\Users\endoh\Dropbox\Development\cafe-story`）の開発中に見つかった、
 webtalekit本体の不具合をまとめる。
 
 ## 1. npm公開パッケージ `webtalekit@0.3.0` が壊れている
@@ -73,7 +73,7 @@ Cannot find module '.../node_modules/webtalekit/src/core/drawer' imported from
 
 `src/core/index.js` の `httpHandler` （0.2.14系・ローカル0.3.0系どちらも同一コード）。
 
-### 2-1. GET/HEADでも常にリクエストボディを付けてしまう
+### 2-1. GET/HEAD/DELETEでも常にリクエストボディを付けてしまう
 
 ```js
 const response = await fetch(line.get || line.post || line.put || line.delete, {
@@ -116,7 +116,7 @@ const headers = line.content
 
 ### 2-3. （0.2.14では未修正・ローカル0.3.0では修正済み）失敗時レスポンスの`json`未定義参照
 
-`webtalekit@0.2.14`（cafe-storyが現在使用しているバージョン）:
+`webtalekit-alpha@0.2.14`（cafe-storyが現在使用しているバージョン）:
 ```js
 } else {
   this.sceneFile.res = json  // ← elseブロック内では`json`が未定義（ReferenceError）
@@ -135,7 +135,7 @@ const headers = line.content
 
 ## 動作確認環境
 
-- cafe-story: `webtalekit@0.2.14`（npm公開版、正常動作）
+- cafe-story: `webtalekit-alpha@0.2.14`（npm公開版、正常動作）
 - 上記npm検証: `webtalekit@0.3.0`（npm公開版、ビルド不可）
 - HTTPタグの2-1/2-2は、ローカル`webTaleKit`リポジトリの`src/core/index.js`
   （0.3.0系ソース）で修正済み（2026-09-01対応）。
