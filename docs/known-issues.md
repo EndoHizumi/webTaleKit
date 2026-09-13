@@ -1,6 +1,6 @@
 # 既知の不具合メモ
 
-cafe-story（`C:\Users\endoh\Dropbox\Development\cafe-story`）の開発中に見つかった、
+cafe-storyの開発中に見つかった、
 webtalekit本体の不具合をまとめる。
 
 ## 3. `<add>`/`<remove>`タグがCommandRegistryに登録されておらず実行時エラーになる
@@ -52,7 +52,7 @@ git blameで経緯を追うと:
   ハンドラから型安全にアクセスできるようにした。
 - `src/commands/index.ts`の`registerBuiltinCommands()`に`add`/`remove`を登録。
 - `src/core/CommandRegistry.test.ts`の登録タグ一覧テストに`add`/`remove`を追加。
-- `src/commands/AddHandler.test.ts`を追加し、`AddHandler`/`RemoveHandler`が
+- `src/commands/AddHandler.test.ts`/`RemoveHandler.test.ts`を追加し、`AddHandler`/`RemoveHandler`が
   `domElementHandler`に正しく委譲することを確認。
 
 なお、`CommandRegistry.ts`が`domElementHandler.ts`をimportするようになった

@@ -1,7 +1,7 @@
 import { EventBus } from '../utils/eventBus'
 import { ScenarioManager } from './scenarioManager'
 import { Drawer } from './drawer'
-import { DomElementHandler } from './domElementHandler'
+import type { DomElementHandler } from './domElementHandler'
 
 /** パーサーが生成するシナリオオブジェクト1件。エンジンはこれを逐次実行する */
 export interface ScenarioCommand {

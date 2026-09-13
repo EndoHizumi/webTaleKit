@@ -3,7 +3,7 @@ import { CommandHandler, ExecutionContext, ScenarioCommand } from '../core/Comma
 export class AddHandler implements CommandHandler {
   async execute(command: ScenarioCommand, context: ExecutionContext): Promise<void> {
     const { core } = context
-    const line: any = command
+    const line = command as { target: string; name?: string; class?: string; content?: any[] }
     core.domElementHandler.addElement(line)
   }
 }
