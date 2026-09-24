@@ -1,0 +1,89 @@
+name: Verify and publish to npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '検証のみ行い、npm publishは実行しない'
+        required: false
+        default: false
+        type: boolean
+      otp:
+        description: 'npmアカウントの2要素認証コード（Automationトークン使用時は不要）'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
+
+jobs:
+  verify-and-publish:
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify dist output
+        run: node scripts/verify-dist.js
+
+      - name: Check package contents (npm pack --dry-run)
+        working-directory: dist
+        run: npm pack --dry-run
+
+      - name: Check version is not already published
+        working-directory: dist
+        run: |
+          set -euo pipefail
+          PKG_NAME=$(node -p "require('./package.json').name")
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          echo "Checking ${PKG_NAME}@${PKG_VERSION} on npm registry..."
+          if npm view "${PKG_NAME}@${PKG_VERSION}" version >/dev/null 2>&1; then
+            echo "::error::${PKG_NAME}@${PKG_VERSION} は既にnpmに公開済みです。publishする前にpackage.jsonのversionを上げてください。"
+            exit 1
+          fi
+          echo "${PKG_NAME}@${PKG_VERSION} is not published yet. OK to publish."
+
+      - name: Publish to npm
+        if: ${{ inputs.dry_run != true }}
+        working-directory: dist
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_OTP: ${{ inputs.otp }}
+        run: |
+          set -euo pipefail
+          if [ -n "$NPM_OTP" ]; then
+            npm publish --otp="$NPM_OTP"
+          else
+            npm publish
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### npm publish workflow結果"
+            echo ""
+            echo "- package: $(node -p "require('./dist/package.json').name")@$(node -p "require('./dist/package.json').version")"
+            echo "- dry_run: ${{ inputs.dry_run }}"
+          } >> "$GITHUB_STEP_SUMMARY"
