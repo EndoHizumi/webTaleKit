@@ -43,6 +43,9 @@
       <item label="triggerタグデモ" onSelect="trigger_test">
         <route to="trigger-test" />
       </item>
+      <item label="天気予報デモ(HTTP)" onSelect="weather">
+        <route to="weather" />
+      </item>
     </choice>
   </scenario>
 
