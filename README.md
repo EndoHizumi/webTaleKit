@@ -12,6 +12,7 @@
 - [環境構築手順](#環境構築手順)
 - [動作確認手順](#動作確認手順)
 - [Quick Start(デモゲームを弄ってみよう)](#quick-startデモゲームを弄ってみよう)
+- [🤖 LLMと会話する](#-llmと会話する)
 - [開発コマンド](#開発コマンド)
 - [シナリオ検証API](#シナリオ検証api)
 - [現在の状況](#現在の状況)
@@ -22,9 +23,12 @@
 ## 概要
 
 TypeScript(JavaScript) ベースのビジュアルノベルゲームエンジンです。
-UIをHTML・CSS・JavaScriptで柔軟に作成でき、シナリオをマークアップ言語とJavaScriptで制御できます。
-自動スケーリング機能で、様々なウィンドウサイズに対応します。
-VS Codeの拡張機能を用いたGUIエディタやREST API呼び出しによる生成AI連携の追加を提供予定です。
+
+- **UIは普通のHTML・CSS・JavaScriptで作れます。** 独自のUI記法を覚える必要はありません。自動スケーリングで様々なウィンドウサイズに対応します。
+- **シナリオはWebTaleScript(HTML風のマークアップ)で書き、TypeScript/JavaScriptで拡張できます。** シーンファイル内の `<script>` で定義した変数や関数を、シナリオからそのまま使えます。
+- **シナリオからJSのメソッドやREST API(POSTを含む)を呼べます。** レスポンスは変数 `res` に入るので、LLMの応答をそのままキャラクターのセリフにできます([LLMと会話する](#-llmと会話する))。
+- **Vue.jsでUIを作るサンプル([example-vue](example-vue/))があります。** `new Core({ customUI: true })` で標準UIを無効にし、EventBusのイベント(`text:show` / `choice:show` など)を購読して画面を描きます。EventBusはフレームワークに依存しないので、Reactなど他のフレームワークにも同じ方法で組み込めます。
+- **AIコーディングエージェント向けの設定を同梱しています。** リポジトリ直下に `CLAUDE.md` / `copilot-instructions.md` / `.clinerules` があります。
 
 ### 特徴
 
@@ -34,7 +38,9 @@ VS Codeの拡張機能を用いたGUIエディタやREST API呼び出しによ�
 - 🎨 **豊富な画像処理**: フィルター・アニメーション機能を搭載
 - 🔊 **サウンド対応**: BGM・SE・ボイス再生に対応
 - 🛠️ **TypeScript対応**: TypeScriptでの開発をサポート
-- 🤖 **AI連携**: REST API呼び出しによる生成AI連携（予定）
+- 🧩 **UIフレームワーク連携**: Vue.jsでUIを作るサンプル(example-vue)付き。`customUI: true` とEventBusで、React等にも同じ方法で組み込める
+- 🤖 **LLM連携**: 全タグ共通のHTTP属性(`get` / `post` / `put` / `delete`)でLLMのAPIを呼び、応答をセリフとして表示
+- 🧑‍💻 **AIコーディング対応**: Claude Code・GitHub Copilot・Cline向けの設定ファイルを同梱
 
 ## デモ
 
@@ -166,6 +172,70 @@ npm run play
 </choice>
 ```
 
+## 🤖 LLMと会話する
+
+どのタグにも `get` / `post` / `put` / `delete` 属性を付けてREST APIを呼び出せます。
+レスポンスのJSONは変数 `res` に入り、`<then>` の中で `{{res.xxx}}` として表示できます。
+これを使うと、LLMの応答をそのままキャラクターのセリフにできます。
+
+```html
+<scene>
+  <scenario>
+    <say name="案内人" post="http://localhost:3002/chat">
+      <progress>考え中……</progress>
+      <header>
+        <Content-Type>application/json</Content-Type>
+      </header>
+      <data>
+        <message>{{question}}</message>
+      </data>
+      <then>{{res.reply}}</then>
+      <error>ごめんなさい、いまはうまく答えられません。</error>
+    </say>
+  </scenario>
+
+  <script>
+    export let question = 'このゲームの遊び方を教えて'
+    // HTTPレスポンスが入る変数(リクエスト前に参照してもエラーにならないよう宣言しておく)
+    export let res = null
+  </script>
+</scene>
+```
+
+- `<data>` の子要素は `{ "message": "…" }` というJSONに変換されて送信されます。値の中の `{{…}}` は送信前に展開されます。
+- `<header>` の `Content-Type: application/json` は省略しないでください。省略するとヘッダーが付かず、下記の中継サーバーはリクエストをJSONとして読めません。
+- レスポンスが2xxなら `<then>`、4xx/5xxのときや通信できなかったときは `<error>` の内容が表示されます。
+- `{{ }}` の中身はJavaScriptの式として評価されるので、`{{res.a.b}}` のようなネストした参照や `{{res.items[0]}}` のような配列の添字も使えます。
+
+### 中継サーバーを起動する
+
+このリポジトリには、OpenAI互換API(`/chat/completions`)に中継するサンプルサーバー [server/chat.js](server/chat.js) が入っています。llama.cpp server・Ollama・LM Studio などのローカルLLMや、Gemini・OpenAIのOpenAI互換エンドポイントで使えます。受け取った `message` をLLMに渡し、`{ "reply": "…" }` を返します。
+
+```bash
+# ローカルLLM(APIキー不要)の例: llama.cpp server を 8082 番で起動しておく
+#   llama-server -m your-model.gguf --port 8082
+LLM_BASE_URL=http://localhost:8082/v1 LLM_MODEL=local-model npm run chat
+```
+
+> [!NOTE]
+> llama.cpp server の既定ポート(8080)は、サンプルゲーム(`example`)の開発サーバーと同じです。
+> 同時に動かすときは、上の例のようにLLM側を別のポートで起動し、`LLM_BASE_URL` をそれに合わせてください。
+
+| 環境変数 | 既定値 | 説明 |
+| :--- | :--- | :--- |
+| `LLM_BASE_URL` | `http://localhost:8080/v1` | OpenAI互換APIのベースURL |
+| `LLM_API_KEY` | (空) | APIキー。ローカルLLMなら不要 |
+| `LLM_MODEL` | `local-model` | モデル名 |
+| `SYSTEM_PROMPT` | 案内人としての短い指示 | システムプロンプト |
+| `ALLOWED_ORIGIN` | `*` | CORSで許可するオリジン |
+| `PORT` | `3002` | 待ち受けポート |
+
+> [!WARNING]
+> **APIキーをシナリオ(`.scene` ファイル)や `<header>` に書かないでください。**
+> シナリオはブラウザに配信されるJavaScriptに変換されるため、プレイヤーが誰でも読めます。
+> APIキーは中継サーバーの環境変数(`LLM_API_KEY`)に置き、ブラウザからは中継サーバーだけを呼び出してください。
+> 公開するときは `ALLOWED_ORIGIN` をゲームのURLに絞ってください。
+
 ## 開発コマンド
 
 ### ビルドと開発
@@ -234,7 +304,7 @@ webTaleKitは、現在アルファ版です。
 | 0.1.0 | 初音| HATUNE | 初期リリース
 | 0.2.0 | 礎 | ISHIZUE | 基本機能アップデート<br>0.2.12〜<br>ダイアログ表示タグの追加<br>engineConfig反映バグの修正<br>未定義タグがある場合、undefineを呼び出すバグの修正<br>文字列以外を囲むとこける問題の修正<br>リンク切れでこける問題の修正<br>メッセージウィンドウオーバーフローの修正<br>if属性の実装<br>for属性の実装<br>既読管理の追加
 | 0.3.0 | 舞踊 | BUYO | トランジション・アニメーション関連のアップデート<br>テキストスピードの調整タグの追加<br>テキスト表示フォントサイズの変更<br>Webフォントのサポート(フォント変更設定の追加)<br>動画再生のサポート<br>子要素でフィルター・アニメーション設定
-| 0.4.0 | 狭間 | HAZAMA | Vue.jsやReact、SvelteなどのUIフレームワークとの連携追加のアップデート
+| 0.4.0 | 狭間 | HAZAMA | Vue.js・React・Svelte向け公式アダプタのパッケージ化<br>(`customUI: true` とEventBusによる組み込み自体は現在も可能。[example-vue](example-vue/)参照)
 | 0.5.0 | 操手 | AYATURI |  ゲームパッドのサポート追加<br>キーコンフィグの追加<br>VOICEBOX APIの対応<br>npm run recの追加
 | 0.6.0 | 絡繰 | KARAKURI | wtsLinterの追加<br>VSCodeとの連携追加<br>wst2htmlの追加<br>プラグイン機能の追加<br>クロスプラットホームへのビルド追加
 | 0.7.0 | 綴り | TUDURI |  GUIエディタの追加
