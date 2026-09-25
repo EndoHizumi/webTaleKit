@@ -14,6 +14,7 @@
     "setup": "npm install && cd example && npm install",
     "dev": "npm run build && cd example && npm run dev",
     "api": "node server/api.js",
+    "chat": "node server/chat.js",
     "build": "rimraf ./dist/ && tsc && npx shx cp -r package.json README.md engineConfig.json parser/ dist/ && npx shx cp src/core/index.js  dist/src/core/ && npx shx rm -f dist/parser/*.test.ts dist/parser/*.test.js",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",

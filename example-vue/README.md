@@ -4,8 +4,11 @@ WebTaleKit のイベント駆動アーキテクチャを活かし、UI 層を **
 
 ## ゲーム概要
 
-**電脳の夢** — 深夜の研究所で AI「イヴ」と出会う短編ビジュアルノベル。
-2 つの選択肢でエンディングが分岐します。
+タイトル画面から 3 つのデモを選べます。
+
+- **ストーリーデモ** — 「電脳の夢」: 深夜の研究所で AI「イヴ」と出会う短編ビジュアルノベル。選択肢によって 2 つのエンディングに分岐します。
+- **ダイアログデモ** — `dialog` タグ(`dialog:show` イベント)を `DialogPanel.vue` で表示します。
+- **セーブ・ロードデモ** — `save` / `load` タグを試せます。
 
 ## アーキテクチャ
 
@@ -15,20 +18,50 @@ WebTaleKit の Core はゲームロジックのみを担当し、UI の実装を
 ```text
 WebTaleKit Core (ゲームロジック)
   │
+  │ EventBus.emit('screen:load')   … Drawer のキャンバス初期化
+  │ EventBus.emit('text:clear')
   │ EventBus.emit('text:show')
   │ EventBus.emit('choice:show')
-  │ EventBus.emit('screen:load')
-  │ EventBus.emit('input:bind')
+  │ EventBus.emit('dialog:show')
+  │ EventBus.emit('input:bind')    … 進行・スキップ用コールバックの受け渡し
   ↓
 useWebTaleKit.js (コンポーザブル — EventBus → Vue reactive state ブリッジ)
   │
   ├─ MessageWindow.vue  (text:show / text:clear)
   ├─ ChoicePanel.vue    (choice:show)
-  └─ WaitCursor.vue     (クリック待ちカーソル)
+  ├─ DialogPanel.vue    (dialog:show)
+  ├─ WaitCursor.vue     (クリック待ちカーソル)
+  │
+  └─ onEvent コールバック
+       ↓
+     useEventBusMonitor.js (受け取ったイベントを記録するデバッグ用コンポーザブル)
+       ├─ EventBusMonitor.vue    (イベントの流れとログ)
+       └─ VueStateInspector.vue  (各コンポーネントに渡している状態)
 ```
 
 `new Core({ customUI: true })` を渡すことで、デフォルトの DOM ハンドラを無効化し、
 すべての UI イベントを Vue 側で制御します。
+クリック・Enter・Ctrl の入力は `App.vue` が `#gameContainer` で受け取り、
+`input:bind` で受け取ったコールバックを通して Core に伝えます。
+
+## デバッグ用パネル
+
+EventBus で Core と UI がどうつながっているかを目で確認するためのパネルです。
+どちらも `useWebTaleKit` の `onEvent` コールバック経由で情報を受け取るので、EventBus を直接購読しません。
+
+### EventBusMonitor
+
+画面左上に、`Core → EventBus → Vue UI` のフロー図と直近 6 件のイベントログを表示します。
+
+- イベントが届くたびに、Core → EventBus → Vue UI の順にノードが光ります
+- ログにはイベント名と、セリフの冒頭や選択肢の件数などの要約が並びます
+- ヘッダーをクリックすると折りたたみます。開き直すとログはクリアされます
+
+### VueStateInspector
+
+画面右上に、Vue DevTools 風のコンポーネントツリーを表示します。
+`MessageWindow`・`ChoicePanel`・`DialogPanel`・`WaitCursor`・`EventBusMonitor` に渡している状態を一覧でき、
+値が変わった行は一瞬ハイライトされます。`content` などの配列はクリックで開閉できます。
 
 ## ディレクトリ構成
 
@@ -39,16 +72,22 @@ example-vue/
 │   │   ├── title.scene
 │   │   ├── chapter1.scene
 │   │   ├── ending_a.scene
-│   │   └── ending_b.scene
+│   │   ├── ending_b.scene
+│   │   ├── dialog_demo.scene     # dialog タグのデモ
+│   │   └── save_load_demo.scene  # save / load タグのデモ
 │   ├── js/               # wtc でコンパイルされた JS (自動生成)
 │   ├── screen/
 │   │   └── game.html     # Drawer 初期化用の最小テンプレート
 │   ├── composables/
-│   │   └── useWebTaleKit.js
+│   │   ├── useWebTaleKit.js       # EventBus → Vue reactive state ブリッジ
+│   │   └── useEventBusMonitor.js  # デバッグ用: イベントの記録
 │   ├── components/
 │   │   ├── MessageWindow.vue
 │   │   ├── ChoicePanel.vue
-│   │   └── WaitCursor.vue
+│   │   ├── DialogPanel.vue
+│   │   ├── WaitCursor.vue
+│   │   ├── EventBusMonitor.vue    # デバッグ用パネル
+│   │   └── VueStateInspector.vue  # デバッグ用パネル
 │   ├── App.vue
 │   ├── index.js
 │   └── template.html
