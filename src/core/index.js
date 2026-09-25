@@ -389,24 +389,24 @@ export class Core {
     // prettier-ignore
     const progressText = line.content.filter((content) => content.type === 'progress')[0]
     if (progressText) {
-      await this.textHandler({ content: [progressText.content][0], wait: 0 })
+      await this.textHandler({ content: progressText.content, name: line.name, wait: 0 })
     }
     // get,post,put,delete属性を処理する
-    const headers = (line.content.filter((content) => content.type === 'header')[0]?.content || []).reduce(
-      (acc, header) => ({
-        ...acc,
-        [header.type]: header.content,
-      }),
-      {},
-    )
-    const body = (line.content.filter((content) => content.type === 'data')[0]?.content || []).reduce(
-      (acc, header) => ({
-        ...acc,
-        [header.type]: header.content,
-      }),
-      {},
-    )
+    // header,dataタグは省略可能。子要素を{タグ名: 値}のオブジェクトに変換し、値はmustache記法で変数展開する
+    const toObject = (type) =>
+      (line.content.filter((content) => content.type === type)[0]?.content || [])
+        .filter((item) => item.type)
+        .reduce(
+          (acc, item) => ({
+            ...acc,
+            [item.type]: this.expandVariable([].concat(item.content).join('')),
+          }),
+          {},
+        )
+    const headers = toObject('header')
+    const body = toObject('data')
     const method = line.get ? 'GET' : line.post ? 'POST' : line.put ? 'PUT' : 'DELETE'
+    const url = this.expandVariable(line.get || line.post || line.put || line.delete)
     const fetchOptions = {
       method,
       headers: headers,
@@ -414,15 +414,20 @@ export class Core {
     if (method !== 'GET' && method !== 'HEAD') {
       fetchOptions.body = JSON.stringify(body)
     }
-    const response = await fetch(line.get || line.post || line.put || line.delete, fetchOptions)
-    if (response.ok) {
-      const json = await response.json()
-      this.sceneFile.res = json
-      line.then = line.content.filter((content) => content.type === 'then')[0].content
-    } else {
-      const json = await response.json()
-      this.sceneFile.res = json
-      line.error = line.content.filter((content) => content.type === 'error')[0].content
+    const findContent = (type) => line.content.filter((content) => content.type === type)[0]?.content || []
+    try {
+      const response = await fetch(url, fetchOptions)
+      this.sceneFile.res = await response.json().catch(() => null)
+      if (response.ok) {
+        line.then = findContent('then')
+      } else {
+        line.error = findContent('error')
+      }
+    } catch (error) {
+      // ネットワークエラー(オフライン・CORS拒否など)もerrorタグで扱う
+      console.error(`HTTP request failed: ${url}`, error)
+      this.sceneFile.res = { error: error.message }
+      line.error = findContent('error')
     }
     if (line.content) {
       line.content = line.content.filter(

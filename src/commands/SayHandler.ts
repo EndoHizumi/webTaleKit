@@ -6,7 +6,14 @@ export class SayHandler implements CommandHandler {
     const line: any = command
     // say(name:string, pattern: string, voice: {playの引数},  ...text)
     if (line.voice) await core.soundHandler({ path: line.voice, play: true })
-    await core.textHandler({ content: line.content, name: line.name, speed: line.speed || 25 })
+    // httpレスポンス(then/error)はtextHandler側でcontentに結合される
+    await core.textHandler({
+      content: line.content,
+      name: line.name,
+      speed: line.speed || 25,
+      then: line.then,
+      error: line.error,
+    })
     scenarioManager.setHistory(line)
   }
 }

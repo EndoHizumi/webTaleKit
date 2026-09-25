@@ -5,7 +5,9 @@ export class IfHandler implements CommandHandler {
     const { core, scenarioManager } = context
     const line: any = command
     const isTrue = core.executeCode(`return ${line.condition}`)
-    const appendScenario = isTrue ? line.content[0].content : line.content[1].content
-    scenarioManager.addScenario(appendScenario)
+    // <else>は省略可能。該当するブロックがなければ何もしない
+    const branch = line.content.find((item: any) => item.type === (isTrue ? 'then' : 'else'))
+    if (!branch) return
+    scenarioManager.addScenario(branch.content)
   }
 }

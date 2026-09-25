@@ -131,6 +131,81 @@ const headers = line.content
 `const json = await response.json()`が追加されており、**この点はすでに修正済み**。
 0.2.14系を使い続ける場合はこの修正が含まれていない点に注意。
 
+以下の2-4〜2-8は、天気予報APIを使ったサンプル（`example/src/scene/weather.scene`）を
+作成する過程で見つかったもの。
+
+### 2-4. `<progress>`の表示でクリック待ちになり、通信が始まらない
+
+```js
+// httpHandler
+await this.textHandler({ content: [progressText.content][0], wait: 0 })
+// TextHandler
+await core.waitHandler({ wait: scenarioObject.time })
+```
+
+`httpHandler`は`wait: 0`を渡しているが、`TextHandler`は`time`しか参照していないため
+`wait`が`undefined`になり、クリック待ちに入る。プレイヤーがクリックするまで
+`fetch`が実行されず、「読み込み中」の表示のまま止まって見える。
+また、`progress`の表示に話者名（`name`）が渡されていなかった。
+
+**対応済み**: `TextHandler`で`scenarioObject.wait ?? scenarioObject.time`を
+参照するようにし、`httpHandler`からは`name`も渡すようにした。
+
+### 2-5. `<say>`で`<then>`/`<error>`の内容が表示されない
+
+`httpHandler`はレスポンスに応じて`line.then`/`line.error`をセットし、
+`TextHandler`がそれを`content`に結合して表示する。しかし`SayHandler`は
+`textHandler`に`content`/`name`/`speed`しか渡していなかったため、
+`<say get="...">`では`<then>`/`<error>`の内容が捨てられていた。
+
+**対応済み**: `SayHandler`から`then`/`error`も`textHandler`に渡すようにした。
+
+### 2-6. ネットワークエラー時に`<error>`へ進まない
+
+オフライン・CORS拒否・DNSエラーなどで`fetch`自体が例外を投げると、
+`httpHandler`で捕捉されずシステムエラーのアラートになっていた。
+また、エラーレスポンスの本文がJSONでない場合も`response.json()`で例外になっていた。
+
+**対応済み**: `fetch`を`try/catch`で囲み、例外時は`res`に`{ error: メッセージ }`を
+入れて`<error>`の内容を表示するようにした。JSONとして読めないレスポンスは
+`res = null`として扱う。
+
+### 2-7. `<then>`/`<error>`を省略すると例外になる
+
+```js
+line.then = line.content.filter((content) => content.type === 'then')[0].content
+```
+
+`<then>`または`<error>`を書かないと`undefined.content`の参照で落ちていた。
+
+**対応済み**: 該当タグがない場合は空配列として扱うようにした。
+
+### 2-8. URLや`<header>`/`<data>`の値で変数が展開されない
+
+`get`/`post`などの属性値や、`<header>`/`<data>`の子要素の値に`{{変数}}`を書いても
+展開されず、文字列のまま送信されていた（ドキュメントの例では`<data>`内で
+`{{username}}`を使っている）。また子要素の値は配列のまま送られていた。
+
+**対応済み**: URLと`<header>`/`<data>`の各値を`expandVariable`で展開し、
+文字列として送信するようにした。
+
+---
+
+## 3. `<if>`タグで`<else>`を省略すると例外になる
+
+`src/commands/IfHandler.ts`:
+
+```ts
+const appendScenario = isTrue ? line.content[0].content : line.content[1].content
+```
+
+`<else>`を書かずに条件が偽になると`line.content[1]`が`undefined`になり、
+`Cannot read properties of undefined (reading 'content')`でシステムエラーになる。
+`<then>`/`<else>`の位置を固定で決め打ちしている点も壊れやすい。
+
+**対応済み**: `type`が`then`/`else`の要素を探して実行し、該当するブロックが
+なければ何もせず次に進むようにした。
+
 ---
 
 ## 動作確認環境
@@ -139,3 +214,6 @@ const headers = line.content
 - 上記npm検証: `webtalekit@0.3.0`（npm公開版、ビルド不可）
 - HTTPタグの2-1/2-2は、ローカル`webTaleKit`リポジトリの`src/core/index.js`
   （0.3.0系ソース）で修正済み（2026-09-01対応）。
+- HTTPタグの2-4〜2-8と、3（`<if>`）は2026-09-25に修正。
+  `example`の天気予報デモ（https://weather.tsukumijima.net/ のAPIを使用）で、
+  取得成功時と通信遮断時の両方の動作を確認済み。
