@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "A WebTaleKit game project",
   "main": "src/index.js",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "play": "rimraf dist && npx wtc ./src/scene/ ./src/js/ && npx webpack serve --open --mode development",
