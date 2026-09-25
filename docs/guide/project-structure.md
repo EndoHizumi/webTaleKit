@@ -157,7 +157,7 @@ export const voice = [
     "dev": "webpack serve --mode development"
   },
   "dependencies": {
-    "webtalekit-alpha": "^0.2.13"
+    "webtalekit": "^0.3.0"
   }
 }
 ```

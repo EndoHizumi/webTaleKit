@@ -23,7 +23,7 @@ module.exports = {
       assert: false,
     },
     alias: {
-      'webtalekit-alpha': path.resolve(__dirname, '..'),
+      webtalekit: path.resolve(__dirname, '..'),
     },
   },
   externals: {

@@ -40,7 +40,7 @@ npm init -y
 #### 2. webTaleKitのインストール
 
 ```bash
-npm install webtalekit-alpha
+npm install webtalekit
 ```
 
 #### 3. ディレクトリ構造の作成
@@ -94,7 +94,7 @@ module.exports = {
     rules: [
       {
         test: /\.scene$/,
-        use: 'webtalekit-alpha/parser/loader'
+        use: 'webtalekit/parser/loader'
       }
     ]
   }
@@ -137,7 +137,7 @@ module.exports = {
 ### メインスクリプト（src/index.js）
 
 ```javascript
-import { Core } from 'webtalekit-alpha';
+import { Core } from 'webtalekit';
 
 // ゲームエンジンの初期化
 const game = new Core({

@@ -26,7 +26,8 @@ export class TextHandler implements CommandHandler {
       waitFn: core.waitHandler.bind(core),
     })
 
-    await core.waitHandler({ wait: scenarioObject.time })
+    // wait: 0 が指定された場合(httpのprogress表示など)はクリック待ちせずに進む
+    await core.waitHandler({ wait: scenarioObject.wait ?? scenarioObject.time })
     drawer.isSkip = false
     scenarioManager.setHistory(scenarioObject.content)
   }

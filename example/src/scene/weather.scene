@@ -1,0 +1,104 @@
+<scene>
+  <scenario>
+    <show src="./src/resource/chara/guide.png" name="ガイド" pos="center:middle" transition="fade" />
+    <say name="ガイド">こんにちは！今日はお天気キャスターとして、最新の天気予報をお届けします。</say>
+    <say name="ガイド">予報はインターネットから、その場で取ってきますね。</say>
+
+    <choice prompt="どの地域の天気を調べますか？">
+      <item label="東京">
+        <call method="cityId = '130010'" />
+      </item>
+      <item label="大阪">
+        <call method="cityId = '270000'" />
+      </item>
+      <item label="札幌">
+        <call method="cityId = '016010'" />
+      </item>
+      <item label="福岡">
+        <call method="cityId = '400010'" />
+      </item>
+      <item label="那覇">
+        <call method="cityId = '471010'" />
+      </item>
+    </choice>
+
+    <!-- get属性でHTTPリクエストを送り、レスポンスのJSONは変数resに入る -->
+    <say name="ガイド" get="https://weather.tsukumijima.net/api/forecast/city/{{cityId}}">
+      <progress>ちょっと待ってくださいね、いま調べています……</progress>
+      <then>お待たせしました！{{res.title}}をお伝えします。</then>
+      <error>ごめんなさい、天気予報を取得できませんでした……。</error>
+    </say>
+
+    <if condition="res && res.forecasts">
+      <then>
+        <say name="ガイド">まずは{{dayLabel(res.forecasts[0])}}。{{res.forecasts[0].telop}}の予報です。</say>
+        <say name="ガイド">{{temperatureText(res.forecasts[0])}}</say>
+        <say name="ガイド">降水確率は、{{rainText(res.forecasts[0])}}。</say>
+        <if condition="res.forecasts[0].telop.includes('雨')">
+          <then>
+            <say name="ガイド">雨が降りそうなので、お出かけの際は傘を忘れずに！</say>
+          </then>
+          <else>
+            <if condition="res.forecasts[0].telop.includes('晴')">
+              <then>
+                <say name="ガイド">お日さまが出そうです。お洗濯日和かもしれませんね。</say>
+              </then>
+            </if>
+          </else>
+        </if>
+        <say name="ガイド">続いて{{dayLabel(res.forecasts[1])}}。{{res.forecasts[1].telop}}の予報です。{{temperatureText(res.forecasts[1])}}</say>
+        <say name="ガイド">以上、{{res.publishingOffice}}が{{res.publicTimeFormatted}}に発表した予報でした！</say>
+      </then>
+      <else>
+        <say name="ガイド">通信環境を確認して、もう一度試してみてくださいね。</say>
+      </else>
+    </if>
+
+    <choice prompt="">
+      <item label="別の地域も調べる">
+        <route to="weather" />
+      </item>
+      <item label="タイトルに戻る">
+        <route to="title" />
+      </item>
+    </choice>
+  </scenario>
+
+  <script>
+    export const sceneConfig = {
+      name: 'weather',
+      background: './src/resource/background/city.jpg',
+      template: './src/screen/title.html'
+    }
+
+    // 選択した地域のID（天気予報APIの city パラメータ）
+    export let cityId = '130010'
+    // HTTPレスポンスが入る変数（リクエスト前に参照してもエラーにならないよう宣言しておく）
+    export let res = null
+
+    // 「今日（9月25日）」のような日付ラベルを作る
+    export function dayLabel(forecast) {
+      const [, month, day] = forecast.date.split('-').map(Number)
+      return `${forecast.dateLabel}（${month}月${day}日）`
+    }
+
+    // 最高・最低気温の読み上げ文を作る。発表時刻によっては値がnullになるので、その場合は省く
+    export function temperatureText(forecast) {
+      const max = forecast.temperature.max.celsius
+      const min = forecast.temperature.min.celsius
+      if (max && min) return `最高気温は${max}度、最低気温は${min}度です。`
+      if (max) return `最高気温は${max}度の見込みです。`
+      if (min) return `最低気温は${min}度の見込みです。`
+      return '気温の予報はまだ発表されていないみたいです。'
+    }
+
+    // 時間帯ごとの降水確率を読み上げ文にする。過ぎた時間帯（"--%"）は省く
+    export function rainText(forecast) {
+      const labels = { T00_06: '0時から6時', T06_12: '6時から12時', T12_18: '12時から18時', T18_24: '18時から24時' }
+      const parts = Object.entries(forecast.chanceOfRain)
+        .filter(([, value]) => value && value !== '--%')
+        .map(([key, value]) => `${labels[key]}が${value}`)
+      return parts.length > 0 ? parts.join('、') : 'まだ発表されていません'
+    }
+  </script>
+</scene>

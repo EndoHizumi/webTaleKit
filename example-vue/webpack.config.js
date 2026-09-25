@@ -22,7 +22,7 @@ module.exports = {
       assert: false,
     },
     alias: {
-      'webtalekit-alpha': path.resolve(__dirname, '..'),
+      webtalekit: path.resolve(__dirname, '..'),
       vue: 'vue/dist/vue.esm-bundler.js',
     },
   },
