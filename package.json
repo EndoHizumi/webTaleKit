@@ -2,14 +2,19 @@
   "name": "webtalekit",
   "version": "0.3.0",
   "description": "Web知識でノベルゲーを作ることを目指したやつ",
-  "main": "./src/index.js",
+  "main": "./src/core/index.js",
+  "files": [
+    "src",
+    "parser",
+    "engineConfig.json"
+  ],
   "scripts": {
     "lint": "eslint . --ext .ts --ext .js",
     "test": "jest",
     "setup": "npm install && cd example && npm install",
     "dev": "npm run build && cd example && npm run dev",
     "api": "node server/api.js",
-    "build": "rimraf ./dist/ && tsc && npx shx cp -r package.json README.md engineConfig.json parser/ dist/ && npx shx cp src/core/index.js  dist/src/core/",
+    "build": "rimraf ./dist/ && tsc && npx shx cp -r package.json README.md engineConfig.json parser/ dist/ && npx shx cp src/core/index.js  dist/src/core/ && npx shx rm -f dist/parser/*.test.ts dist/parser/*.test.js",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"
