@@ -25,6 +25,11 @@ export class LoadHandler implements CommandHandler {
     await core.loadScreen(saveData.sceneConfig, { skipBackground: true, skipBgm: true })
 
     // 読んだところまで復元
+    // 選択肢の分岐の途中でセーブしたときも同じ位置に戻れるよう、差し込まれた分岐ごとシナリオを戻す。
+    // scenario のない古いセーブでは、loadScene で読み直した元のシナリオのまま
+    if (Array.isArray(saveData.scenarioManager.scenario)) {
+      scenarioManager.setScenario(saveData.scenarioManager.scenario, sceneName)
+    }
     scenarioManager.setSceneName(saveData.scenarioManager.sceneName)
     scenarioManager.setIndex(saveData.scenarioManager.currentIndex)
     scenarioManager.setHistory(saveData.scenarioManager.history || [])
