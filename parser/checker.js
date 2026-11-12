@@ -5,7 +5,7 @@
  * HTTP サブタグはこれらのコマンドいずれかの子要素として使用できる。
  */
 const TOP_LEVEL_COMMANDS = [
-  'text', 'choice', 'show', 'newpage', 'hide', 'jump', 'sound', 'say',
+  'text', 'choice', 'show', 'newpage', 'hide', 'jump', 'label', 'sound', 'say',
   'if', 'call', 'moveto', 'route', 'wait', 'dialog', 'save', 'load', 'add', 'remove',
   'trigger', 'untrigger',
 ]
@@ -64,7 +64,8 @@ const KNOWN_ATTRIBUTES = {
   hide:     new Set(['name', 'mode', 'transition', 'duration']),
   moveto:   new Set(['name', 'x', 'y', 'duration']),
   sound:    new Set(['src', 'name', 'mode', 'play', 'loop', 'stop', 'pause']),
-  jump:     new Set(['index', 'sub']),
+  jump:     new Set(['index', 'to', 'sub']),
+  label:    new Set(['name']),
   if:       new Set(['condition']),
   call:     new Set(['method']),
   route:    new Set(['to']),

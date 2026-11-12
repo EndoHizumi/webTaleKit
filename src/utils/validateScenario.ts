@@ -143,6 +143,16 @@ export interface CommandLookup {
   has(tagName: string): boolean
 }
 
+/** シナリオ（選択肢・if の中も含む）に、その名前の <label> があるか */
+function hasLabel(nodes: any, name: string): boolean {
+  if (!Array.isArray(nodes)) return false
+  return nodes.some((n: any) => {
+    if (!n || typeof n !== 'object') return false
+    if (n.type === 'label' && String(n.name) === name) return true
+    return hasLabel(n.content, name) || hasLabel(n.then, name) || hasLabel(n.else, name)
+  })
+}
+
 function isCommandLookup(commandList: Record<string, Function> | CommandLookup): commandList is CommandLookup {
   return typeof (commandList as CommandLookup).has === 'function'
 }
@@ -193,6 +203,14 @@ export function validateScenarioObjects(
       if (items.length === 0) {
         errors.push({ index: i, type, message: 'choice コマンドに item が含まれていません' })
       }
+    }
+
+    if (type === 'jump' && obj.to !== undefined && obj.index === undefined && !hasLabel(sanitizedScenario, String(obj.to))) {
+      warnings.push({
+        index: i,
+        type,
+        message: `jump の飛び先のラベル「${obj.to}」がありません`,
+      })
     }
 
     if (type === 'jump' && obj.index !== undefined) {
