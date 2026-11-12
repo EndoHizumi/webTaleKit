@@ -12,6 +12,7 @@ import { DomElementHandler } from './domElementHandler'
 import { logError } from '../utils/logger'
 import { CommandRegistry } from './CommandRegistry'
 import { registerBuiltinCommands } from '../commands'
+import { createSceneBinding, pullSceneVariables, pushSceneVariables } from './sceneBinding'
 
 export class Core {
   constructor(options = {}) {
@@ -136,6 +137,8 @@ export class Core {
     // ESモジュールの名前空間オブジェクトは外部から書き込み不可なため、プレーンオブジェクトにコピーする
     const moduleNamespace = await import(/* webpackChunkName: "[request]" */ `/src/js/${sceneFileName}.js`)
     this.sceneFile = { ...moduleNamespace }
+    // タグとスクリプトの関数で、同じ変数の値が見えるようにする（#230）
+    this.sceneBinding = createSceneBinding(moduleNamespace)
     // sceneファイルの初期化処理を実行
     if (this.sceneFile.init) {
       this.sceneFile.init(this.getAPIForScript())
@@ -459,12 +462,21 @@ export class Core {
 
   executeCode(code) {
     try {
+      const binding = this.sceneBinding ?? createSceneBinding(null)
+      // <script> の関数が書き換えたモジュールの変数を、先に取り込む（#230）
+      pullSceneVariables(binding, this.sceneFile)
       const keys = Object.keys(this.sceneFile).filter((key) => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(key))
+      const before = {}
+      keys.forEach((key) => (before[key] = this.sceneFile[key]))
       const declarations = keys.map((key) => `let ${key} = _ctx[${JSON.stringify(key)}];`).join('\n')
       const writeBacks = keys.map((key) => `_ctx[${JSON.stringify(key)}] = ${key};`).join('\n')
       const wrappedCode = `${declarations}\nconst _result = (function() { ${code} })();\n${writeBacks}\nreturn _result;`
       const func = new Function('_ctx', wrappedCode)
-      return func(this.sceneFile)
+      const result = func(this.sceneFile)
+      // このコードで代入した変数をモジュールにも戻し、関数の中で変わった値を取り込み直す
+      pushSceneVariables(binding, this.sceneFile, before)
+      pullSceneVariables(binding, this.sceneFile)
+      return result
     } catch (error) {
       throw new Error(`Error executing code: ${error.message}`)
     }

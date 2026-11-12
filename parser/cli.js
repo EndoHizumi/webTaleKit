@@ -2,6 +2,7 @@
 const { HTMLToJSON } = require('html-to-json-parser')
 const { minify } = require('html-minifier')
 const parse = require('./parser.js')
+const { SCENE_ASSIGN_SOURCE } = require('./sceneAccessor.js')
 const fs = require('fs')
 const path = require('path')
 
@@ -64,7 +65,8 @@ const exec = (targetScript) => {
     // JSファイルを出力する(lang=tsの場合は、tsファイルを出力する)
     fs.writeFile(
       `${outputPath}${fileName}.${lang == 'text/typescript' ? 'ts' : 'js'}`,
-      `${script};\nexport const scenario = ${JSON.stringify(scenario)}; `,
+      // タグで代入した変数を、モジュールの export let にも戻すための関数を足す（#230）
+      `${script};\nexport ${SCENE_ASSIGN_SOURCE}\nexport const scenario = ${JSON.stringify(scenario)}; `,
       (err) => {
         if (err) {
           console.error(err)
