@@ -104,11 +104,11 @@ describe('CommandRegistry', () => {
 })
 
 describe('registerBuiltinCommands', () => {
-  it('組み込み全タグ（16タグ + trigger/untrigger + add/remove）を登録する', () => {
+  it('組み込み全タグ（16タグ + label + trigger/untrigger + add/remove）を登録する', () => {
     const registry = new CommandRegistry()
     const handlers = registerBuiltinCommands(registry)
     const expectedTags = [
-      'text', 'say', 'choice', 'show', 'hide', 'newpage', 'jump', 'call',
+      'text', 'say', 'choice', 'show', 'hide', 'newpage', 'jump', 'label', 'call',
       'moveto', 'route', 'if', 'sound', 'wait', 'dialog', 'save', 'load',
       'trigger', 'untrigger', 'add', 'remove',
     ]

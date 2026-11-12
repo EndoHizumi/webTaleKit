@@ -6,6 +6,7 @@ import { ShowHandler } from './ShowHandler'
 import { HideHandler } from './HideHandler'
 import { NewpageHandler } from './NewpageHandler'
 import { JumpHandler } from './JumpHandler'
+import { LabelHandler } from './LabelHandler'
 import { CallHandler } from './CallHandler'
 import { MoveToHandler } from './MoveToHandler'
 import { RouteHandler } from './RouteHandler'
@@ -28,6 +29,7 @@ export {
   HideHandler,
   NewpageHandler,
   JumpHandler,
+  LabelHandler,
   CallHandler,
   MoveToHandler,
   RouteHandler,
@@ -58,6 +60,7 @@ export function registerBuiltinCommands(registry: CommandRegistry): Record<strin
     hide: new HideHandler(),
     newpage: new NewpageHandler(),
     jump: new JumpHandler(),
+    label: new LabelHandler(),
     call: new CallHandler(),
     moveto: new MoveToHandler(),
     route: new RouteHandler(),
