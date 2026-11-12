@@ -98,6 +98,12 @@ export class ScenarioManager {
     return this.backlist
   }
 
+  // 履歴全体を置き換える（ロード時の復元用）。setHistory は 1 件の追加なので、
+  // 保存した履歴の配列を渡すと配列ごと 1 件として入れ子になる（#242）
+  replaceHistory (history: any[]): void {
+    this.backlist = Array.isArray(history) ? [...history] : []
+  }
+
   snapshot(): ScenarioSnapshot {
     return {
       scenario: JSON.parse(JSON.stringify(this.scenarioData ?? [])),
