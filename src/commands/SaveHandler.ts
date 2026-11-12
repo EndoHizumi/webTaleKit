@@ -16,6 +16,8 @@ export class SaveHandler implements CommandHandler {
         sceneName: scenarioManager.getSceneName() || core.sceneConfig.name,
         currentIndex: scenarioManager.getIndex(),
         history: scenarioManager.getHistory ? [...scenarioManager.getHistory()] : [],
+        // 選択肢で差し込まれた分岐（sub: true）を含む、今のシナリオ。currentIndex はこの配列の位置を指す
+        scenario: JSON.parse(JSON.stringify(scenarioManager.getScenario() ?? [])),
       },
       sceneConfig: core.sceneConfig,
       displayedImages: Object.keys(core.displayedImages).reduce((acc: Record<string, any>, key) => {
