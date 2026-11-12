@@ -1,4 +1,5 @@
 import { CommandHandler, ExecutionContext, ScenarioCommand } from '../core/CommandRegistry'
+import { captureSceneVariables } from '../utils/sceneVariables'
 
 export class SaveHandler implements CommandHandler {
   async execute(command: ScenarioCommand, context: ExecutionContext): Promise<void> {
@@ -18,6 +19,8 @@ export class SaveHandler implements CommandHandler {
         history: scenarioManager.getHistory ? [...scenarioManager.getHistory()] : [],
       },
       sceneConfig: core.sceneConfig,
+      // シーン変数（<script> から export した値のうち、JSON にできるもの）
+      sceneVariables: captureSceneVariables(core.sceneFile),
       displayedImages: Object.keys(core.displayedImages).reduce((acc: Record<string, any>, key) => {
         if (key !== 'background') {
           acc[key] = {

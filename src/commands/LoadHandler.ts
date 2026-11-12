@@ -1,5 +1,6 @@
 import { CommandHandler, ExecutionContext, ScenarioCommand } from '../core/CommandRegistry'
 import { ImageObject } from '../resource/ImageObject'
+import { restoreSceneVariables } from '../utils/sceneVariables'
 
 export class LoadHandler implements CommandHandler {
   async execute(command: ScenarioCommand, context: ExecutionContext): Promise<void> {
@@ -22,6 +23,9 @@ export class LoadHandler implements CommandHandler {
 
     // シーンとプログレスを復元
     await core.loadScene(sceneName)
+    // シーン変数を保存したときの値に戻す（loadScene で初期値に戻っているため、その後で）。
+    // sceneVariables のない古いセーブでは何もしない
+    restoreSceneVariables(core.sceneFile, saveData.sceneVariables)
     await core.loadScreen(saveData.sceneConfig, { skipBackground: true, skipBgm: true })
 
     // 読んだところまで復元
