@@ -27,7 +27,7 @@ export class LoadHandler implements CommandHandler {
     // 読んだところまで復元
     scenarioManager.setSceneName(saveData.scenarioManager.sceneName)
     scenarioManager.setIndex(saveData.scenarioManager.currentIndex)
-    scenarioManager.setHistory(saveData.scenarioManager.history || [])
+    scenarioManager.replaceHistory(saveData.scenarioManager.history || [])
     ;(scenarioManager as any).progress = { ...(scenarioManager as any).progress, ...saveData.scenarioManager.progress }
 
     // 画面の復元
