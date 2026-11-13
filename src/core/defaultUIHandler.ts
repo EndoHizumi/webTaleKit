@@ -1,5 +1,6 @@
 import { EventBus } from '../utils/eventBus'
 import { Drawer } from './drawer'
+import { buildDialogPrompt, dialogActionLabel } from '../utils/dialogContent'
 
 export class DefaultUIHandler {
   /**
@@ -174,15 +175,15 @@ export class DefaultUIHandler {
         if (item.type === 'prompt') {
           const promptElement = dialogContainer.querySelector('.dialog-prompt')
           if (promptElement) {
-            promptElement.innerHTML = item.content
-              .map((text: any) => expandVariable(text))
-              .join('\n')
+            // <text> で包んだ書き方（docs/tags/dialog.md）も、文字列だけの書き方も表示する
+            promptElement.innerHTML = buildDialogPrompt(item.content, expandVariable)
           }
         } else if (item.type === 'actions') {
           const buttonContainer = dialogContainer.querySelector('.dialog-buttons')
           if (!buttonContainer) return
           item.content.forEach((action: any) => {
-            action.label = expandVariable(action.label)
+            // action.label は書き換えない（開き直したとき、そのときの値で作り直すため）
+            const label = dialogActionLabel(action, expandVariable)
             let button = buttonContainer.querySelector(
               `#dialog-button-${action.id}`,
             ) as HTMLButtonElement | null
@@ -193,7 +194,7 @@ export class DefaultUIHandler {
               button.classList.add('dialog-button')
               buttonContainer.appendChild(button)
             }
-            button.innerText = action.label
+            button.innerText = label
             button.addEventListener('click', () => {
               // 選択されたアクションのシナリオを追加してダイアログを閉じる
               addScenario(action.content)
