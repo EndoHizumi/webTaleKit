@@ -54,6 +54,8 @@ export class Drawer {
     this.nameView = screenHtml.querySelector('#nameView') as HTMLElement
     this.messageText = screenHtml.querySelector('#messageView') as HTMLElement
     this.interactiveView = screenHtml.querySelector('#interactiveView') as HTMLElement
+    // 選択肢が出ていない空の欄が、下の要素や文字送りのクリックを奪わないようにする
+    this.syncChoicePointer()
 
     // canvasをDOMに追加する
     const canvas = document.createElement('canvas')
@@ -155,6 +157,14 @@ export class Drawer {
     }
   }
 
+  // 選択肢の欄（#interactiveView）は、中に要素があるときだけクリックを受け取る。
+  // 空のときは pointer-events: none にして、クリックを下の要素（ゲームの画面・文字送り）へ通す
+  syncChoicePointer() {
+    const view = this.interactiveView
+    if (!view) return
+    view.style.pointerEvents = view.childElementCount > 0 ? '' : 'none'
+  }
+
   async drawChoices(choices: any): Promise<{ selectId: number; onSelect: any }> {
     let isSelect = false
     let selectId = 0
@@ -232,12 +242,14 @@ export class Drawer {
         this.interactiveView.querySelectorAll('.choice').forEach((element) => {
           element.parentNode?.removeChild(element)
         })
+        this.syncChoicePointer()
         selectId = choice.id
         onSelect = choice.content
         isSelect = true
       }
       this.interactiveView.appendChild(button)
     }
+    this.syncChoicePointer()
 
     // 選択待ち
     return new Promise((resolve) => {

@@ -95,3 +95,82 @@ describe('animateImageAlpha', () => {
     expect(drawCalls.filter((call) => call.id === 'previous').every((call) => call.alpha === 1)).toBe(true)
   })
 })
+
+describe('選択肢の欄のクリック', () => {
+  const originalDocument = (global as any).document
+  const originalWindow = (global as any).window
+
+  afterEach(() => {
+    ;(global as any).document = originalDocument
+    ;(global as any).window = originalWindow
+  })
+
+  // 子要素の出し入れだけを扱う疑似要素
+  class FakeElement {
+    style: Record<string, string> = {}
+    className = ''
+    innerHTML = ''
+    id = ''
+    children: FakeElement[] = []
+    parentNode: FakeElement | null = null
+    onclick: (() => void) | null = null
+    get childElementCount() {
+      return this.children.length
+    }
+    appendChild(child: FakeElement) {
+      child.parentNode = this
+      this.children.push(child)
+      return child
+    }
+    insertBefore(child: FakeElement) {
+      return this.appendChild(child)
+    }
+    removeChild(child: FakeElement) {
+      this.children = this.children.filter((c) => c !== child)
+      child.parentNode = null
+      return child
+    }
+    querySelectorAll(selector: string) {
+      return this.children.filter((c) => selector === '.' + c.className)
+    }
+    addEventListener() {}
+    getContext() {
+      return { fillRect: () => {}, fillStyle: '', canvas: this }
+    }
+  }
+
+  const setup = () => {
+    const interactiveView = new FakeElement()
+    interactiveView.id = 'interactiveView'
+    ;(global as any).window = { innerWidth: 1280, innerHeight: 720 }
+    ;(global as any).document = {
+      createElement: () => new FakeElement(),
+      querySelector: (selector: string) => (selector === '#interactiveView' ? interactiveView : null),
+      getElementById: () => null,
+    }
+    const screenHtml: any = { querySelector: (selector: string) => (selector === '#interactiveView' ? interactiveView : new FakeElement()) }
+    const gameScreen: any = Object.assign(new FakeElement(), { scrollWidth: 1280, scrollHeight: 720 })
+    ;(gameScreen.style as any).setProperty = () => {}
+    const drawer = Object.create(Drawer.prototype) as any
+    drawer.gameScreen = gameScreen
+    drawer.setScreen(screenHtml, { width: 1280, height: 720 })
+    return { drawer, interactiveView }
+  }
+
+  test('画面を読み込んだとき、空の選択肢の欄はクリックを通す', () => {
+    const { interactiveView } = setup()
+    expect(interactiveView.style.pointerEvents).toBe('none')
+  })
+
+  test('選択肢を出している間だけクリックを受け取り、選んだら通す', async () => {
+    const { drawer, interactiveView } = setup()
+    const result = drawer.drawChoices({ content: [{ id: 0, label: 'はい', content: [] }, { id: 1, label: 'いいえ', content: ['B'] }] })
+    const shown = { count: interactiveView.childElementCount, pointer: interactiveView.style.pointerEvents }
+    // 先に選んで選択待ちを終わらせてから確かめる（確認が失敗しても待ちが残らないように）
+    interactiveView.children[1].onclick!()
+    expect(shown).toEqual({ count: 2, pointer: '' })
+    expect(interactiveView.childElementCount).toBe(0)
+    expect(interactiveView.style.pointerEvents).toBe('none')
+    await expect(result).resolves.toEqual({ selectId: 1, onSelect: ['B'] })
+  })
+})
