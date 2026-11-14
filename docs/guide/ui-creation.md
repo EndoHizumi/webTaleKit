@@ -382,6 +382,8 @@ document.getElementById('load-button').addEventListener('click', () => {
 
 ### 自動スケーリング
 
+エンジンは `#gameContainer` を、ウィンドウに合わせて自動で拡大縮小・中央寄せします。使うのは CSS の個別プロパティ `scale` と `translate` で、`transform` は使いません。`#gameContainer` やその中の要素の `transform` は、揺れや回転などの演出に自由に使えます（演出の `transform` は論理解像度の px のまま効きます）。今の倍率は CSS 変数 `--wtk-scale` で読めます。
+
 ```css
 #game-container {
   width: 1280px;

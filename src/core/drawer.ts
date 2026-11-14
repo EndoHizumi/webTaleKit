@@ -443,9 +443,14 @@ export class Drawer {
     const offsetX = (viewportWidth - scaledWidth) / 2
     const offsetY = (viewportHeight - scaledHeight) / 2
 
-    // ターゲット要素にスケールと位置を適用
+    // ターゲット要素にスケールと位置を適用する。
+    // transform ではなく個別の CSS プロパティ（translate / scale）を使い、transform を演出（揺れ・回転など）に空けておく。
+    // 合成の順は translate → scale → transform なので、演出の transform は論理解像度の px のまま効く
     targetElement.style.transformOrigin = 'top left'
-    targetElement.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`
+    targetElement.style.setProperty('translate', `${offsetX}px ${offsetY}px`)
+    targetElement.style.setProperty('scale', `${scale}`)
+    // 拡張（3D の描画面の画素数合わせなど）が倍率を読めるように、CSS 変数にも置く
+    targetElement.style.setProperty('--wtk-scale', `${scale}`)
   }
 
   setVisibility(name: string, isVisible: boolean) {

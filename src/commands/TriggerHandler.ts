@@ -130,7 +130,7 @@ export class TriggerHandler implements CommandHandler {
 
   /**
    * 透明ホットスポット要素を生成する。
-   * 座標は論理解像度基準で指定する。gameContainer自体がCSS transformで
+   * 座標は論理解像度基準で指定する。gameContainer自体がCSSの scale / translate で
    * スケーリングされるため、子要素は論理px指定のままリサイズに追従する。
    */
   private createHotspotElement(
