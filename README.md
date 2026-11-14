@@ -249,6 +249,7 @@ LLM_BASE_URL=http://localhost:8082/v1 LLM_MODEL=local-model npm run chat
 
 - `wtc` - WebTaleScriptパーサーCLI (`parser/cli.js` から利用可能)
 - 使用方法: `wtc <scene-file> [output-directory]` で `.scene` ファイルを `.js/.ts` ファイルに変換
+- `--watch` を付けると、`.scene` の変更を監視して変換し直す（開発サーバーと一緒に使う）
 
 ### ドキュメント
 

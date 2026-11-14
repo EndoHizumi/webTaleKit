@@ -1,93 +1,36 @@
 #!/usr/bin/env node
-const { HTMLToJSON } = require('html-to-json-parser')
-const { minify } = require('html-minifier')
-const parse = require('./parser.js')
-const fs = require('fs')
-const path = require('path')
-
-const minifyOptions = {
-  removeTagWhitespace: true,
-  collapseWhitespace: true,
-  removeComments: true,
-  minifyJS: true,
-  minifyCSS: true,
-}
-
-/**
- * Node.js 向け HTMLParserAdapter（minify + HTMLToJSON）
- * @param {string} data
- * @returns {Promise<object>}
- */
-const nodeHtmlParser = async (data) => {
-  const html = minify(data, minifyOptions)
-  return HTMLToJSON(html)
-}
 /**
  * WebTaleScript パーサー CLI
+ * 使い方: wtc <.scene またはフォルダ> [出力先のフォルダ] [--watch]
+ *   --watch: 最初に全部を変換した後、フォルダの .scene を監視して、変わったものを変換し直す
  */
+const fs = require('fs')
+const path = require('path')
+const { compileScene, watchScenes, report } = require('./compile.js')
 
-const exec = (targetScript) => {
-  // ファイル名を取得する。（拡張子を除く）
-  const fileName = path.basename(targetScript).split('.')[0]
-  let outputPath = process.argv.slice(2)[1] || ''
-  // 末尾にスラッシュがない場合、追加する
-  if (outputPath.length > 0) {
-    if (outputPath.slice(-1) !== '/') {
-      outputPath += '/'
+const args = process.argv.slice(2)
+const watch = args.includes('--watch')
+const [targetScripts, outputPath = ''] = args.filter((a) => a !== '--watch')
+
+const main = async () => {
+  const isDir = fs.statSync(targetScripts).isDirectory()
+  const files = isDir ? fs.readdirSync(targetScripts).map((file) => path.join(targetScripts, file)) : [targetScripts]
+  let ok = true
+  for (const file of files) {
+    try {
+      ok = report(await compileScene(file, outputPath)) && ok
+    } catch (err) {
+      console.error(err)
     }
   }
-
-  // sceneファイルを読み込んで、JSファイルに変換する
-  fs.readFile(targetScript, 'utf8', async (err, data) => {
-    if (err) {
-      console.error(err)
-      return
-    }
-    // パーサーを呼び出す。
-    const { scenario, script, lang, errors } = await parse(data, nodeHtmlParser)
-    // 構文エラーと属性警告を分ける
-    const syntaxErrors = errors ? errors.filter((e) => e.type !== 'unknown_attribute') : []
-    const attrWarnings = errors ? errors.filter((e) => e.type === 'unknown_attribute') : []
-    // 属性警告を標準エラー出力へ
-    if (attrWarnings.length > 0) {
-      attrWarnings.forEach((w) => console.warn(`Attribute Warning in ${targetScript}: ${w.message}`))
-    }
-    // 構文エラーがある場合、エラーを出力して終了する
-    if (syntaxErrors.length > 0) {
-      syntaxErrors.forEach((err) => console.error(`Syntax Error in ${targetScript}: ${err.message}`))
-      process.exit(1)
-    }
-    // jsディレクトリがない場合、作成する
-    if (!fs.existsSync(outputPath)) {
-      fs.mkdirSync(outputPath)
-    }
-    // JSファイルを出力する(lang=tsの場合は、tsファイルを出力する)
-    fs.writeFile(
-      `${outputPath}${fileName}.${lang == 'text/typescript' ? 'ts' : 'js'}`,
-      `${script};\nexport const scenario = ${JSON.stringify(scenario)}; `,
-      (err) => {
-        if (err) {
-          console.error(err)
-          return
-        }
-        console.log(`Output: ${outputPath}${fileName}.${lang == 'text/typescript' ? 'ts' : 'js'}`)
-      },
-    )
-  })
+  if (!watch) {
+    // 構文エラーがある場合は、エラーで終了する
+    if (!ok) process.exit(1)
+    return
+  }
+  const sceneDir = isDir ? targetScripts : path.dirname(targetScripts)
+  watchScenes(sceneDir, outputPath)
+  console.log(`Watching: ${sceneDir}`)
 }
 
-// コマンドライン引数から、ファイル一覧を取得する
-const targetScripts = process.argv.slice(2)[0]
-if (fs.statSync(targetScripts).isDirectory()) {
-  fs.readdir(targetScripts, (err, files) => {
-    if (err) {
-      console.error(err)
-      return
-    }
-    files.forEach((file) => {
-      exec(`${targetScripts}/${file}`)
-    })
-  })
-} else {
-  exec(targetScripts)
-}
+main()

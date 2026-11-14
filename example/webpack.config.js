@@ -2,6 +2,13 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const path = require('path')
 const FileManagerPlugin = require('filemanager-webpack-plugin')
 
+// 開発サーバー（webpack serve）の間は .scene を監視し、変わったものを src/js/ に変換し直す。
+// 書き出した .js の変更は webpack-dev-server が拾うので、サーバーの起動し直しは要らない
+if (process.env.WEBPACK_SERVE) {
+  const { watchScenes } = require('../parser/compile.js')
+  watchScenes(path.resolve(__dirname, 'src/scene'), path.resolve(__dirname, 'src/js'))
+}
+
 module.exports = {
   mode: 'development',
   entry: {

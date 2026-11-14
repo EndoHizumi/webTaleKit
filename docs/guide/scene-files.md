@@ -253,6 +253,25 @@ wtc src/scene/title.scene
 
 これにより、`title.js`が生成されます。
 
+### 開発中に変更を反映する（--watch）
+
+`--watch` を付けると、最初に全部を変換した後もフォルダの `.scene` を監視し、保存したものをその場で変換し直します。開発サーバー（`webpack serve`）は書き出された `.js` の変更を拾って読み直すので、サーバーを起動し直す必要はありません。
+
+```bash
+wtc ./src/scene/ ./src/js/ --watch
+```
+
+構文エラーのある `.scene` は書き出さず、エラーを表示して前の `.js` のまま動き続けます。
+
+`webpack.config.js` から監視を始めることもできます（`example/webpack.config.js` がこの形です）。
+
+```javascript
+const { watchScenes } = require('webtalekit/parser/compile.js')
+if (process.env.WEBPACK_SERVE) {
+  watchScenes(path.resolve(__dirname, 'src/scene'), path.resolve(__dirname, 'src/js'))
+}
+```
+
 ## ベストプラクティス
 
 ### 1. シーンを適切に分割
