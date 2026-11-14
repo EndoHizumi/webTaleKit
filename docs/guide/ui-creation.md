@@ -378,6 +378,25 @@ document.getElementById('load-button').addEventListener('click', () => {
 });
 ```
 
+### シーン遷移で画面が入れ直されるとき
+
+`<route>` でシーンが変わるたびに、エンジンは画面テンプレートを読み直し、`#gameContainer` の中身を置き換えます。`registerCommand` などで `#gameContainer` に足した要素（3D の描画面など）も外れるので、前後に出る合図で付け直してください。
+
+| イベント | 出るとき |
+| --- | --- |
+| `screen:beforeLoad` | 画面を入れ直す直前 |
+| `screen:loaded` | 新しい画面の要素と背景がそろった後 |
+
+どちらも `{ template, sceneName, isDialog }` を受け取ります。`isDialog` が `true` のとき（ダイアログの読み込み）は、`#gameContainer` の中身は置き換わりません。
+
+```javascript
+game.eventBus.on('screen:loaded', ({ isDialog }) => {
+  if (isDialog) return
+  // 描画面は作り直さず、新しい画面に差し直す
+  if (!layer.isConnected) game.gameContainer.insertBefore(layer, document.getElementById('messageWindow'))
+})
+```
+
 ## レスポンシブ対応
 
 ### 自動スケーリング

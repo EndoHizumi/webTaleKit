@@ -175,6 +175,12 @@ export class Core {
       throw new Error('Game container not found.')
     }
 
+    // 画面の入れ直しの前後に合図を出す。通常画面の screen:load は #gameContainer の中身を置き換えるため、
+    // registerCommand で足した層（3D の描画面など）も外れる。拡張は screen:beforeLoad で後片付けをし、
+    // screen:loaded で新しい画面に付け直す（data.isDialog が true のときは中身を置き換えない）
+    const screenEvent = { template: sceneConfig.template, sceneName: sceneConfig.name, isDialog }
+    await this.eventBus.emit('screen:beforeLoad', screenEvent)
+
     // screen:loadイベントを発行してHTMLの読み込み・パース・DOM注入をDefaultUIHandlerに委譲する
     // テンプレートURLとフォールバック関数を渡すことで、UIフレームワークが独自のfetch/描画処理を実装できる
     await this.eventBus.emit('screen:load', {
@@ -200,6 +206,9 @@ export class Core {
       }
       this.drawer.show(this.displayedImages)
     }
+
+    // 新しい画面の要素と背景がそろった後
+    await this.eventBus.emit('screen:loaded', screenEvent)
   }
 
   async runScenario() {
