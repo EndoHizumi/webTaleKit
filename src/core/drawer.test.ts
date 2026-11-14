@@ -95,3 +95,42 @@ describe('animateImageAlpha', () => {
     expect(drawCalls.filter((call) => call.id === 'previous').every((call) => call.alpha === 1)).toBe(true)
   })
 })
+
+describe('adjustScale', () => {
+  const originalWindow = (global as any).window
+
+  afterEach(() => {
+    ;(global as any).window = originalWindow
+  })
+
+  // style.setProperty と通常のプロパティの両方を記録する疑似要素
+  const createElement = () => {
+    const props: Record<string, string> = {}
+    const style: any = { setProperty: (name: string, value: string) => (props[name] = value) }
+    return { el: { scrollWidth: 1280, scrollHeight: 720, style } as any, props, style }
+  }
+
+  test('拡大縮小と中央寄せを、transform ではなく translate / scale に入れる', () => {
+    ;(global as any).window = { innerWidth: 1920, innerHeight: 1200 }
+    const { el, props, style } = createElement()
+    const drawer = Object.create(Drawer.prototype) as any
+    drawer.adjustScale(el)
+    // 1920/1280 = 1.5、1200/720 = 1.67 → 1.5。縦に (1200 - 1080) / 2 = 60px 寄せる
+    expect(props.scale).toBe('1.5')
+    expect(props.translate).toBe('0px 60px')
+    expect(props['--wtk-scale']).toBe('1.5')
+    expect(style.transformOrigin).toBe('top left')
+    expect(style.transform).toBeUndefined()
+  })
+
+  test('演出が transform を使っていても、拡大縮小で上書きしない', () => {
+    ;(global as any).window = { innerWidth: 640, innerHeight: 360 }
+    const { el, props, style } = createElement()
+    style.transform = 'translateX(12px) rotate(1deg)'
+    const drawer = Object.create(Drawer.prototype) as any
+    drawer.adjustScale(el)
+    expect(style.transform).toBe('translateX(12px) rotate(1deg)')
+    expect(props.scale).toBe('0.5')
+    expect(props.translate).toBe('0px 0px')
+  })
+})
