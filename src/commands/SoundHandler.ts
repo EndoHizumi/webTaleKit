@@ -4,6 +4,14 @@ export class SoundHandler implements CommandHandler {
   async execute(command: ScenarioCommand, context: ExecutionContext): Promise<void> {
     const { core } = context
     const line: any = command
+    // BGMの指定が無い（sceneConfig.bgm を省いたシーンなど）ときは、流れているBGMを止めて無音のまま進む
+    if (line.mode === 'bgm' && !line.src) {
+      if (core.bgm && core.bgm.isPlaying) {
+        core.bgm.stop()
+      }
+      core.bgm = null
+      return
+    }
     const soundObject = await core.getSoundObject(line)
 
     if (line.mode === 'bgm') {
