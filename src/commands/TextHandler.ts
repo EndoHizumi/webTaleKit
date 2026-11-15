@@ -1,4 +1,5 @@
 import { CommandHandler, ExecutionContext, ScenarioCommand } from '../core/CommandRegistry'
+import { toPlainText } from '../utils/plainText'
 
 export class TextHandler implements CommandHandler {
   async execute(command: ScenarioCommand, context: ExecutionContext): Promise<void> {
@@ -30,5 +31,12 @@ export class TextHandler implements CommandHandler {
     await core.waitHandler({ wait: scenarioObject.wait ?? scenarioObject.time })
     drawer.isSkip = false
     scenarioManager.setHistory(scenarioObject.content)
+    // ログ（読み返し）：地の文も台詞も、表示した文を名前つきで残す。エンジン自身の案内（log: false）は残さない
+    if (scenarioObject.log !== false && scenarioManager.addBacklog) {
+      scenarioManager.addBacklog({
+        name: scenarioObject.name || '',
+        text: toPlainText(scenarioObject.content, core.expandVariable?.bind(core)),
+      })
+    }
   }
 }

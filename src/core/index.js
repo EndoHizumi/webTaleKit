@@ -110,7 +110,7 @@ export class Core {
         },
       })
 
-      await this.textHandler('タップでスタート')
+      await this.textHandler({ content: ['タップでスタート'], log: false })
       // BGMを再生する
       await this.soundHandler({
         mode: 'bgm',
@@ -389,7 +389,7 @@ export class Core {
     // prettier-ignore
     const progressText = line.content.filter((content) => content.type === 'progress')[0]
     if (progressText) {
-      await this.textHandler({ content: progressText.content, name: line.name, wait: 0 })
+      await this.textHandler({ content: progressText.content, name: line.name, wait: 0, log: false })
     }
     // get,post,put,delete属性を処理する
     // header,dataタグは省略可能。子要素を{タグ名: 値}のオブジェクトに変換し、値はmustache記法で変数展開する
@@ -594,6 +594,14 @@ export class Core {
 
   async loadHandler(line) {
     return this.dispatch('load', line)
+  }
+
+  /**
+   * ログ（読み返し）の写し。表示した文を古い順に { name, text } で返す。
+   * text は {{…}} を展開し、タグを除いた素の文字列。エンジン自身の案内（セーブの通知など）は含まない
+   */
+  getBacklog() {
+    return this.scenarioManager.getBacklog()
   }
 
   getSaveData() {
