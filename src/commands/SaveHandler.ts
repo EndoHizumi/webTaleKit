@@ -16,6 +16,7 @@ export class SaveHandler implements CommandHandler {
         sceneName: scenarioManager.getSceneName() || core.sceneConfig.name,
         currentIndex: scenarioManager.getIndex(),
         history: scenarioManager.getHistory ? [...scenarioManager.getHistory()] : [],
+        backlog: scenarioManager.getBacklog ? scenarioManager.getBacklog() : [],
       },
       sceneConfig: core.sceneConfig,
       displayedImages: Object.keys(core.displayedImages).reduce((acc: Record<string, any>, key) => {
@@ -43,7 +44,7 @@ export class SaveHandler implements CommandHandler {
     core.store.set(`save_${slot}`, saveData)
 
     if (line.message !== false) {
-      await core.textHandler(`ゲームをセーブしました: ${name}`)
+      await core.textHandler({ content: [`ゲームをセーブしました: ${name}`], log: false })
     }
   }
 }

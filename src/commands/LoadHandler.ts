@@ -28,6 +28,8 @@ export class LoadHandler implements CommandHandler {
     scenarioManager.setSceneName(saveData.scenarioManager.sceneName)
     scenarioManager.setIndex(saveData.scenarioManager.currentIndex)
     scenarioManager.setHistory(saveData.scenarioManager.history || [])
+    // ログ（古いセーブには無いので、そのときは空にする）
+    if (scenarioManager.replaceBacklog) scenarioManager.replaceBacklog(saveData.scenarioManager.backlog)
     ;(scenarioManager as any).progress = { ...(scenarioManager as any).progress, ...saveData.scenarioManager.progress }
 
     // 画面の復元
@@ -64,7 +66,7 @@ export class LoadHandler implements CommandHandler {
     drawer.show(core.displayedImages)
 
     if (line.message !== false) {
-      await core.textHandler(`ゲームをロードしました: ${saveData.name}`)
+      await core.textHandler({ content: [`ゲームをロードしました: ${saveData.name}`], log: false })
     }
   }
 }

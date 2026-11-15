@@ -6,10 +6,21 @@ export interface ScenarioSnapshot {
   sceneName: string
   progress: any
   history: any[]
+  backlog?: BacklogEntry[]
 }
+
+/** ログ（読み返し）の 1 件。text は {{…}} を展開し、タグを除いた素の文字列 */
+export interface BacklogEntry {
+  name: string
+  text: string
+}
+
+/** ログに残す件数の上限（古いものから捨てる） */
+export const BACKLOG_MAX = 300
 
 export class ScenarioManager {
   private backlist: any
+  private backlog: BacklogEntry[] = []
   private saveDataList: any
   private progress: any
   private ctx: any
@@ -98,6 +109,23 @@ export class ScenarioManager {
     return this.backlist
   }
 
+  /** ログに 1 件足す（空の文は残さない） */
+  addBacklog (entry: BacklogEntry): void {
+    if (!entry || !entry.text) return
+    this.backlog.push({ name: entry.name || '', text: entry.text })
+    if (this.backlog.length > BACKLOG_MAX) this.backlog.splice(0, this.backlog.length - BACKLOG_MAX)
+  }
+
+  /** ログの写し（古い順） */
+  getBacklog (): BacklogEntry[] {
+    return this.backlog.map((e) => ({ ...e }))
+  }
+
+  /** ログを入れ替える（ロード用） */
+  replaceBacklog (list: BacklogEntry[] | undefined): void {
+    this.backlog = Array.isArray(list) ? list.map((e) => ({ name: e.name || '', text: e.text || '' })) : []
+  }
+
   snapshot(): ScenarioSnapshot {
     return {
       scenario: JSON.parse(JSON.stringify(this.scenarioData ?? [])),
@@ -105,6 +133,7 @@ export class ScenarioManager {
       sceneName: this.getSceneName(),
       progress: JSON.parse(JSON.stringify(this.progress)),
       history: [...this.getHistory()],
+      backlog: this.getBacklog(),
     }
   }
 
@@ -114,6 +143,7 @@ export class ScenarioManager {
     this.progress.currentIndex = snap.index
     this.progress.currentScene = snap.sceneName
     this.backlist = [...snap.history]
+    this.replaceBacklog(snap.backlog)
   }
 
   setSelectedChoice (prompt:string, id:number):void {
