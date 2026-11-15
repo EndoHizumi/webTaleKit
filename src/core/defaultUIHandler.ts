@@ -1,5 +1,6 @@
 import { EventBus } from '../utils/eventBus'
 import { Drawer } from './drawer'
+import { renderAction } from './dialogActions'
 
 export class DefaultUIHandler {
   /**
@@ -182,7 +183,9 @@ export class DefaultUIHandler {
           const buttonContainer = dialogContainer.querySelector('.dialog-buttons')
           if (!buttonContainer) return
           item.content.forEach((action: any) => {
-            action.label = expandVariable(action.label)
+            // image・note・badge・disabled（どれも {{…}} を展開）。無ければ今までどおり label の文字だけ
+            const view = renderAction(action, expandVariable)
+            action.label = view.label
             let button = buttonContainer.querySelector(
               `#dialog-button-${action.id}`,
             ) as HTMLButtonElement | null
@@ -193,8 +196,13 @@ export class DefaultUIHandler {
               button.classList.add('dialog-button')
               buttonContainer.appendChild(button)
             }
-            button.innerText = action.label
+            if (view.html !== null) button.innerHTML = view.html
+            else button.innerText = action.label
+            button.disabled = view.disabled
+            button.classList.toggle('is-disabled', view.disabled)
             button.addEventListener('click', () => {
+              // 選べないボタンは押しても閉じない
+              if (view.disabled) return
               // 選択されたアクションのシナリオを追加してダイアログを閉じる
               addScenario(action.content)
               result = action.id
