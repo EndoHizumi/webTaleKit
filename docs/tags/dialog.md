@@ -53,6 +53,32 @@
 |------|------|------|------|
 | id | string | ✓ | アクションの識別子 |
 | label | string | ✓ | ボタンに表示するテキスト |
+| image | string | × | ボタンに入れる画像の URL |
+| note | string | × | 見出しの下に出す補足の文 |
+| badge | string | × | ボタンの隅などに出す札の文字 |
+| disabled | string | × | 選べない状態にする。値（`{{…}}` を展開したもの）が `false`・`0`・`null`・`undefined` 以外なら選べない |
+
+どの属性も `{{…}}` を展開します。
+
+`image`・`note`・`badge` のどれかがあると、ボタンの中身は次の形になります（文字はエスケープされます）。どれも無ければ、今までどおり `label` の文字だけです。
+
+```html
+<button class="dialog-button" id="dialog-button-wolf">
+  <img class="dialog-button-image" src="./img/wolf.jpg" alt="">
+  <span class="dialog-button-label">灰牙狼の駆除</span>
+  <span class="dialog-button-note">報酬 金貨 70</span>
+  <span class="dialog-button-badge">B</span>
+</button>
+```
+
+選べないボタンには `disabled` 属性と `is-disabled` クラスが付き、押してもダイアログは閉じません。見た目はダイアログのテンプレートの CSS で整えます。
+
+```html
+<action id="wolf" label="灰牙狼の駆除" image="./img/wolf.jpg" note="報酬 金貨 {{reward('wolf')}}"
+        badge="{{rank('wolf')}}" disabled="{{!canTake('wolf')}}">
+  <call method="takeQuest('wolf')" />
+</action>
+```
 
 ```html
 <actions>

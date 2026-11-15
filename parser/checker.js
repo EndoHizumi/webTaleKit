@@ -79,7 +79,7 @@ const KNOWN_ATTRIBUTES = {
   remove:   new Set(['name']),
   // サブノード
   item:     new Set(['label', 'id', 'default', 'hover', 'select', 'color', 'position']),
-  action:   new Set(['id', 'label', 'value']),
+  action:   new Set(['id', 'label', 'value', 'image', 'note', 'badge', 'disabled']),
   then:     new Set([]),
   else:     new Set([]),
   prompt:   new Set([]),
