@@ -1,4 +1,5 @@
 import { CommandHandler, ExecutionContext, ScenarioCommand } from '../core/CommandRegistry'
+import { resolveSaveSummary } from '../utils/saveSlots'
 
 export class SaveHandler implements CommandHandler {
   async execute(command: ScenarioCommand, context: ExecutionContext): Promise<void> {
@@ -11,6 +12,8 @@ export class SaveHandler implements CommandHandler {
       slot: slot,
       name: name,
       timestamp: new Date().toISOString(),
+      // 一覧に出す要約（<save summary="…"> か、シーンの saveSummary()）
+      summary: resolveSaveSummary(line, core.sceneFile, core.expandVariable?.bind(core)),
       scenarioManager: {
         progress: JSON.parse(JSON.stringify((scenarioManager as any).progress)),
         sceneName: scenarioManager.getSceneName() || core.sceneConfig.name,

@@ -71,7 +71,7 @@ const KNOWN_ATTRIBUTES = {
   wait:     new Set(['wait', 'time']),
   newpage:  new Set([]),
   dialog:   new Set(['name', 'template']),
-  save:     new Set(['slot', 'name', 'message']),
+  save:     new Set(['slot', 'name', 'message', 'summary']),
   load:     new Set(['slot', 'message']),
   trigger:  new Set(['id', 'event', 'target', 'rect', 'circle', 'style', 'cursor', 'once', 'cooldown']),
   untrigger: new Set(['id', 'all']),

@@ -15,6 +15,7 @@
 | slot | string\|number | × | 'auto' | セーブスロットの識別子 |
 | name | string | × | `セーブ{slot}` | セーブデータの名前 |
 | message | boolean | × | true | セーブ完了メッセージを表示するかどうか |
+| summary | string | × | - | 一覧に出す要約（`{{…}}` を展開する）。省くと、シーンの `saveSummary()` の戻り値 |
 | if | string | × | - | 条件式（trueの場合のみ実行） |
 
 ## セーブされる内容
@@ -24,6 +25,7 @@
 - **slot**: セーブスロット番号
 - **name**: セーブデータの名前
 - **timestamp**: セーブ日時（ISO 8601形式）
+- **summary**: 一覧に出す要約（`summary` 属性か、シーンの `saveSummary()`。どちらも無ければ null）
 - **scenarioManager**: シナリオの進行状況
   - progress: 進行度
   - sceneName: 現在のシーン名
@@ -34,6 +36,37 @@
 - **backgroundImage**: 背景画像
 - **usedSounds**: 使用中の音声
 - **bgmSrc**: 再生中のBGM
+
+## セーブ枠の一覧
+
+タイトルやメニューで「スロット 1：3 日目　金貨 120」のように並べるために、セーブデータ全体ではなく要約だけを取り出せます。
+
+```javascript
+game.getSaveSlots()   // [{ slot, name, timestamp, sceneName, summary }, ...]（新しい順）
+game.getSaveSlot(1)   // 1 つの枠の要約（無ければ null）
+game.hasSave(1)       // その枠にセーブがあるか
+```
+
+シーンのスクリプトからは、`init(api)` で受け取る `api.save.getSlots()`・`api.save.getSlot(slot)`・`api.save.hasSave(slot)` で同じものを呼べます。
+
+要約は、セーブするシーンが `saveSummary()` を export しておくと、その戻り値（JSON にできる値）が入ります。
+
+```html
+<script>
+  export let day = 3
+  export let gold = 120
+  export function saveSummary() {
+    return { day, gold }
+  }
+  // 選択肢の文字：{{slotLabel(1)}}
+  let api
+  export function init(a) { api = a }
+  export function slotLabel(n) {
+    const s = api.save.getSlot(n)
+    return s ? `スロット ${n}：${s.summary.day} 日目　金貨 ${s.summary.gold}` : `スロット ${n}：（空き）`
+  }
+</script>
+```
 
 ## 使用例
 

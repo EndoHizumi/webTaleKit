@@ -6,6 +6,7 @@ import { SoundObject } from '../resource/soundObject'
 import engineConfig from '../../engineConfig.json'
 import { sleep } from '../utils/waitUtil'
 import { generateStore } from '../utils/store'
+import { listSaveSlots, summarizeSave } from '../utils/saveSlots'
 import { EventBus } from '../utils/eventBus'
 import { DefaultUIHandler } from './defaultUIHandler'
 import { DomElementHandler } from './domElementHandler'
@@ -564,6 +565,9 @@ export class Core {
         setSaveData: (data) => this.setSaveData(data),
         getSaveList: () => this.getSaveList(),
         deleteSave: (slot) => this.deleteSave(slot),
+        getSlots: () => this.getSaveSlots(),
+        getSlot: (slot) => this.getSaveSlot(slot),
+        hasSave: (slot) => this.hasSave(slot),
       },
       store: this.store,
       playback: {
@@ -611,6 +615,24 @@ export class Core {
 
   getSaveList() {
     return this.getSaveData()
+  }
+
+  /**
+   * セーブ枠の一覧（新しい順）。{ slot, name, timestamp, sceneName, summary } だけを返す。
+   * summary は <save summary="…"> か、セーブしたシーンの saveSummary() が返したもの
+   */
+  getSaveSlots() {
+    return listSaveSlots(this.store)
+  }
+
+  /** 1 つの枠の要約。無ければ null */
+  getSaveSlot(slot) {
+    return summarizeSave(this.store.get(`save_${slot}`))
+  }
+
+  /** その枠にセーブがあるか */
+  hasSave(slot) {
+    return !!this.store.get(`save_${slot}`)
   }
 
   deleteSave(slot) {
