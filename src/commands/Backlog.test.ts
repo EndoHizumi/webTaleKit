@@ -40,6 +40,19 @@ describe('ログ（読み返し）', () => {
     ])
   })
 
+  test('文を出す前（文字送りやクリック待ちのあいだ）に、もうログに入っている', async () => {
+    const { sm, context } = setup()
+    const seen: number[] = []
+    ;(context as any).eventBus.emit = jest.fn(async (name: string) => {
+      if (name === 'text:show') seen.push(sm.getBacklog().length)
+    })
+    ;(context as any).core.waitHandler = jest.fn(async () => {
+      seen.push(sm.getBacklog().length)
+    })
+    await new TextHandler().execute({ type: 'text', content: ['いまの文'] } as any, context)
+    expect(seen).toEqual([1, 1])
+  })
+
   test('log: false の文（エンジン自身の案内）は残さない', async () => {
     const { sm, context } = setup()
     await new TextHandler().execute({ type: 'text', content: ['ゲームをセーブしました: セーブ1'], log: false } as any, context)

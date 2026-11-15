@@ -18,6 +18,14 @@ export class TextHandler implements CommandHandler {
     // text:clearイベントを発行してテキスト表示領域をクリアする
     await eventBus.emit('text:clear')
 
+    // ログ（読み返し）：地の文も台詞も、出し始める前に名前つきで残す（文字送りの途中やクリック待ちで読み返しを開いても、今の文が入るように）。エンジン自身の案内（log: false）は残さない
+    if (scenarioObject.log !== false && scenarioManager.addBacklog) {
+      scenarioManager.addBacklog({
+        name: scenarioObject.name || '',
+        text: toPlainText(scenarioObject.content, core.expandVariable?.bind(core)),
+      })
+    }
+
     // text:showイベントを発行してテキスト表示をDefaultUIHandlerに委譲する
     await eventBus.emit('text:show', {
       name: scenarioObject.name || '',
@@ -31,12 +39,5 @@ export class TextHandler implements CommandHandler {
     await core.waitHandler({ wait: scenarioObject.wait ?? scenarioObject.time })
     drawer.isSkip = false
     scenarioManager.setHistory(scenarioObject.content)
-    // ログ（読み返し）：地の文も台詞も、表示した文を名前つきで残す。エンジン自身の案内（log: false）は残さない
-    if (scenarioObject.log !== false && scenarioManager.addBacklog) {
-      scenarioManager.addBacklog({
-        name: scenarioObject.name || '',
-        text: toPlainText(scenarioObject.content, core.expandVariable?.bind(core)),
-      })
-    }
   }
 }
