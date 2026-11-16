@@ -378,6 +378,34 @@ document.getElementById('load-button').addEventListener('click', () => {
 });
 ```
 
+### ゲームパッドと十字キー（padNav）
+
+`installPadNav` を呼ぶと、ゲームパッドと矢印キーで遊べるようになります。
+
+```javascript
+import { installPadNav } from 'webtalekit/src/core/padNav'
+
+installPadNav({
+  container: game.gameContainer,
+  layers: ['#myConfirm'], // エンジンの窓より手前に調べる、ゲーム独自の窓（省略可）
+  start: '#menu [data-sys="title"]', // Start で押すボタン（省略可）
+})
+```
+
+| パッド | 動き |
+| --- | --- |
+| A | 決定・文を進める（Enter） |
+| B | 閉じる（Escape。`<dialog>` は閉じ、ほかの窓は `[data-close]`・`[data-no]` のボタンを押す） |
+| 十字キー・左スティック | 窓の中のボタンを選ぶ（矢印キー） |
+| X / Y / LB | `data-wtk-action` の `auto`・`hide`・`log` のボタンを押す |
+| RB | 押しているあいだスキップ |
+| Start | `start` で指定したボタンを押す |
+
+- ボタンの番号は、ブラウザの標準配置（`Gamepad.mapping === "standard"`）のものです。
+- 矢印キーで選ぶのは、いちばん手前に開いている窓の中のボタンです。窓は `layers`、`.wtk-backlog`、`dialog[open]`、`#interactiveView`（選択肢）の順に探します。押した向きにある、いちばん近いボタンへ移ります。
+- 選んでいるボタンには `wtk-pad-focus` の class が付きます（マウスやタッチを使うと外れます）。
+- ゲームパッドの機能は、安全な接続（HTTPS か localhost）でしか使えません。
+
 ## レスポンシブ対応
 
 ### 自動スケーリング
