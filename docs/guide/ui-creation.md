@@ -399,7 +399,7 @@ document.getElementById('load-button').addEventListener('click', () => {
 | `log` | 読み返しの窓（`core.getBacklog()` の内容）を開く |
 
 - オート・スキップが入っているあいだ、そのボタンには `is-active` クラスと `aria-pressed="true"` が付きます（キー操作で切り替えたときも）。オートとスキップは同時には入りません。
-- ログの窓は `.wtk-backlog`（背景）・`.wtk-backlog-panel`・`.wtk-backlog-title`・`.wtk-backlog-list`・`.wtk-backlog-item`・`.wtk-backlog-name`・`.wtk-backlog-text`・`.wtk-backlog-close` でできています。最低限の見た目はエンジンが付けますが、テンプレートの CSS で上書きできます。ログや「隠す」のあいだはオートが止まり、閉じると戻ります。
+- ログの窓は `<dialog class="wtk-backlog">`（`showModal` で開き、Esc や窓の外のクリックでも閉じる。背景は `::backdrop`）・`.wtk-backlog-panel`・`.wtk-backlog-title`・`.wtk-backlog-list`・`.wtk-backlog-item`・`.wtk-backlog-name`・`.wtk-backlog-text`・`.wtk-backlog-close` でできています。最低限の見た目はエンジンが付けますが、テンプレートの CSS で上書きできます。ログや「隠す」のあいだはオートが止まり、閉じると戻ります。
 
 ```css
 .game-menu button.is-active { background: gold; color: #222; }
