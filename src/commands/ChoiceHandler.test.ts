@@ -74,3 +74,20 @@ describe('ChoiceHandler の <item if>', () => {
     expect(history[0].line).toBe(line)
   })
 })
+
+describe('ChoiceHandler の label の変数展開', () => {
+  it('元の label は {{…}} のまま残し、実行するたびにそのときの値で展開する', async () => {
+    const vars = { sp: 4 }
+    const line = { type: 'choice', content: [{ type: 'item', id: 0, label: '技（気力 {{sp}}）', content: [] }] }
+    const run = async () => {
+      const ctx = makeContext(vars, (shown) => ({ selectId: shown.content[0].id, onSelect: shown.content[0].content }))
+      ctx.context.core.expandVariable = (text: string) => text.replace(/\{\{(\w+)\}\}/g, (_m, k) => String((vars as any)[k]))
+      await new ChoiceHandler().execute(line as any, ctx.context)
+      return ctx.shownList[0].content[0].label
+    }
+    expect(await run()).toBe('技（気力 4）')
+    vars.sp = 1
+    expect(await run()).toBe('技（気力 1）')
+    expect(line.content[0].label).toBe('技（気力 {{sp}}）')
+  })
+})
