@@ -48,7 +48,7 @@ export class Core {
     this.eventBus = new EventBus()
     // DefaultUIHandlerの登録（customUI: trueの場合はスキップ）
     if (!options.customUI) {
-      DefaultUIHandler.register(this.eventBus, this.drawer, this.gameContainer, this.engineConfig.resolution)
+      DefaultUIHandler.register(this.eventBus, this.drawer, this.gameContainer, () => this.engineConfig.resolution)
     }
   }
 
@@ -87,8 +87,8 @@ export class Core {
   async start(initScene) {
     try {
       // TODO: ブラウザ用のビルドの場合は、最初にクリックしてもらう
-      // titleタグの内容を書き換える
-      document.title = engineConfig.title
+      // titleタグの内容を書き換える（setConfig で渡したゲームの設定を使う）
+      document.title = this.engineConfig?.title ?? engineConfig.title
       // sceneファイルを読み込む
       await this.loadScene(initScene || 'title')
       // 画面を表示する

@@ -8,14 +8,16 @@ export class DefaultUIHandler {
    * @param eventBus      - 共有EventBusインスタンス
    * @param drawer        - Drawerインスタンス（キャンバス・テキスト描画）
    * @param gameContainer - ゲームのルートコンテナ要素
-   * @param resolution    - キャンバス初期化に使用するエンジン解像度
+   * @param resolution    - キャンバス初期化に使用するエンジン解像度。関数を渡すと、画面を読み込むたびにその時の値を使う
+   *                         （Core は setConfig で設定を差し替えられるので、関数で渡す）
    */
   static register(
     eventBus: EventBus,
     drawer: Drawer,
     gameContainer: HTMLElement,
-    resolution: { width: number; height: number },
+    resolution: { width: number; height: number } | (() => { width: number; height: number }),
   ): void {
+    const currentResolution = () => (typeof resolution === 'function' ? resolution() : resolution)
     // ----------------------------------------------------------------
     // screen:load
     //   テンプレートURLからHTMLを読み込み・パースしてDOMに注入する。
@@ -70,7 +72,7 @@ export class DefaultUIHandler {
         gameContainer.innerHTML = mainDiv.innerHTML
 
         // キャンバスと各ビューの参照を初期化する
-        drawer.setScreen(gameContainer, resolution)
+        drawer.setScreen(gameContainer, currentResolution())
 
         // テンプレートのスタイルシートを適用する
         if (styleContent) {
