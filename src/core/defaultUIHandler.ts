@@ -60,9 +60,10 @@ export class DefaultUIHandler {
       const styleContent = styleElement ? styleElement.textContent : null
 
       if (!isDialog) {
-        // 既存のスタイルシートを削除する
-        const styleTags = Array.from(document.head.getElementsByTagName('style'))
-        styleTags.forEach((tag) => document.head.removeChild(tag))
+        // 前の画面テンプレートとダイアログのスタイルシートを削除する（エンジンが入れたものだけ。拡張やゲームが足した <style> は残す）
+        document.head
+          .querySelectorAll('style[data-wtk-screen-style], style[data-dialog-style]')
+          .forEach((tag) => document.head.removeChild(tag))
 
         gameContainer.tabIndex = 0
         gameContainer.style.outline = 'none'
@@ -75,6 +76,7 @@ export class DefaultUIHandler {
         // テンプレートのスタイルシートを適用する
         if (styleContent) {
           const styleEl = document.createElement('style')
+          styleEl.dataset.wtkScreenStyle = ''
           styleEl.textContent = styleContent
           document.head.appendChild(styleEl)
         }
