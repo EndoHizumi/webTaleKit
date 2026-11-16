@@ -54,6 +54,14 @@
 | id | string | ✓ | アクションの識別子 |
 | label | string | ✓ | ボタンに表示するテキスト |
 
+`if` を付けた `<action>` は、条件が `false` のときボタンを出しません（`<choice>` の `<item if>` と同じ）。条件はダイアログを開くたびに評価し直します。
+
+```html
+<action id="inn" label="宿の酒場に行く" if="fallen">
+  <route to="inn" />
+</action>
+```
+
 ```html
 <actions>
   <action id="confirm" label="確認">

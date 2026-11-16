@@ -16,9 +16,15 @@ export class DialogHandler implements CommandHandler {
       skipBgm: true,
       fallbackTemplate: getDefaultDialogTemplate,
     })
+    // <action if="…"> の条件が false のボタンは出さない（<choice> の <item if> と同じ）。
+    // 元の行は書き換えず、写しを渡す（同じダイアログを開き直したとき、そのときの条件で選び直すため）
+    const visible = (action: any) => action?.type !== 'action' || action.if === undefined || core.executeCode(`return ${action.if}`)
+    const content = scenarioObject.content.map((item: any) =>
+      item?.type === 'actions' && Array.isArray(item.content) ? { ...item, content: item.content.filter(visible) } : item,
+    )
     // dialog:showイベントを発行してダイアログのDOM操作をDefaultUIHandlerに委譲する
     await eventBus.emit('dialog:show', {
-      content: scenarioObject.content,
+      content,
       expandVariable: core.expandVariable.bind(core),
       addScenario: scenarioManager.addScenario.bind(scenarioManager),
     })
