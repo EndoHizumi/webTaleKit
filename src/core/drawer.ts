@@ -57,6 +57,8 @@ export class Drawer {
 
     // canvasをDOMに追加する
     const canvas = document.createElement('canvas')
+    // 背景とキャラを描く canvas。拡張（3D の層・演出）が探せるように印を付ける
+    canvas.className = 'backgroundCanvas'
     canvas.width = resolution.width || 1280
     canvas.height = resolution.height || 720
     // canvasのコンテキストを取得する

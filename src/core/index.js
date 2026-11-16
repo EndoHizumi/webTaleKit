@@ -20,6 +20,7 @@ export class Core {
     this.isAuto = false
     this.isNext = false
     this.isSkip = false
+    this.isClickWaiting = false
     this.onNextHandler = null
     this.sceneFile = {}
     this.sceneConfig = {}
@@ -75,6 +76,13 @@ export class Core {
   // カスタムタグの公式登録API
   registerCommand(tagName, handler) {
     this.commandRegistry.register(tagName, handler)
+  }
+
+  // タグの前後に処理を足す公式API（組み込みタグを包むために、ハンドラを差し替えなくてよい）
+  //   const off = game.hookCommand('say', { before(cmd) { … }, after(cmd) { … } })
+  // after はタグの処理が例外で止まっても呼ばれる。<say> は中で <text> の処理を通るので、text のフックも呼ばれる
+  hookCommand(tagName, hook) {
+    return this.commandRegistry.hook(tagName, hook)
   }
 
   // 全トリガーを解除する（<route>によるシーン遷移時に呼ばれる）
@@ -282,9 +290,13 @@ export class Core {
   }
 
   // クリック待ち処理
+  // 待っているあいだは isClickWaiting が true。入るときに clickWait:start、抜けるときに clickWait:end を出す
+  // （文字送りが終わってクリックを待っていることを、拡張が #waitCircle の見え方を調べずに知れるように）
   async clickWait() {
     this.drawer.setVisibility('#waitCircle', true)
-    return new Promise((resolve) => {
+    this.isClickWaiting = true
+    await this.eventBus.emit('clickWait:start')
+    await new Promise((resolve) => {
       const intervalId = setInterval(() => {
         if (this.isNext || this.isAuto || this.isSkip) {
           this.drawer.setVisibility('#waitCircle', false)
@@ -294,6 +306,8 @@ export class Core {
         }
       }, 500)
     })
+    this.isClickWaiting = false
+    await this.eventBus.emit('clickWait:end')
   }
 
   async sayHandler(line) {

@@ -45,6 +45,7 @@ export interface CoreFacade {
   isAuto: boolean
   isNext: boolean
   isSkip: boolean
+  isClickWaiting?: boolean // clickWait() でクリックを待っているあいだ true
   onNextHandler: (() => void) | null
   setBackground(image: any): void
   getBackground(): any
@@ -66,11 +67,22 @@ export interface CommandHandler {
 }
 
 /**
+ * 組み込みタグ（や登録済みのタグ）の前後に処理を足すためのフック。
+ * ハンドラを差し替えずに済むので、元の処理（エンジンの更新で変わるもの）をそのまま使える。
+ * after はハンドラが例外を投げても呼ばれる。
+ */
+export interface CommandHook {
+  before?(command: ScenarioCommand, context: ExecutionContext): Promise<void> | void
+  after?(command: ScenarioCommand, context: ExecutionContext): Promise<void> | void
+}
+
+/**
  * タグ名→ハンドラのマッピングを管理する純粋なディスパッチャ。
  * httpHandler解決・ifグローバル属性の評価・シナリオ進行は呼び出し側の責務。
  */
 export class CommandRegistry {
   private handlers = new Map<string, CommandHandler>()
+  private hooks = new Map<string, CommandHook[]>()
 
   /** ハンドラ登録。既存タグへの登録は上書きとなり、警告を出す */
   register(tagName: string, handler: CommandHandler): void {
@@ -94,6 +106,22 @@ export class CommandRegistry {
     return this.handlers.delete(tagName.toLowerCase())
   }
 
+  /**
+   * タグの前後に処理を足す。複数足すと、before は足した順、after はその逆順に呼ぶ。
+   * 戻り値の関数を呼ぶと外れる。ハンドラの上書き（register）をしても、フックは残る
+   */
+  hook(tagName: string, hook: CommandHook): () => void {
+    const normalized = tagName.toLowerCase()
+    const list = this.hooks.get(normalized) ?? []
+    list.push(hook)
+    this.hooks.set(normalized, list)
+    return () => {
+      const cur = this.hooks.get(normalized)
+      const i = cur ? cur.indexOf(hook) : -1
+      if (i >= 0) cur!.splice(i, 1)
+    }
+  }
+
   /** ディスパッチ実行 */
   async execute(command: ScenarioCommand, context: ExecutionContext): Promise<void> {
     const tagName = (command.type || 'text').toLowerCase()
@@ -101,7 +129,14 @@ export class CommandRegistry {
     if (!handler) {
       throw new Error(`Error: Command type "${tagName}" is not defined`)
     }
-    await handler.execute(command, context)
+    // 実行中にフックが外れても順番が崩れないよう、写しを使う
+    const hooks = [...(this.hooks.get(tagName) ?? [])]
+    for (const h of hooks) await h.before?.(command, context)
+    try {
+      await handler.execute(command, context)
+    } finally {
+      for (const h of hooks.reverse()) await h.after?.(command, context)
+    }
   }
 
   /** 登録確認（validateScenario / Linter用） */

@@ -378,6 +378,46 @@ document.getElementById('load-button').addEventListener('click', () => {
 });
 ```
 
+### 組み込みタグの前後に処理を足す（hookCommand）
+
+`registerCommand` で組み込みのタグを上書きしなくても、`hookCommand` でタグの前後に処理を足せます。元の処理はエンジンのものがそのまま動きます。
+
+```javascript
+// コルネイユの台詞のあいだだけ口パクさせる
+const off = game.hookCommand('say', {
+  before(cmd) {
+    if (cmd.name === 'コルネイユ') lipSync.start(cmd.content)
+  },
+  after() {
+    lipSync.stop()
+  },
+})
+// off() で外せる
+```
+
+- `before`・`after` は `(command, context)` を受け取ります。Promise を返すと、終わるまで待ちます。
+- `after` は、タグの処理が例外で止まっても呼ばれます。
+- 同じタグに複数足すと、`before` は足した順、`after` はその逆の順に呼ばれます。
+- `if` 属性で飛ばされたタグでは、どちらも呼ばれません。
+- `<say>` は中で `<text>` の処理を通るので、`text` に足したフックは台詞のときも呼ばれます。
+
+### クリック待ちに入ったことを知る
+
+文を出し終えてクリックを待っているあいだ、`game.isClickWaiting` が `true` になります。待ちに入るときに `clickWait:start`、抜けるときに `clickWait:end` が出ます。
+
+```javascript
+game.eventBus.on('clickWait:start', () => indicator.classList.add('ready'))
+game.eventBus.on('clickWait:end', () => indicator.classList.remove('ready'))
+```
+
+### 背景の canvas
+
+背景とキャラクターを描く canvas には `backgroundCanvas` の class が付いています（フェード用は `fadeCanvas`）。
+
+```javascript
+const bg = game.gameContainer.querySelector(':scope > canvas.backgroundCanvas')
+```
+
 ## レスポンシブ対応
 
 ### 自動スケーリング
