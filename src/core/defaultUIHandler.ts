@@ -1,6 +1,22 @@
 import { EventBus } from '../utils/eventBus'
 import { Drawer } from './drawer'
 
+// 読み込んだ画面テンプレートの HTML（URL ごと）。同じテンプレートの画面へ切り替えるたびに取り直さない
+const templateCache = new Map<string, Promise<string>>()
+const loadTemplate = (url: string): Promise<string> => {
+  let p = templateCache.get(url)
+  if (!p) {
+    p = fetch(url).then((r) => {
+      if (!r.ok) throw new Error(`Template file not found: ${url}`)
+      return r.text()
+    })
+    // 失敗したものは覚えない（次に開くときに取り直す）
+    p.catch(() => templateCache.get(url) === p && templateCache.delete(url))
+    templateCache.set(url, p)
+  }
+  return p
+}
+
 export class DefaultUIHandler {
   /**
    * 指定されたEventBusにDOM操作関連のイベントハンドラをすべて登録する。
@@ -29,7 +45,7 @@ export class DefaultUIHandler {
       const { template, isDialog, fallbackTemplate } = data
 
       // テンプレートHTMLをフェッチしてパースする
-      const htmlString = await (await fetch(template)).text()
+      const htmlString = await loadTemplate(template)
       const parser = new DOMParser()
       const doc = parser.parseFromString(htmlString, 'text/html')
 

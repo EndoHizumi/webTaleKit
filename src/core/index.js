@@ -146,9 +146,14 @@ export class Core {
   }
 
   // ファイルの存在確認を行う関数
+  // 一度あると分かったファイルは、問い合わせ直さない（画面の切り替えのたびに、テンプレート・背景・BGM へ
+  // 1 往復ずつ増える。遠くのサーバーから開いたとき（VPN・回線の遅い端末）に、切り替えが目に見えて遅くなるため）
   async checkResourceExists(url) {
+    this.knownResources ??= new Set()
+    if (this.knownResources.has(url)) return true
     try {
       const response = await fetch(url, { method: 'HEAD' })
+      if (response.ok) this.knownResources.add(url)
       return response.ok
     } catch (error) {
       return false
