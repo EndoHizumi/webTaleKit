@@ -17,9 +17,12 @@ export class TextHandler implements CommandHandler {
     // text:clearイベントを発行してテキスト表示領域をクリアする
     await eventBus.emit('text:clear')
 
+    // 話者名も、本文と同じように {{…}} を展開する（<say name="{{heroName()}}"> のような書き方のため）
+    const speaker = core.expandVariable(scenarioObject.name || '')
+
     // text:showイベントを発行してテキスト表示をDefaultUIHandlerに委譲する
     await eventBus.emit('text:show', {
-      name: scenarioObject.name || '',
+      name: speaker,
       content: scenarioObject.content,
       speed: core.isSkip ? 1 : scenarioObject.speed || 25,
       expandVariable: core.expandVariable.bind(core),
