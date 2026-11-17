@@ -1,4 +1,5 @@
 import { CommandHandler, ExecutionContext, ScenarioCommand } from '../core/CommandRegistry'
+import { expandContent } from '../utils/expandContent'
 import { toPlainText } from '../utils/plainText'
 
 export class TextHandler implements CommandHandler {
@@ -18,12 +19,17 @@ export class TextHandler implements CommandHandler {
     // text:clearイベントを発行してテキスト表示領域をクリアする
     await eventBus.emit('text:clear')
 
+    // {{…}} は、ここで一度だけ展開する。表示とログ（読み返し）で、同じ写しを使うため。
+    // 別々に展開すると、1 行につき中の関数が 2 回呼ばれる（副作用のある関数だと、二重に効く）
+    const content = expandContent(scenarioObject.content, core.expandVariable?.bind(core))
+
     // text:showイベントを発行してテキスト表示をDefaultUIHandlerに委譲する
+    // content は展開済みなので、UI 側では展開しない（差し替えた UI ハンドラのために、同じ形の関数は渡す）
     await eventBus.emit('text:show', {
       name: scenarioObject.name || '',
-      content: scenarioObject.content,
+      content,
       speed: core.isSkip ? 1 : scenarioObject.speed || 25,
-      expandVariable: core.expandVariable.bind(core),
+      expandVariable: (text: any) => text,
       waitFn: core.waitHandler.bind(core),
     })
 
@@ -35,7 +41,7 @@ export class TextHandler implements CommandHandler {
     if (scenarioObject.log !== false && scenarioManager.addBacklog) {
       scenarioManager.addBacklog({
         name: scenarioObject.name || '',
-        text: toPlainText(scenarioObject.content, core.expandVariable?.bind(core)),
+        text: toPlainText(content),
       })
     }
   }
