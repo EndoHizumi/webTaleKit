@@ -218,6 +218,26 @@ describe('data-wtk-action のボタン', () => {
     expect(t.onNext).not.toHaveBeenCalled()
   })
 
+  test('ログは <dialog> を showModal で開き、Esc など（ブラウザの close）で閉じても片付く', () => {
+    const t = setup()
+    dispatch(t.auto, 'click')
+    dispatch(t.log, 'click')
+    // テスト用の DOM には showModal が無いので、開いた <dialog> に close を送って、ブラウザが閉じたときを再現する
+    const panel = t.container.querySelector('.wtk-backlog')!
+    expect(panel.getAttribute('open')).toBe('')
+    dispatch(panel, 'close')
+    expect(t.container.querySelector('.wtk-backlog')).toBeNull()
+    expect(t.state.auto).toBe(true)
+  })
+
+  test('ログの枠の外（<dialog> そのもの）を押しても閉じ、文は進まない', () => {
+    const t = setup()
+    dispatch(t.log, 'click')
+    dispatch(t.container.querySelector('.wtk-backlog')!, 'click')
+    expect(t.container.querySelector('.wtk-backlog')).toBeNull()
+    expect(t.onNext).not.toHaveBeenCalled()
+  })
+
   test('sync()：画面が入れ替わったあとのボタンにも、今の状態を写す', () => {
     const t = setup()
     t.state.skip = true

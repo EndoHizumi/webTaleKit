@@ -9,7 +9,7 @@
  * - クリックはゲームコンテナの capture で受け取り、文を進めるクリックには届かせない
  * - オート・スキップが入っているボタンには is-active クラスと aria-pressed="true" を付ける
  * - hide：メッセージ窓・選択肢と、data-wtk-hide を付けた要素を隠し、次のクリックで戻す（そのクリックでは文を進めない）
- * - log：読み返しの窓（.wtk-backlog）を開く。見た目はテンプレートの CSS で変えられる
+ * - log：読み返しの窓（<dialog class="wtk-backlog">、showModal）を開く。Esc・枠の外・閉じるボタンで閉じる。見た目はテンプレートの CSS で変えられる
  */
 import type { BacklogEntry } from './scenarioManager'
 
@@ -44,7 +44,9 @@ export function renderBacklogHtml(entries: BacklogEntry[], labels = { title: '�
 
 /** テンプレートに CSS が無くても読めるようにする最低限の見た目（テンプレートの CSS が後から勝つよう、:where で詳細度 0） */
 const DEFAULT_STYLE = `
-:where(.wtk-backlog){position:absolute;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6)}
+:where(.wtk-backlog){position:fixed;inset:0;width:100%;height:100%;max-width:none;max-height:none;margin:0;padding:0;border:0;background:transparent;align-items:center;justify-content:center}
+:where(.wtk-backlog[open]){display:flex}
+:where(.wtk-backlog)::backdrop{background:rgba(0,0,0,.6)}
 :where(.wtk-backlog-panel){width:80%;height:80%;display:flex;flex-direction:column;padding:16px 24px;box-sizing:border-box;background:rgba(10,10,20,.95);color:#fff;border-radius:8px}
 :where(.wtk-backlog-title){text-align:center;font-weight:bold;margin-bottom:8px}
 :where(.wtk-backlog-list){flex:1;overflow-y:auto;line-height:1.6}
@@ -97,27 +99,30 @@ export function bindUiActions(container: HTMLElement, host: UiActionHost, signal
       doc.head?.appendChild(st)
     }
     pause()
-    const el = doc.createElement('div')
+    // <dialog> を showModal で開く（ブラウザが手前に出し、Esc で閉じ、後ろのボタンを押せなくする）
+    const el = doc.createElement('dialog')
     el.className = 'wtk-backlog'
     el.innerHTML = renderBacklogHtml(host.getBacklog())
+    // <dialog> もゲームコンテナの中に置くので、クリックやキーが文を進めないように止める
     for (const t of SHIELD_EVENTS) el.addEventListener(t, (e: Event) => e.stopPropagation())
-    const close = () => {
+    let done = false
+    const finish = () => {
+      if (done) return
+      done = true
       el.remove()
-      doc.removeEventListener?.('keydown', onKey, true)
       resume()
     }
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation()
-        close()
-      }
-    }
+    // 閉じるボタン・枠の外・Esc（ブラウザが close を出す）のどれで閉じても、ここで片付ける
+    el.addEventListener('close', finish)
+    const close = () => (typeof el.close === 'function' && el.open ? el.close() : finish())
     el.addEventListener('click', (e: Event) => {
       const t = e.target as any
+      // 枠の外（::backdrop）を押すと、target は <dialog> そのものになる
       if (t === el || t?.closest?.('.wtk-backlog-close')) close()
     })
-    doc.addEventListener?.('keydown', onKey, true)
     container.appendChild(el)
+    if (typeof el.showModal === 'function') el.showModal()
+    else el.setAttribute('open', '')
     const list = el.querySelector?.('.wtk-backlog-list') as any
     if (list) list.scrollTop = list.scrollHeight
   }

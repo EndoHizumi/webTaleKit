@@ -171,9 +171,12 @@ export class Core {
       skipBackground = false, // 背景画像の読み込みをスキップ
     } = options
 
-    // 画面名を設定する。
-    this.scenarioManager.progress.currentScene = sceneConfig.name
-    this.scenarioManager.setSceneName(sceneConfig.name)
+    // 画面名を設定する。<dialog> はシーンの上に重ねるだけなので変えない
+    // （変えると、ダイアログのボタンから <save> したとき、シーンではなくダイアログの name が記録され、ロードで読めない）
+    if (!isDialog) {
+      this.scenarioManager.progress.currentScene = sceneConfig.name
+      this.scenarioManager.setSceneName(sceneConfig.name)
+    }
     // テンプレートの存在確認（ダイアログ以外のみ）
     if (!isDialog && !(await this.checkResourceExists(sceneConfig.template))) {
       console.error(`Template file not found: ${sceneConfig.template}`)
