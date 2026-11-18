@@ -378,6 +378,34 @@ document.getElementById('load-button').addEventListener('click', () => {
 });
 ```
 
+### メニューのボタン（オート・スキップ・隠す・ログ）
+
+画面テンプレートの要素に `data-wtk-action` を付けると、エンジンがその操作につなぎます。押しても文は進みません。
+
+```html
+<div class="game-menu" data-wtk-hide>
+  <button data-wtk-action="log">ログ</button>
+  <button data-wtk-action="auto">オート</button>
+  <button data-wtk-action="skip">スキップ</button>
+  <button data-wtk-action="hide">隠す</button>
+</div>
+```
+
+| 値 | 動き |
+| --- | --- |
+| `auto` | オート（自動で進む）を切り替える |
+| `skip` | スキップ（早送り）を切り替える |
+| `hide` | `#messageWindow`・`#interactiveView`・`data-wtk-hide` を付けた要素を隠し、次のクリックで戻す（そのクリックでは文を進めない） |
+| `log` | 読み返しの窓（`core.getBacklog()` の内容）を開く |
+
+- オート・スキップが入っているあいだ、そのボタンには `is-active` クラスと `aria-pressed="true"` が付きます（キー操作で切り替えたときも）。オートとスキップは同時には入りません。
+- ログの窓は `.wtk-backlog`（背景）・`.wtk-backlog-panel`・`.wtk-backlog-title`・`.wtk-backlog-list`・`.wtk-backlog-item`・`.wtk-backlog-name`・`.wtk-backlog-text`・`.wtk-backlog-close` でできています。最低限の見た目はエンジンが付けますが、テンプレートの CSS で上書きできます。ログや「隠す」のあいだはオートが止まり、閉じると戻ります。
+
+```css
+.game-menu button.is-active { background: gold; color: #222; }
+.wtk-backlog-panel { background: rgba(10, 14, 40, 0.95); border: 2px solid #fff; }
+```
+
 ## レスポンシブ対応
 
 ### 自動スケーリング

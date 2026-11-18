@@ -108,6 +108,15 @@ export class Core {
         toggleSkip: () => {
           this.isSkip = !this.isSkip
         },
+        // 画面テンプレートの data-wtk-action ボタン用
+        getState: () => ({ auto: !!this.isAuto, skip: !!this.isSkip }),
+        setAuto: (on) => {
+          this.isAuto = !!on
+        },
+        setSkipMode: (on) => {
+          this.isSkip = !!on
+        },
+        getBacklog: () => this.getBacklog(),
       })
 
       await this.textHandler({ content: ['タップでスタート'], log: false })

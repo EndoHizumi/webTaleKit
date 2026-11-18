@@ -1,5 +1,6 @@
 import { EventBus } from '../utils/eventBus'
 import { Drawer } from './drawer'
+import { bindUiActions } from './uiActions'
 
 export class DefaultUIHandler {
   /**
@@ -16,6 +17,9 @@ export class DefaultUIHandler {
     gameContainer: HTMLElement,
     resolution: { width: number; height: number },
   ): void {
+    // 画面テンプレートの data-wtk-action ボタンの札を、今の状態に合わせ直す（input:bind で中身が入る）
+    let syncUiActions = () => {}
+
     // ----------------------------------------------------------------
     // screen:load
     //   テンプレートURLからHTMLを読み込み・パースしてDOMに注入する。
@@ -71,6 +75,8 @@ export class DefaultUIHandler {
 
         // キャンバスと各ビューの参照を初期化する
         drawer.setScreen(gameContainer, resolution)
+        // 入れ替わったテンプレートのボタンに、オート・スキップの状態を写す
+        syncUiActions()
 
         // テンプレートのスタイルシートを適用する
         if (styleContent) {
@@ -225,7 +231,16 @@ export class DefaultUIHandler {
       if (inputAbortController) inputAbortController.abort()
       inputAbortController = new AbortController()
       const { signal } = inputAbortController
-      const { onNext, setSkip, toggleAuto, toggleSkip } = data
+      const { onNext, setSkip, toggleAuto, toggleSkip, getState, setAuto, setSkipMode, getBacklog } = data
+      // テンプレートの data-wtk-action ボタン（オート・スキップ・隠す・ログ）。文を進めるクリックより先に受け取る
+      if (getState && setAuto && setSkipMode) {
+        const ui = bindUiActions(
+          gameContainer,
+          { getState, setAuto, setSkip: setSkipMode, getBacklog: getBacklog || (() => []) },
+          signal,
+        )
+        syncUiActions = ui.sync
+      }
       gameContainer.addEventListener(
         'keydown',
         (e: KeyboardEvent) => {
@@ -233,8 +248,10 @@ export class DefaultUIHandler {
             onNext()
           } else if (e.key === 'Control') {
             toggleSkip()
+            syncUiActions()
           } else if (e.key.toLowerCase() === 'a' && toggleAuto) {
             toggleAuto()
+            syncUiActions()
           }
         },
         { signal },
@@ -244,6 +261,7 @@ export class DefaultUIHandler {
         (e: KeyboardEvent) => {
           if (e.key === 'Control') {
             toggleSkip()
+            syncUiActions()
           }
         },
         { signal },
